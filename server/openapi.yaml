@@ -14,8 +14,8 @@ paths:
       tags:
         - App
 info:
-  title: Thread API
-  description: Thread API documentation
+  title: danmaku API
+  description: Danmaku API documentation
   version: '1.0'
   contact: {}
 tags: []

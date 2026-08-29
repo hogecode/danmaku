@@ -1,13 +1,17 @@
 version: '3.8'
 
 services:
+  # ===================================================
+  # PostgreSQL Database
+  # ===================================================
   postgres:
     image: postgres:16-alpine
     container_name: danmaku_postgres
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: danmaku
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-danmaku}
+      TZ: ${TZ:-UTC}
     ports:
       - "5432:5432"
     volumes:
@@ -15,14 +19,19 @@ services:
     networks:
       - danmaku_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d danmaku"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-danmaku}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
+  # ===================================================
+  # Redis Cache
+  # ===================================================
   redis:
     image: redis:7-alpine
     container_name: danmaku_redis
+    command: redis-server --appendonly yes
     ports:
       - "6379:6379"
     volumes:
@@ -34,11 +43,94 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
-volumes:
-  postgres_data:
-  redis_data:
+  # ===================================================
+  # Next.js Frontend (Development)
+  # ===================================================
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile.dev
+    container_name: danmaku_web
+    env_file:
+      - .env
+      - apps/web/.env
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount entire app directory with delegated mode for better performance on Mac/Windows
+      - ./apps/web:/app:delegated
+      # Named volume for node_modules to persist dependencies
+      - web_node_modules:/app/node_modules
+      # Use named volume for .next (instead of tmpfs to avoid permission issues)
+      - web_next:/app/.next
+    networks:
+      - danmaku_network
+    depends_on:
+      - server
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    # Override user to root for development (needed for volume mount permissions)
+    user: root
 
+  # ===================================================
+  # NestJS Backend (Development with Hot-Reload)
+  # ===================================================
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: danmaku_server
+    env_file:
+      - .env
+      - server/.env
+    ports:
+      - "3001:3001"
+      - "9229:9229"  # Debug port
+    volumes:
+      # Mount entire app directory with delegated mode for better performance on Mac/Windows
+      - ./server:/app:delegated
+      # Named volume for dist (avoids host mount conflicts with NestCLI)
+      - server_dist:/app/dist
+      # Cache directory as anonymous volume
+      - /app/.eslintcache
+      # Named volume for node_modules to persist dependencies
+      - server_node_modules:/app/node_modules
+    networks:
+      - danmaku_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    # Override user to root for development (needed for volume mount permissions)
+    user: root
+
+# ===================================================
+# Networks
+# ===================================================
 networks:
   danmaku_network:
     driver: bridge
+
+# ===================================================
+# Volumes
+# ===================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  web_node_modules:
+    driver: local
+  web_next:
+    driver: local
+  server_node_modules:
+    driver: local
+  server_dist:
+    driver: local

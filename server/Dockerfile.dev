@@ -1,0 +1,44 @@
+# Development image for NestJS with hot-reload support
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Copy package files
+COPY package.json yarn.lock ./
+
+# Install all dependencies (including dev dependencies)
+RUN yarn install --frozen-lockfile
+
+# Copy source code
+COPY --chown=nodejs:nodejs . .
+
+# Fix permissions for volume mount
+# Ensure node_modules directory is writable by nodejs user
+RUN chown -R nodejs:nodejs /app && \
+    chmod -R 755 /app
+
+# Create dist directory with proper permissions (avoids volume mount conflicts)
+RUN mkdir -p /app/dist && \
+    chown -R nodejs:nodejs /app/dist
+
+# Set NODE_ENV for development
+ENV NODE_ENV=development
+
+# Switch to non-root user
+USER nodejs
+
+# Expose ports for application and debugging
+EXPOSE 3001 9229
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the application in watch mode for hot-reload
+CMD ["yarn", "start:dev"]
