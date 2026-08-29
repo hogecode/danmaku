@@ -33,7 +33,11 @@ class ApiService {
         connectTimeout: AppConstants.apiConnectTimeout,
         receiveTimeout: AppConstants.apiReceiveTimeout,
         sendTimeout: AppConstants.apiSendTimeout,
-        contentType: 'application/json',
+        // CORSプリフライト対策: GETはContent-Typeを指定しない
+        // POSTはapplication/jsonを使用
+        headers: {
+          'Accept': 'application/json',
+        },
       ),
     );
 
@@ -41,6 +45,10 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
+          // GETリクエストではContent-Typeを削除（CORS対策）
+          if (options.method == 'GET') {
+            options.headers.remove('content-type');
+          }
           _logger.i(
             'API Request: ${options.method} ${options.path}',
             error: options.queryParameters,
@@ -72,6 +80,13 @@ class ApiService {
     required String videoId,
     int limit = 1000,
   }) async {
+    // テストモード：モックデータを返す
+    if (AppConstants.useMockData) {
+      _logger.i('Using mock danmaku data for testing');
+      await Future.delayed(const Duration(milliseconds: 500)); // ネットワーク遅延をシミュレート
+      return _getMockDanmakuData();
+    }
+
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         '/api/danmaku',
@@ -159,6 +174,9 @@ class ApiService {
           'text': text,
           'size': size,
         },
+        options: Options(
+          contentType: 'application/json',
+        ),
       );
 
       if (response.data == null) {
@@ -186,6 +204,60 @@ class ApiService {
     } catch (e) {
       throw ApiException('Failed to send danmaku: $e');
     }
+  }
+
+  /// モックダンマクデータを取得（テスト用）
+  List<DanmakuModel> _getMockDanmakuData() {
+    return [
+      DanmakuModel(
+        time: 2.0,
+        type: 'right',
+        color: '#ffeaea',
+        author: 'User1',
+        text: 'Welcome to the video!',
+        size: 'medium',
+      ),
+      DanmakuModel(
+        time: 5.0,
+        type: 'right',
+        color: '#ffcccc',
+        author: 'User2',
+        text: 'Nice video! 👍',
+        size: 'medium',
+      ),
+      DanmakuModel(
+        time: 8.0,
+        type: 'top',
+        color: '#ffe5e5',
+        author: 'User3',
+        text: 'This is awesome',
+        size: 'small',
+      ),
+      DanmakuModel(
+        time: 12.0,
+        type: 'right',
+        color: '#ffd9d9',
+        author: 'User4',
+        text: 'I love this content',
+        size: 'medium',
+      ),
+      DanmakuModel(
+        time: 15.0,
+        type: 'bottom',
+        color: '#ffcdcd',
+        author: 'User5',
+        text: 'Great work!',
+        size: 'small',
+      ),
+      DanmakuModel(
+        time: 20.0,
+        type: 'right',
+        color: '#ffc1c1',
+        author: 'User6',
+        text: 'Looking forward to more videos',
+        size: 'medium',
+      ),
+    ];
   }
 
   /// Dio のクリーンアップ

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_app/core/constants/color_constants.dart';
 
 /// アプリテーマ管理
@@ -12,20 +13,16 @@ class AppTheme {
       brightness: Brightness.light,
       primaryColor: ColorConstants.lightPrimary,
       scaffoldBackgroundColor: ColorConstants.lightBackground,
+      fontFamily: GoogleFonts.notoSansJp().fontFamily,
       appBarTheme: const AppBarTheme(
         backgroundColor: ColorConstants.lightPrimary,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      tabBarTheme: const TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         labelColor: Colors.white,
         unselectedLabelColor: Colors.grey,
-        indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(
-            color: Colors.white,
-            width: 3,
-          ),
-        ),
+        indicatorColor: Colors.white,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -66,20 +63,16 @@ class AppTheme {
       brightness: Brightness.dark,
       primaryColor: ColorConstants.darkPrimary,
       scaffoldBackgroundColor: ColorConstants.darkBackground,
+      fontFamily: GoogleFonts.notoSansJp().fontFamily,
       appBarTheme: const AppBarTheme(
         backgroundColor: ColorConstants.darkControllerBg,
         foregroundColor: ColorConstants.darkText,
         elevation: 0,
       ),
-      tabBarTheme: const TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         labelColor: ColorConstants.darkPrimary,
         unselectedLabelColor: Colors.grey,
-        indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(
-            color: ColorConstants.darkPrimary,
-            width: 3,
-          ),
-        ),
+        indicatorColor: ColorConstants.darkPrimary,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

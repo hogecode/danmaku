@@ -26,12 +26,12 @@ class PlayerPage extends ConsumerStatefulWidget {
 }
 
 class _PlayerPageState extends ConsumerState<PlayerPage> {
-  late GlobalKey<_VideoViewState> _videoViewKey;
+  late GlobalKey<VideoViewState> _videoViewKey;
 
   @override
   void initState() {
     super.initState();
-    _videoViewKey = GlobalKey<_VideoViewState>();
+    _videoViewKey = GlobalKey<VideoViewState>();
     
     // ダンマクを取得
     WidgetsBinding.instance.addPostFrameCallback((_) {

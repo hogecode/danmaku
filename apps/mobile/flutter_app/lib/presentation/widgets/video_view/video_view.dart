@@ -17,10 +17,10 @@ class VideoView extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  ConsumerState<VideoView> createState() => _VideoViewState();
+  ConsumerState<VideoView> createState() => VideoViewState();
 }
 
-class _VideoViewState extends ConsumerState<VideoView> {
+class VideoViewState extends ConsumerState<VideoView> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
 

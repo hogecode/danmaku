@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_app/core/constants/app_constants.dart';
 import 'package:flutter_app/data/models/danmaku_model.dart';
 import 'package:flutter_app/data/services/api_service.dart';
@@ -143,6 +144,3 @@ class DanmakuRepository {
     }
   }
 }
-
-// Color 拡張用の import
-import 'package:flutter/material.dart';

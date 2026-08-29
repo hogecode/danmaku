@@ -3,10 +3,14 @@ class AppConstants {
   AppConstants._(); // Private constructor
 
   // API Configuration
-  static const String apiBaseUrl = 'http://api.danmaku.local';
+  // 開発環境ではモックサーバーまたはlocalhostを使用
+  static const String apiBaseUrl = 'http://localhost:3000';
   static const Duration apiConnectTimeout = Duration(seconds: 10);
   static const Duration apiReceiveTimeout = Duration(seconds: 10);
   static const Duration apiSendTimeout = Duration(seconds: 10);
+  
+  // テストモード（APIサーバーなしでテストする）
+  static const bool useMockData = true;
 
   // Danmaku Configuration
   static const int maxDanmakuCount = 1000;
