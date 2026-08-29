@@ -2,7 +2,7 @@
  * ユーザー情報レスポンスDTO
  */
 export class UserInfoDto {
-  id!: bigint;
+  id!: string;
   email!: string;
   name?: string | null;
   picture_url?: string | null;

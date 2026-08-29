@@ -29,7 +29,7 @@ export class UserService {
     }
 
     return {
-      id: user.id,
+      id: String(user.id),
       email: user.email,
       name: user.name,
       picture_url: user.picture_url,

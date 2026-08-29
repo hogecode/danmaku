@@ -36,6 +36,8 @@ export class OAuthAccountService {
       : null;
 
     const now = new Date();
+    // 
+    console.log('Google user:', googleUser);
 
     const existingOAuth = await this.db.query.oauthAccounts.findFirst({
       where: and(
@@ -48,7 +50,7 @@ export class OAuthAccountService {
       await this.db
         .update(oauthAccounts)
         .set({
-          provider_user_id: googleUser.id,
+          provider_user_id: googleUser.sub,
           provider_email: googleUser.email,
           access_token: tokenData.access_token,
           refresh_token:
@@ -62,7 +64,7 @@ export class OAuthAccountService {
       await this.db.insert(oauthAccounts).values({
         user_id: userId,
         provider_name: 'google',
-        provider_user_id: googleUser.id,
+        provider_user_id: googleUser.sub,
         provider_email: googleUser.email,
         access_token: tokenData.access_token,
         refresh_token: tokenData.refresh_token,

@@ -123,8 +123,7 @@ components:
       type: object
       properties:
         id:
-          format: int64
-          type: integer
+          type: string
         email:
           type: string
         name:

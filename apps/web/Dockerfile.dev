@@ -6,9 +6,18 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+# Disable Next.js telemetry
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Enable file watching with polling for Docker file systems
+# Critical for Turbopack to detect file changes in Docker
+ENV CHOKIDAR_USEPOLLING=true
+ENV CHOKIDAR_POLL_INTERVAL=1000
+ENV WATCHPACK_POLLING=true
+ENV TURBOPACK_LOG_VERBOSITY=debug
+
+# Node options for Turbopack
+ENV NODE_OPTIONS=--enable-source-maps
 
 # Copy package files
 COPY package.json package-lock.json ./
@@ -17,17 +26,11 @@ COPY package.json package-lock.json ./
 RUN npm install --frozen-lockfile
 
 # Copy source code
-COPY --chown=nodejs:nodejs . .
+COPY . .
 
-# Fix permissions for volume mount
-# Ensure .next directory is writable by nodejs user
-RUN mkdir -p /app/.next && chown -R nodejs:nodejs /app
-
-# Switch to non-root user
-USER nodejs
-
-# Disable Next.js telemetry
-ENV NEXT_TELEMETRY_DISABLED=1
+# Fix permissions and ensure .next directory is writable
+RUN mkdir -p /app/.next && \
+    chmod -R 755 /app
 
 # Expose development port
 EXPOSE 3000
@@ -36,4 +39,5 @@ EXPOSE 3000
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application in development mode with hot-reload
+# Run as root to avoid permission issues with mounted volumes
 CMD ["npm", "run", "dev"]

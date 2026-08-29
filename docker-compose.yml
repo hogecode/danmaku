@@ -52,18 +52,28 @@ services:
     build:
       context: ./apps/web
       dockerfile: Dockerfile.dev
+      args:
+        - NODE_ENV=development
     container_name: danmaku_web
     env_file:
       - .env
       - apps/web/.env
+    environment:
+      # Critical for Turbopack file watching in Docker
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_POLL_INTERVAL=1000
+      - WATCHPACK_POLLING=true
+      - TURBOPACK_LOG_VERBOSITY=debug
+      - NODE_ENV=development
     ports:
       - "3000:3000"
     volumes:
-      # Mount entire app directory with delegated mode for better performance on Mac/Windows
-      - ./apps/web:/app:delegated
-      # Named volume for node_modules to persist dependencies
-      - web_node_modules:/app/node_modules
-      # Use named volume for .next (instead of tmpfs to avoid permission issues)
+      # Mount entire app directory - use 'delegated' on Mac/Windows for performance
+      # The entire /app volume should be monitored for changes
+      - ./apps/web:/app
+      # Explicitly exclude node_modules from sync to avoid conflicts
+      - /app/node_modules
+      # .next should be a volume to persist build cache
       - web_next:/app/.next
     networks:
       - danmaku_network
@@ -72,8 +82,15 @@ services:
     restart: unless-stopped
     stdin_open: true
     tty: true
-    # Override user to root for development (needed for volume mount permissions)
+    # Run as root to avoid permission issues with mounted volumes in development
     user: root
+    # Add healthcheck to monitor the dev server
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # ===================================================
   # NestJS Backend (Development with Hot-Reload)

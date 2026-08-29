@@ -50,7 +50,7 @@ export class AuthService {
     const redirectUri = this.configService.get<string>('GOOGLE_REDIRECT_URI');
     const scopes =
       this.configService.get<string>('GOOGLE_SCOPES') ||
-      'openid,email,profile,https://www.googleapis.com/auth/drive.readonly';
+      'openid email profile https://www.googleapis.com/auth/drive.readonly';
 
     if (!clientId || !redirectUri) {
       throw new InternalServerErrorException(
@@ -131,7 +131,7 @@ export class AuthService {
       );
 
       return {
-        id: user.id,
+        id: String(user.id),
         email: user.email,
         name: user.name,
         picture_url: user.picture_url,

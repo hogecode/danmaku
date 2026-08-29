@@ -8,10 +8,13 @@ import {
   Redirect,
   BadRequestException,
   HttpCode,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 import { OAuthAccountService } from './services/auth-account.service';
+import { ConfigService } from '@nestjs/config';
 import { RateLimitGuard, AuthGuard } from './guards';
 import {
   LoginRequestDto,
@@ -31,6 +34,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly oauthAccountService: OAuthAccountService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -52,7 +56,7 @@ export class AuthController {
   @Redirect()
   async callback(
     @Query() query: CallbackQueryDto,
-    @Session() session: Express.Session & { userId?: bigint },
+    @Session() session: Express.Session & { userId?: string },
   ) {
     // エラーパラメータをチェック
     if (query.error) {
@@ -73,12 +77,12 @@ export class AuthController {
         query.state,
       );
 
-      // セッションにユーザーIDを保存
+      // セッションにユーザーID（string）を保存
       session.userId = userInfo.id;
 
       // リダイレクト先
       return {
-        url: '/home',
+        url: `${this.configService.get('FRONTEND_URL')}/home`, // フロントエンドのホームページにリダイレクト
         statusCode: 302,
       };
     } catch (error) {
@@ -93,13 +97,14 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard)
   async getUserInfo(
-    @Session() session: Express.Session & { userId?: bigint },
+    @Session() session: Express.Session & { userId?: string },
   ): Promise<UserInfoDto> {
     if (!session.userId) {
       throw new BadRequestException('User ID not found in session');
     }
 
-    return await this.userService.getUserInfo(session.userId);
+    // 文字列から bigint に変換してサービスに渡す
+    return await this.userService.getUserInfo(BigInt(session.userId));
   }
 
   /**
@@ -109,13 +114,14 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @HttpCode(200)
   async refreshToken(
-    @Session() session: Express.Session & { userId?: bigint },
+    @Session() session: Express.Session & { userId?: string },
   ): Promise<RefreshTokenResponseDto> {
     if (!session.userId) {
       throw new BadRequestException('User ID not found in session');
     }
 
-    return await this.oauthAccountService.refreshToken(session.userId);
+    // 文字列から bigint に変換してサービスに渡す
+    return await this.oauthAccountService.refreshToken(BigInt(session.userId));
   }
 
   /**
@@ -125,13 +131,14 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @HttpCode(200)
   async logout(
-    @Session() session: Express.Session & { userId?: bigint },
+    @Session() session: Express.Session & { userId?: string },
   ): Promise<{ message: string }> {
     if (!session.userId) {
       throw new BadRequestException('User ID not found in session');
     }
 
-    await this.oauthAccountService.logout(session.userId);
+    // 文字列から bigint に変換してサービスに渡す
+    await this.oauthAccountService.logout(BigInt(session.userId));
 
     // セッションを破棄（Express Session API）
     (session as any).destroy?.(() => {});
