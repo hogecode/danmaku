@@ -97,6 +97,53 @@ paths:
       summary: POST /api/auth/logout - ログアウト
       tags:
         - Auth
+  /api/gdrive/list:
+    get:
+      operationId: GDriveController_listFolder
+      parameters:
+        - name: folderId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FolderListDto'
+      summary: |-
+        GET /api/gdrive/list
+        フォルダ内容を取得
+      tags:
+        - GDrive
+  /api/gdrive/search:
+    get:
+      operationId: GDriveController_search
+      parameters:
+        - name: folderId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: query
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FolderListDto'
+      summary: |-
+        GET /api/gdrive/search
+        フォルダ内でキーワード検索
+      tags:
+        - GDrive
 info:
   title: danmaku API
   description: Danmaku API documentation
@@ -152,3 +199,56 @@ components:
       required:
         - access_token
         - expires_in
+    FileItemDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ファイル/フォルダID
+        name:
+          type: string
+          description: ファイル/フォルダ名
+        mimeType:
+          type: string
+          description: |-
+            MIME タイプ
+            - 'application/vnd.google-apps.folder' = フォルダ
+            - 'video/mp4' = MP4 ビデオ
+        size:
+          type: number
+          description: |-
+            ファイル/フォルダサイズ（バイト）
+            フォルダの場合は null
+        modifiedTime:
+          type: string
+          description: 最終更新日時（ISO 8601形式）
+        webViewLink:
+          type: string
+          description: Google Drive WebView URL
+        thumbnailLink:
+          type: string
+          description: サムネイル URL（ビデオファイルの場合のみ）
+        parentId:
+          type: string
+          description: 親フォルダID
+      required:
+        - id
+        - name
+        - mimeType
+        - modifiedTime
+        - webViewLink
+    FolderListDto:
+      type: object
+      properties:
+        items:
+          description: フォルダ内のファイル/フォルダ一覧
+          type: array
+          items:
+            $ref: '#/components/schemas/FileItemDto'
+        nextPageToken:
+          type: string
+          description: |-
+            次のページトークン（ページネーション用）
+            あれば指定してリクエスト
+      required:
+        - items

@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { authClient } from '@/lib/auth-client';
 import type { UserInfoDto, LoginResponseDto } from '@/lib/generated';
 
 /**
- * ユーザー情報型（OpenAPI生成型を拡張）
+ * ユーザー情報型
  */
 export type UserInfo = UserInfoDto;
 
 /**
- * ログイン開始レスポンス型（OpenAPI生成型を使用）
+ * ログイン開始レスポンス型
  */
 export type LoginResponse = LoginResponseDto;
 
@@ -29,11 +29,10 @@ export function useAuth() {
   const fetchUserInfo = useCallback(async () => {
     try {
       setLoading(true);
-      const userData = await apiClient.getUserInfo();
+      const userData = await authClient.getUserInfo();
       setUser(userData);
       setError(null);
     } catch (err) {
-      // 認証されていない場合はユーザーをnullに設定（エラーではない）
       if (err instanceof Error && err.message.includes('401')) {
         setUser(null);
         setError(null);
@@ -52,9 +51,8 @@ export function useAuth() {
   const startLogin = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await apiClient.login();
+      const response = await authClient.login();
       const { authorize_url } = response;
-      // Google OAuth の認可ページにリダイレクト
       window.location.href = authorize_url;
     } catch (err) {
       if (err instanceof Error) {
@@ -71,10 +69,9 @@ export function useAuth() {
   const logout = useCallback(async () => {
     try {
       setLoading(true);
-      await apiClient.logout();
+      await authClient.logout();
       setUser(null);
       setError(null);
-      // ホームページにリダイレクト
       window.location.href = '/';
     } catch (err) {
       if (err instanceof Error) {
@@ -90,8 +87,7 @@ export function useAuth() {
    */
   const refreshToken = useCallback(async () => {
     try {
-      await apiClient.refreshToken();
-      // トークン更新成功後、ユーザー情報を再取得
+      await authClient.refreshToken();
       await fetchUserInfo();
     } catch (err) {
       if (err instanceof Error) {
@@ -100,16 +96,10 @@ export function useAuth() {
     }
   }, [fetchUserInfo]);
 
-  /**
-   * マウント時の初期化
-   */
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  /**
-   * マウント後にユーザー情報を取得
-   */
   useEffect(() => {
     if (!isMounted) return;
     fetchUserInfo();

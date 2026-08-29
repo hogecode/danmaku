@@ -6,13 +6,11 @@ import { useAuthContext } from '@/components/AuthProvider';
 
 /**
  * ホーム画面
- * 認証が必須なページ
  */
 export default function HomePage() {
   const router = useRouter();
   const { user, loading, isAuthenticated, logout } = useAuthContext();
 
-  // 未認証の場合はログインページへリダイレクト
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.push('/auth/login');
@@ -123,6 +121,28 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
+
+             <div className="bg-white rounded-lg shadow-lg p-8">
+               <div className="flex items-start justify-between">
+                 <div>
+                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                     🎬 Google Drive
+                   </h3>
+                   <p className="text-gray-600 mb-4">
+                     Google Drive 内のビデオファイルを閲覧・検索できます。
+                     MP4 ファイルをストリーミング再生できるほか、
+                     関連するコメントファイルを表示できます。
+                   </p>
+                 </div>
+               </div>
+               <a
+                 href="/drive"
+                 className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+               >
+                 Drive を開く →
+               </a>
+             </div>
+
           </div>
         </div>
       </main>
