@@ -1,15 +1,56 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import session from 'express-session';
+import { createClient } from 'redis';
+import { RedisStore } from 'connect-redis';
 import { AppModule } from './app.module';
 import { generateOpenAPIYaml } from './utils/openapi-generator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Redis セッションストア設定
+  const redisClient = createClient({
+    socket: {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379', 10),
+    },
+    password: process.env.REDIS_PASSWORD,
+  });
+
+  // Redis クライアントの接続
+  redisClient.connect().catch(console.error);
+
+  const redisStore = new RedisStore({
+    client: redisClient as any,
+    prefix: 'session:',
+  });
+
+  // Express session 設定
+  const sessionSecret = process.env.SESSION_SECRET || 'your-secret-key';
+  const cookieSecure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
+
+  app.use(
+    session({
+      store: redisStore,
+      secret: sessionSecret,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: cookieSecure,
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 14 * 24 * 60 * 60 * 1000, // 14日
+      },
+      name: 'danmaku.sid',
+    }),
+  );
+
   // Enable CORS
+  const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:3001';
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: corsOrigin.split(','),
     credentials: true,
   });
 
@@ -24,8 +65,8 @@ async function bootstrap() {
 
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle('Thread API')
-    .setDescription('Thread API documentation')
+    .setTitle('Danmaku API')
+    .setDescription('Danmaku API documentation')
     .setVersion('1.0')
     .build();
 

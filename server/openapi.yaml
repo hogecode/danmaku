@@ -13,6 +13,90 @@ paths:
                 type: string
       tags:
         - App
+  /api/auth/login:
+    post:
+      operationId: AuthController_login
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
+      summary: POST /api/auth/login - ログイン開始
+      tags:
+        - Auth
+  /api/auth/callback:
+    get:
+      operationId: AuthController_callback
+      parameters:
+        - name: code
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: state
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: error
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: error_description
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        GET /api/auth/callback - OAuth コールバック
+        Google OAuth 認証後にリダイレクトされるエンドポイント
+      tags:
+        - Auth
+  /api/auth/me:
+    get:
+      operationId: AuthController_getUserInfo
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoDto'
+      summary: GET /api/auth/me - ユーザー情報取得
+      tags:
+        - Auth
+  /api/auth/refresh:
+    post:
+      operationId: AuthController_refreshToken
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponseDto'
+      summary: POST /api/auth/refresh - トークン更新
+      tags:
+        - Auth
+  /api/auth/logout:
+    post:
+      operationId: AuthController_logout
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: POST /api/auth/logout - ログアウト
+      tags:
+        - Auth
 info:
   title: danmaku API
   description: Danmaku API documentation
@@ -21,4 +105,51 @@ info:
 tags: []
 servers: []
 components:
-  schemas: {}
+  schemas:
+    LoginResponseDto:
+      type: object
+      properties:
+        authorize_url:
+          type: string
+        state:
+          type: string
+        expires_in:
+          type: number
+      required:
+        - authorize_url
+        - state
+        - expires_in
+    UserInfoDto:
+      type: object
+      properties:
+        id:
+          format: int64
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+          nullable: true
+        picture_url:
+          type: string
+          nullable: true
+        oauth_provider:
+          type: string
+        last_login:
+          format: date-time
+          type: string
+          nullable: true
+      required:
+        - id
+        - email
+        - oauth_provider
+    RefreshTokenResponseDto:
+      type: object
+      properties:
+        access_token:
+          type: string
+        expires_in:
+          type: number
+      required:
+        - access_token
+        - expires_in

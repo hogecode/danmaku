@@ -1,5 +1,5 @@
 # Development image for NestJS with hot-reload support
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
@@ -10,23 +10,24 @@ RUN apk add --no-cache dumb-init
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Copy package files
-COPY package.json yarn.lock ./
+# Copy package files first (layer caching)
+COPY --chown=nodejs:nodejs package.json yarn.lock ./
 
 # Install all dependencies (including dev dependencies)
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --network-timeout 100000
 
-# Copy source code
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/dist /app/.eslintcache && \
+    chown -R nodejs:nodejs /app/dist /app/.eslintcache
+
+# Copy source code (excluding node_modules and dist via .dockerignore)
 COPY --chown=nodejs:nodejs . .
 
 # Fix permissions for volume mount
-# Ensure node_modules directory is writable by nodejs user
 RUN chown -R nodejs:nodejs /app && \
-    chmod -R 755 /app
-
-# Create dist directory with proper permissions (avoids volume mount conflicts)
-RUN mkdir -p /app/dist && \
-    chown -R nodejs:nodejs /app/dist
+    chmod -R 755 /app && \
+    # Ensure node_modules is writable for hot-reload scenarios
+    chmod -R 755 /app/node_modules
 
 # Set NODE_ENV for development
 ENV NODE_ENV=development

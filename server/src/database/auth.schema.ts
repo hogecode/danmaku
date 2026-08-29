@@ -1,6 +1,7 @@
 import {
   pgTable,
   bigserial,
+  bigint,
   varchar,
   text,
   timestamp,

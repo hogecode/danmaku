@@ -90,14 +90,14 @@ services:
       - "3001:3001"
       - "9229:9229"  # Debug port
     volumes:
-      # Mount entire app directory with delegated mode for better performance on Mac/Windows
+      # Mount source code (excluding node_modules) with delegated mode for better performance
       - ./server:/app:delegated
+      # Named volume for node_modules to persist dependencies and avoid host conflicts
+      - server_node_modules:/app/node_modules
       # Named volume for dist (avoids host mount conflicts with NestCLI)
       - server_dist:/app/dist
       # Cache directory as anonymous volume
       - /app/.eslintcache
-      # Named volume for node_modules to persist dependencies
-      - server_node_modules:/app/node_modules
     networks:
       - danmaku_network
     depends_on:
