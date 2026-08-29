@@ -1,0 +1,195 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_app/core/constants/app_constants.dart';
+import 'package:flutter_app/data/models/api_response_model.dart';
+import 'package:flutter_app/data/models/danmaku_model.dart';
+import 'package:logger/logger.dart';
+
+/// API エラー
+class ApiException implements Exception {
+  final String message;
+  final int? statusCode;
+
+  ApiException(this.message, [this.statusCode]);
+
+  @override
+  String toString() => 'ApiException: $message (status: $statusCode)';
+}
+
+/// API サービス
+class ApiService {
+  late final Dio _dio;
+  late final Logger _logger;
+
+  ApiService() {
+    _logger = Logger();
+    _initDio();
+  }
+
+  /// Dio 初期化
+  void _initDio() {
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: AppConstants.apiBaseUrl,
+        connectTimeout: AppConstants.apiConnectTimeout,
+        receiveTimeout: AppConstants.apiReceiveTimeout,
+        sendTimeout: AppConstants.apiSendTimeout,
+        contentType: 'application/json',
+      ),
+    );
+
+    // インターセプター（ロギング）
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          _logger.i(
+            'API Request: ${options.method} ${options.path}',
+            error: options.queryParameters,
+          );
+          return handler.next(options);
+        },
+        onResponse: (response, handler) {
+          _logger.i(
+            'API Response: ${response.statusCode} ${response.requestOptions.path}',
+          );
+          return handler.next(response);
+        },
+        onError: (error, handler) {
+          _logger.e(
+            'API Error: ${error.message}',
+            error: error.response?.statusCode,
+            stackTrace: StackTrace.current,
+          );
+          return handler.next(error);
+        },
+      ),
+    );
+  }
+
+  /// ダンマク取得
+  ///
+  /// GET /api/danmaku?video_id=xxx
+  Future<List<DanmakuModel>> fetchDanmaku({
+    required String videoId,
+    int limit = 1000,
+  }) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/api/danmaku',
+        queryParameters: {
+          'video_id': videoId,
+          'limit': limit,
+        },
+      );
+
+      if (response.data == null) {
+        throw ApiException('No data received');
+      }
+
+      // API レスポンスをパース
+      final json = response.data!;
+      final apiResponse = ApiResponseModel<dynamic>.fromJson(
+        json,
+        (obj) => obj,
+      );
+
+      if (!apiResponse.isSuccess) {
+        throw ApiException(
+          apiResponse.msg ?? 'Unknown error',
+          apiResponse.code,
+        );
+      }
+
+      if (apiResponse.data == null) {
+        _logger.w('No danmaku data returned');
+        return [];
+      }
+
+      // 配列形式 [時刻, タイプ, 色, 著者, テキスト, サイズ] をパース
+      return _parseDanmakuArray(apiResponse.data as List<dynamic>);
+    } on DioException catch (e) {
+      throw ApiException(
+        'Network error: ${e.message}',
+        e.response?.statusCode,
+      );
+    } catch (e) {
+      throw ApiException('Failed to fetch danmaku: $e');
+    }
+  }
+
+  /// 配列形式のダンマクをパース
+  List<DanmakuModel> _parseDanmakuArray(List<dynamic> rawData) {
+    return rawData.map((item) {
+      if (item is! List || item.isEmpty) {
+        return null;
+      }
+
+      try {
+        return DanmakuModel(
+          time: (item[0] as num).toDouble(),
+          type: item.length > 1 ? item[1] as String : 'right',
+          color: item.length > 2 ? item[2] as String : '#ffeaea',
+          author: item.length > 3 ? item[3] as String : 'Anonymous',
+          text: item.length > 4 ? item[4] as String : '',
+          size: item.length > 5 ? item[5] as String : 'medium',
+        );
+      } catch (e) {
+        _logger.e('Failed to parse danmaku item: $item', error: e);
+        return null;
+      }
+    }).whereType<DanmakuModel>().toList();
+  }
+
+  /// ダンマク送信（後実装）
+  Future<void> sendDanmaku({
+    required String videoId,
+    required double time,
+    required String type,
+    required String color,
+    required String text,
+    required String size,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/api/danmaku',
+        data: {
+          'video_id': videoId,
+          'time': time,
+          'type': type,
+          'color': color,
+          'text': text,
+          'size': size,
+        },
+      );
+
+      if (response.data == null) {
+        throw ApiException('No response data');
+      }
+
+      final apiResponse = ApiResponseModel<dynamic>.fromJson(
+        response.data!,
+        (obj) => obj,
+      );
+
+      if (!apiResponse.isSuccess) {
+        throw ApiException(
+          apiResponse.msg ?? 'Failed to send danmaku',
+          apiResponse.code,
+        );
+      }
+
+      _logger.i('Danmaku sent successfully');
+    } on DioException catch (e) {
+      throw ApiException(
+        'Network error: ${e.message}',
+        e.response?.statusCode,
+      );
+    } catch (e) {
+      throw ApiException('Failed to send danmaku: $e');
+    }
+  }
+
+  /// Dio のクリーンアップ
+  void dispose() {
+    _dio.close();
+  }
+}
