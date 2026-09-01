@@ -39,8 +39,8 @@ class DanmakuParticle {
     required double canvasHeight,
     required double canvasWidth,
   })  : x = canvasWidth,
-        y = 0,
-        targetY = 0,
+        y = canvasHeight / 2,  // デフォルト: 画面中央
+        targetY = canvasHeight / 2,
         isVisible = true,
         opacity = 1.0 {
     _initializeTextPainter();

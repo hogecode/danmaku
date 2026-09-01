@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/domain/entities/danmaku_entity.dart';
 import 'package:flutter_app/domain/usecases/fetch_danmaku_usecase.dart';
@@ -24,12 +25,19 @@ class DanmakuCanvas extends ConsumerStatefulWidget {
   ConsumerState<DanmakuCanvas> createState() => _DanmakuCanvasState();
 }
 
+
 class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
   late DanmakuEngine _engine;
   late Logger _logger;
   late FetchDanmakuUseCase _fetchUseCase;
+  late Ticker _ticker;
+
+  // 追加済みのダンマク ID を追跡
+  final Set<String> _addedDanmakuIds = {};
+
+  // 前回の danmakuState を保持（リファレンス比較用）
+  DanmakuState? _lastDanmakuState;
 
   @override
   void initState() {
@@ -45,13 +53,32 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas>
     // FetchDanmakuUseCase を事前に取得
     _fetchUseCase = ref.read(fetchDanmakuUseCaseProvider);
 
-    // アニメーションコントローラーを設定（60fps）
-    _animationController = AnimationController(
-      duration: const Duration(days: 1), // 十分に長い期間
-      vsync: this,
-    )..addListener(_onAnimationTick);
+    // Ticker を設定（毎フレーム実行）
+    int _tickCount = 0;
+    _ticker = createTicker((elapsed) {
+      _tickCount++;
+      final size = MediaQuery.of(context).size;
 
-    _animationController.forward();
+      // ✅ widget.currentTime を使用（PlayerPage が Riverpod から取得して渡してくれる）
+      final currentTime = widget.currentTime;
+
+      if (_tickCount % 60 == 0) {  // 60フレームごとに（約1秒）
+        _logger.d('⏱️ Ticker #$_tickCount - time: ${currentTime.toStringAsFixed(2)}s, particles: ${_engine.particles.length}, visible: ${_engine.particles.where((p) => p.isVisible).length}');
+      }
+
+      // エンジンのフレーム計算
+      _engine.calculateFrame(
+        currentTime,
+        size.height,
+        size.width,
+      );
+
+      // 再描画トリガー
+      setState(() {});
+    });
+
+    _ticker.start();
+    _logger.i('✅ Ticker started');
   }
 
   @override
@@ -59,36 +86,30 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas>
     super.didUpdateWidget(oldWidget);
 
     // グローバルパラメータを更新
-    _engine.globalOpacity = widget.globalOpacity;
-    _engine.globalSpeedRate = widget.globalSpeedRate;
-  }
-
-  /// アニメーション毎フレーム（60fps）
-  void _onAnimationTick() {
-    // フレームを計算
-    _calculateFrame();
-
-    // Canvas を再描画
-    if (mounted) {
-      setState(() {});
+    if (oldWidget.globalOpacity != widget.globalOpacity) {
+      _engine.globalOpacity = widget.globalOpacity;
     }
-  }
-
-  /// フレームを計算
-  void _calculateFrame() {
-    final size = MediaQuery.of(context).size;
-    _engine.calculateFrame(
-      widget.currentTime,
-      size.height,
-      size.width,
-    );
+    if (oldWidget.globalSpeedRate != widget.globalSpeedRate) {
+      _engine.globalSpeedRate = widget.globalSpeedRate;
+    }
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _ticker.dispose();
     _engine.clear();
+    _addedDanmakuIds.clear();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // MediaQuery の変化時（画面リサイズ等）は engine をクリアして再初期化
+    // ⚠️ でし追加済みダンマクの重複は防ぐため、_addedDanmakuIds はクリアしない
+    _engine.clear();
+    _lastDanmakuState = null;
+    _logger.i('🔄 didChangeDependencies - engine cleared, ready for re-initialization');
   }
 
   @override
@@ -97,11 +118,19 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas>
       // 既に保存した FetchDanmakuUseCase を使用
       final danmakuState = ref.watch(danmakuStateProvider(_fetchUseCase));
 
-      // ダンマクをエンジンに追加
-      if (danmakuState.danmakuList.isNotEmpty) {
-        _addDanmakuToEngine(danmakuState.danmakuList);
+      _logger.d('🎬 Build called - danmakuList: ${danmakuState.danmakuList.length}, isLoading: ${danmakuState.isLoading}');
+
+      // 前回と異なるダンマク状態かチェック
+      // ✅ _lastDanmakuState が null（リサイズ後）のときも、ダンマクを再追加
+      if (_lastDanmakuState?.danmakuList != danmakuState.danmakuList || _lastDanmakuState == null) {
+        if (danmakuState.danmakuList.isNotEmpty) {
+          _logger.i('🔄 Danmaku list changed or engine reinitialized - adding ${danmakuState.danmakuList.length} items');
+          _addNewDanmaku(danmakuState.danmakuList);
+        }
+        _lastDanmakuState = danmakuState;
       }
 
+      // 常に RepaintBoundary を返す（Ticker で毎フレーム build が呼ばれる）
       return RepaintBoundary(
         child: CustomPaint(
           painter: _DanmakuPainter(
@@ -112,29 +141,35 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas>
         ),
       );
     } catch (e) {
-      _logger.e('Error in DanmakuCanvas build: $e');
-      // エラー時は何も描画しない（透明）
+      _logger.e('❌ Error in DanmakuCanvas build: $e');
       return Container();
     }
   }
 
-  /// ダンマクをエンジンに追加
-  void _addDanmakuToEngine(List<DanmakuEntity> danmakuList) {
+  /// 新しいダンマクのみをエンジンに追加
+  void _addNewDanmaku(List<DanmakuEntity> danmakuList) {
+    if (danmakuList.isEmpty) {
+      return;
+    }
+
     final size = MediaQuery.of(context).size;
+    int addedCount = 0;
 
     for (var danmaku in danmakuList) {
-      // すでに追加済みかチェック
-      final exists = _engine.particles
-          .any((p) => p.entity.id == danmaku.id && p.entity.text == danmaku.text);
-
-      if (!exists) {
+      // 重複チェック（ID + テキスト + 時刻の組み合わせで一意性を判定）
+      final uniqueKey = '${danmaku.id}_${danmaku.text}_${danmaku.time}';
+      
+      if (!_addedDanmakuIds.contains(uniqueKey)) {
+        _addedDanmakuIds.add(uniqueKey);
+        addedCount++;
+        
         _engine.addDanmaku(
           danmaku,
           widget.currentTime,
           size.height,
           size.width,
         );
-      }
+      } 
     }
   }
 }
@@ -152,9 +187,20 @@ class _DanmakuPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // 各粒子を描画
+    if (engine.particles.isNotEmpty) {
+      final visibleParticles = engine.particles.where((p) => p.isVisible).toList();
+      if (visibleParticles.isNotEmpty) {
+        //debugPrint('🎨 Painting ${visibleParticles.length}/${engine.particles.length} - First: x=${visibleParticles[0].x.toStringAsFixed(1)}, y=${visibleParticles[0].y.toStringAsFixed(1)}, text="${visibleParticles[0].entity.text}"');
+      }
+    }
+    
     for (var particle in engine.particles) {
       if (particle.isVisible) {
-        _drawParticle(canvas, particle, globalOpacity);
+        try {
+          _drawParticle(canvas, particle, globalOpacity);
+        } catch (e) {
+          debugPrint('❌ Error drawing particle: $e');
+        }
       }
     }
   }
@@ -171,11 +217,31 @@ class _DanmakuPainter extends CustomPainter {
 
     // 不透明度を計算（グローバル × ローカル）
     final finalOpacity = opacity * particle.opacity;
+    
+    // 不透明度を適用（0 ~ 255の範囲）
+    final alphaValue = (finalOpacity * 255).toInt().clamp(0, 255);
 
-    // テキストを描画
-    // NOTE: opacity を適用するには Paint を使う必要がある
-    // ここでは単純な描画を実装
-    textPainter.paint(canvas, const Offset(0, 0));
+    // テキストスタイルを取得して不透明度を適用したバージョンを作成
+    if (textPainter.text?.style != null) {
+      final originalStyle = textPainter.text!.style!;
+      final newStyle = originalStyle.copyWith(
+        color: originalStyle.color?.withAlpha(alphaValue),
+      );
+      
+      // 新しい TextPainter を作成
+      final newTextPainter = TextPainter(
+        text: TextSpan(
+          text: textPainter.text!.toPlainText(),
+          style: newStyle,
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      newTextPainter.layout();
+      newTextPainter.paint(canvas, const Offset(0, 0));
+    } else {
+      // フォールバック：オリジナルを描画
+      textPainter.paint(canvas, const Offset(0, 0));
+    }
 
     canvas.restore();
   }

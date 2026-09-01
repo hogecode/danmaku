@@ -36,7 +36,7 @@ class DanmakuRepository {
     }
   }
 
-  /// Model をエンティティに変換
+  /// danmakuModel をエンティティに変換
   List<DanmakuEntity> _modelsToEntities(List<DanmakuModel> models) {
     return models.map((model) {
       return DanmakuEntity(

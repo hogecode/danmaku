@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/presentation/widgets/video_view/video_view.dart';
 import 'package:flutter_app/presentation/widgets/controller_bar/controller_bar.dart';
 import 'package:flutter_app/presentation/widgets/danmaku/danmaku_canvas.dart';
+import 'package:flutter_app/presentation/widgets/settings/settings_panel.dart';
 import 'package:flutter_app/presentation/notifiers/player_notifier.dart';
 import 'package:flutter_app/presentation/notifiers/danmaku_notifier.dart';
 import 'package:flutter_app/presentation/providers/app_provider.dart';
 import 'package:flutter_app/presentation/providers/ui_provider.dart';
+import 'package:flutter_app/domain/entities/player_entity.dart';
 
-/// プレイヤーページ
 class PlayerPage extends ConsumerStatefulWidget {
   final String videoId;
   final String videoUrl;
@@ -25,26 +26,24 @@ class PlayerPage extends ConsumerStatefulWidget {
   ConsumerState<PlayerPage> createState() => _PlayerPageState();
 }
 
+
 class _PlayerPageState extends ConsumerState<PlayerPage> {
   late GlobalKey<VideoViewState> _videoViewKey;
 
   @override
   void initState() {
     super.initState();
-    // videowidgetの状態を管理するためのGlobalKeyを初期化
     _videoViewKey = GlobalKey<VideoViewState>();
     
-    // 画面の描画が1回終わったあとに、この処理を実行する
-    // ダンマクを取得
+    // レンダリング後に弾幕を取得する
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchDanmaku();
     });
   }
 
-  /// ダンマクを取得
   void _fetchDanmaku() {
+    debugPrint('=== Fetching danmaku for videoId: ${widget.videoId} ===');
     final fetchUseCase = ref.read(fetchDanmakuUseCaseProvider);
-    // presentation/notifiers/danmaku_notifier.dart の DanmakuNotifier を利用して状態を更新
     final notifier = ref.read(
       danmakuStateProvider(fetchUseCase).notifier,
     );
@@ -53,117 +52,149 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
 
   @override
   Widget build(BuildContext context) {
-    // プレイヤー状態をplayer_notifierから取得
     final playerState = ref.watch(playerStateProvider);
-
-    // ui_provider.dart から UI 状態を取得
     final controllerVisible = ref.watch(controllerVisibleProvider);
+    final settingsPanelVisible = ref.watch(settingsPanelVisibleProvider);
+
     final danmakuOpacity = ref.watch(danmakuOpacityProvider);
     final danmakuSpeedRate = ref.watch(danmakuSpeedRateProvider);
     final danmakuVisible = ref.watch(danmakuVisibilityProvider);
+    
+    // ✅ DEBUG: playerState.currentTime を監視
+    debugPrint('🎬 PlayerPage build - currentTime: ${playerState.currentTime.inMilliseconds / 1000.0} s, isPlaying: ${playerState.isPlaying}');
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // ビデオプレイヤー
-            Expanded(
-              child: Stack(
-                children: [
-                  // ビデオwidget
-                  VideoView(
-                    key: _videoViewKey,
-                    videoUrl: widget.videoUrl,
-                    onReady: () {
-                      // ビデオ準備完了時の処理
-                      debugPrint('Video ready');
-                    },
-                    onError: () {
-                      // エラー時の処理
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('ビデオの再生に失敗しました')),
-                      );
-                    },
+            Column(
+              children: [
+                Expanded(
+                  child: Stack(
+                    children: [
+                      _buildVideoView(),
+                      if (danmakuVisible) _buildDanmakuLayer(danmakuOpacity, danmakuSpeedRate, playerState),
+                      if (playerState.isLoading) _buildLoadingOverlay(),
+                      if (controllerVisible) _buildControllerBar(),
+                    ],
                   ),
-                  
-                  // ダンマク Canvas（ビデオの上に重ねる）
-                  if (danmakuVisible)
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: IgnorePointer(
-                        child: DanmakuCanvas(
-                          currentTime: playerState.currentTime.inMilliseconds / 1000.0,
-                          globalOpacity: danmakuOpacity,
-                          globalSpeedRate: danmakuSpeedRate,
-                        ),
-                      ),
-                    ),
-                  
-                  // ローディング表示
-                  if (playerState.isLoading)
-                    const Center(
-                      child: SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      ),
-                    ),
-                  
-                  // コントローラーバー（下部）
-                  if (controllerVisible)
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: SafeArea(
-                        child: ControllerBar(
-                          onPlayTapped: () {
-                            _videoViewKey.currentState?.play();
-                            ref
-                                .read(playerStateProvider.notifier)
-                                .updatePlayingState(true);
-                          },
-                          onPauseTapped: () {
-                            _videoViewKey.currentState?.pause();
-                            ref
-                                .read(playerStateProvider.notifier)
-                                .updatePlayingState(false);
-                          },
-                          onSeek: (position) {
-                            _videoViewKey.currentState?.seek(position);
-                          },
-                          onSpeedChange: (speed) {
-                            _videoViewKey.currentState?.setPlaybackSpeed(speed);
-                            ref
-                                .read(playerStateProvider.notifier)
-                                .updatePlaybackSpeed(speed);
-                          },
-                          onSettingsTapped: () {
-                            ref
-                                .read(settingsPanelVisibleProvider.notifier)
-                                .state = true;
-                          },
-                          onFullscreenTapped: () {
-                            ref
-                                .read(playerStateProvider.notifier)
-                                .updateFullscreen(
-                                  !playerState.isFullscreen,
-                                );
-                          },
-                        ),
-                      ),
-                    )
-                ],
-              ),
+                ),
+              ],
             ),
+            if (settingsPanelVisible) _buildSettingsPanel(),
           ],
+        ),
+      ),
+    );
+  }
+
+/// ビデオビューを構築
+  Widget _buildVideoView() {
+    return VideoView(
+      key: _videoViewKey,
+      videoUrl: widget.videoUrl,
+      onReady: () => debugPrint('Video ready'),
+      onError: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('ビデオの再生に失敗しました')),
+        );
+      },
+    );
+  }
+
+/// ダンマクレイヤーを構築
+  Widget _buildDanmakuLayer(double opacity, double speedRate, PlayerEntity playerState) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: IgnorePointer(
+        child: DanmakuCanvas(
+          currentTime: playerState.currentTime.inMilliseconds / 1000.0,
+          globalOpacity: opacity,
+          globalSpeedRate: speedRate,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingOverlay() {
+    return const Center(
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildControllerBar() {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: SafeArea(
+        child: ControllerBar(
+          onPlayTapped: () {
+            _videoViewKey.currentState?.play();
+            ref.read(playerStateProvider.notifier).updatePlayingState(true);
+          },
+          onPauseTapped: () {
+            _videoViewKey.currentState?.pause();
+            ref.read(playerStateProvider.notifier).updatePlayingState(false);
+          },
+          onSeek: (position) {
+            _videoViewKey.currentState?.seek(position);
+          },
+          onSpeedChange: (speed) {
+            _videoViewKey.currentState?.setPlaybackSpeed(speed);
+            ref.read(playerStateProvider.notifier).updatePlaybackSpeed(speed);
+          },
+          onSettingsTapped: () {
+            ref.read(settingsPanelVisibleProvider.notifier).state = true;
+          },
+          onFullscreenTapped: () {
+            final current = ref.read(playerStateProvider);
+            ref.read(playerStateProvider.notifier).updateFullscreen(!current.isFullscreen);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsPanel() {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.75,
+          ),
+          child: Stack(
+            children: [
+              const SettingsPanel(),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () {
+                    ref.read(settingsPanelVisibleProvider.notifier).state = false;
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

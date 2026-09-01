@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/core/constants/color_constants.dart';
 import 'package:flutter_app/core/i18n/i18n.dart';
 import 'package:flutter_app/presentation/providers/ui_provider.dart';
+import 'package:flutter_app/presentation/providers/app_provider.dart';
 
 /// ダンマク設定スライダーウィジェット
 class DanmakuSettingsPanel extends ConsumerWidget {
@@ -13,12 +14,16 @@ class DanmakuSettingsPanel extends ConsumerWidget {
     final opacity = ref.watch(danmakuOpacityProvider);
     final speedRate = ref.watch(danmakuSpeedRateProvider);
     final isVisible = ref.watch(danmakuVisibilityProvider);
-    final localizations = AppLocalizations.of(context);
+    final isDarkMode = ref.watch(darkModeProvider);
+    final localizations = AppLocalizations.of(context)!;
+    final bgColor = isDarkMode
+        ? ColorConstants.darkBackground
+        : ColorConstants.lightBackground;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
-        color: ColorConstants.lightBackground,
+        color: bgColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(

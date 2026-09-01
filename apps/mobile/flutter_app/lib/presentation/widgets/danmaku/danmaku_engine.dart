@@ -6,7 +6,7 @@ import 'package:flutter_app/presentation/widgets/danmaku/collision_detector.dart
 import 'package:logger/logger.dart';
 
 /// ダンマク描画エンジン
-class DanmakuEngine {
+class DanmakuEngine extends ChangeNotifier {
   /// 全粒子リスト
   final List<DanmakuParticle> particles = [];
 
@@ -36,22 +36,21 @@ class DanmakuEngine {
 
   /// ダンマクを追加
   void addDanmaku(DanmakuEntity danmaku, double currentTime, double canvasHeight, double canvasWidth) {
-    // 最大数に達しました場合は古い粒子を削除
+    // 最大数に達した場合は古い粒子を削除
     if (particles.length >= maxParticles) {
       particles.removeAt(0);
-      _logger.w(
-        'Max danmaku count reached, removing oldest particle',
-      );
     }
 
+    // startTime は danmaku.time で、現在時刻ではなく絶対時刻
     final particle = DanmakuParticle(
       entity: danmaku,
-      startTime: currentTime + danmaku.time,
+      startTime: danmaku.time,
       canvasHeight: canvasHeight,
       canvasWidth: canvasWidth,
     );
 
     particles.add(particle);
+    _logger.i('✅ Added particle: text="${danmaku.text}", startTime=${particle.startTime.toStringAsFixed(2)}s, total=${particles.length}');
   }
 
   /// フレームを計算（毎フレーム呼び出し）
@@ -65,7 +64,12 @@ class DanmakuEngine {
     _collisionDetector.detectAndResolveCollisions(particles);
 
     // 画面外の粒子を削除
+    final beforeCount = particles.length;
     particles.removeWhere((p) => !p.isVisible);
+    
+    if (beforeCount != particles.length) {
+      _logger.d('Removed ${beforeCount - particles.length} invisible particles');
+    }
   }
 
   /// 粒子の位置を更新
@@ -76,6 +80,13 @@ class DanmakuEngine {
     double canvasHeight,
   ) {
     final typeValue = particle.entity.type.value;
+    final elapsed = currentTime - particle.startTime;
+
+    // 表示開始時刻に達していないか、表示期間を過ぎた場合は非表示
+    if (elapsed < 0 || elapsed > AppConstants.danmakuDurationSeconds + 0.5) {
+      particle.isVisible = false;
+      return;
+    }
 
     if (typeValue == 'right') {
       _updateRightDanmaku(particle, currentTime, canvasWidth);
@@ -92,16 +103,7 @@ class DanmakuEngine {
     double currentTime,
     double canvasWidth,
   ) {
-    // 経過時間を計算
     final elapsed = currentTime - particle.startTime;
-
-    // まだ表示時刻でない
-    if (elapsed < 0) {
-      particle.isVisible = false;
-      return;
-    }
-
-    // 進捗率（0.0 ~ 1.0）
     final progress = elapsed / AppConstants.danmakuDurationSeconds;
 
     // X 座標を計算（右から左へ移動）
@@ -111,7 +113,7 @@ class DanmakuEngine {
     // Y 座標を設定
     particle.y = particle.targetY;
 
-    // 画面外判定
+    // 進捗に応じた表示判定
     if (progress >= 1.0) {
       particle.isVisible = false;
     } else {
@@ -122,18 +124,6 @@ class DanmakuEngine {
   /// Top タイプ（上部固定）の位置を更新
   void _updateTopDanmaku(DanmakuParticle particle, double currentTime) {
     final elapsed = currentTime - particle.startTime;
-
-    if (elapsed < 0) {
-      particle.isVisible = false;
-      return;
-    }
-
-    // 表示期間内か判定
-    final totalDuration = AppConstants.danmakuDurationSeconds + 0.5; // フェードアウト時間
-    if (elapsed > totalDuration) {
-      particle.isVisible = false;
-      return;
-    }
 
     // フェードアウト期間を計算
     if (elapsed > AppConstants.danmakuDurationSeconds) {
@@ -153,18 +143,6 @@ class DanmakuEngine {
     double canvasHeight,
   ) {
     final elapsed = currentTime - particle.startTime;
-
-    if (elapsed < 0) {
-      particle.isVisible = false;
-      return;
-    }
-
-    // 表示期間内か判定
-    final totalDuration = AppConstants.danmakuDurationSeconds + 0.5;
-    if (elapsed > totalDuration) {
-      particle.isVisible = false;
-      return;
-    }
 
     // Y 座標を設定（下部）
     particle.y = canvasHeight - particle.textHeight - 20;

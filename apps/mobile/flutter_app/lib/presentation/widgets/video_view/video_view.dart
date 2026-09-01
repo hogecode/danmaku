@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_app/presentation/notifiers/player_notifier.dart';
+import 'dart:async';
 
 /// ビデオ表示ウィジェット
 class VideoView extends ConsumerStatefulWidget {
@@ -22,12 +23,21 @@ class VideoView extends ConsumerStatefulWidget {
 
 class VideoViewState extends ConsumerState<VideoView> {
   late VideoPlayerController _controller;
+  Timer? _updateTimer;
   bool _isInitialized = false;
+  
+  /// 公開: DanmakuCanvas から currentTime を取得するため
+  VideoPlayerController get controller => _controller;
 
   @override
   void initState() {
     super.initState();
     _initializeVideo();
+    
+    // Timer を開始（定期的に currentTime を更新）
+    _updateTimer = Timer.periodic(const Duration(milliseconds: 16), (_) {
+      _safeUpdatePlayerState();
+    });
   }
 
   /// ビデオコントローラーを初期化
@@ -56,12 +66,14 @@ class VideoViewState extends ConsumerState<VideoView> {
           widget.onError?.call();
           ref.read(playerStateProvider.notifier).setError(error.toString());
         }
-      })
-      ..addListener(_updatePlayerState);
+      });
   }
 
   /// プレイヤー状態を定期的に更新
   void _updatePlayerState() {
+    // ✅ mounted チェック（dispose 後のアクセス防止）
+    if (!mounted) return;
+    
     if (_controller.value.isInitialized) {
       ref.read(playerStateProvider.notifier)
           .updateCurrentTime(_controller.value.position);
@@ -78,8 +90,24 @@ class VideoViewState extends ConsumerState<VideoView> {
     }
   }
 
+  /// プレイヤー状態を安全に更新（dispose 後のエラーを無視）
+  void _safeUpdatePlayerState() {
+    try {
+      if (!mounted) return;
+      
+      if (_controller.value.isInitialized) {
+        ref.read(playerStateProvider.notifier)
+            .updateCurrentTime(_controller.value.position);
+      }
+    } catch (e) {
+      // dispose 後のエラーを無視
+      debugPrint('⚠️ Safely ignored error in _updatePlayerState: $e');
+    }
+  }
+
   @override
   void dispose() {
+    _updateTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }

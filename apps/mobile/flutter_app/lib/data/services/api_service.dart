@@ -160,7 +160,7 @@ class ApiService {
         type: 'right',
         color: '#ffeaea',
         author: 'User1',
-        text: 'Welcome to the video!',
+        text: 'ようこそ',
         size: 'medium',
       ),
       DanmakuModel(
@@ -168,7 +168,7 @@ class ApiService {
         type: 'right',
         color: '#ffcccc',
         author: 'User2',
-        text: 'Nice video! 👍',
+        text: 'いい動画ですね！',
         size: 'medium',
       ),
       DanmakuModel(
@@ -176,7 +176,7 @@ class ApiService {
         type: 'top',
         color: '#ffe5e5',
         author: 'User3',
-        text: 'This is awesome',
+        text: 'これはすごい',
         size: 'small',
       ),
       DanmakuModel(
@@ -184,7 +184,7 @@ class ApiService {
         type: 'right',
         color: '#ffd9d9',
         author: 'User4',
-        text: 'I love this content',
+        text: 'このコンテンツ大好きです',
         size: 'medium',
       ),
       DanmakuModel(
@@ -192,7 +192,7 @@ class ApiService {
         type: 'bottom',
         color: '#ffcdcd',
         author: 'User5',
-        text: 'Great work!',
+        text: '素晴らしい作品！',
         size: 'small',
       ),
       DanmakuModel(
@@ -200,7 +200,7 @@ class ApiService {
         type: 'right',
         color: '#ffc1c1',
         author: 'User6',
-        text: 'Looking forward to more videos',
+        text: 'もっと動画を楽しみにしています',
         size: 'medium',
       ),
     ];

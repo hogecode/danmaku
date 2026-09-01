@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/core/constants/color_constants.dart';
-import 'package:flutter_app/core/utils/i18n.dart';
+import 'package:flutter_app/core/i18n/i18n.dart';
 import 'package:flutter_app/presentation/providers/ui_provider.dart';
 import 'package:flutter_app/presentation/widgets/settings/danmaku_settings.dart';
 import 'package:flutter_app/presentation/notifiers/player_notifier.dart';
 
-/// 統合設定パネル
 class SettingsPanel extends ConsumerStatefulWidget {
   const SettingsPanel({Key? key}) : super(key: key);
 
@@ -32,34 +31,43 @@ class _SettingsPanelState extends ConsumerState<SettingsPanel>
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
+    final localizations = AppLocalizations.of(context)!;
     final isDarkMode = ref.watch(darkModeProvider);
+    final bgColor = isDarkMode
+        ? ColorConstants.darkBackground
+        : ColorConstants.lightBackground;
+    final tabBgColor = isDarkMode
+        ? ColorConstants.darkControllerBg
+        : ColorConstants.lightControllerBg;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.settings),
-        backgroundColor: isDarkMode
-            ? ColorConstants.darkControllerBg
-            : ColorConstants.lightControllerBg,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: localizations.playbackSpeed),
-            Tab(text: localizations.danmakuSettings),
+    return DefaultTabController(
+      length: 2,
+      child: Container(
+        color: bgColor,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TabBar(
+              controller: _tabController,
+              labelColor: ColorConstants.lightPrimary,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: ColorConstants.lightPrimary,
+              tabs: [
+                Tab(text: localizations.playbackSpeed),
+                Tab(text: localizations.danmakuSettings),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildPlaybackTab(context, localizations),
+                  _buildDanmakuTab(context, localizations),
+                ],
+              ),
+            ),
           ],
         ),
-      ),
-      backgroundColor: isDarkMode
-          ? ColorConstants.darkBackground
-          : ColorConstants.lightBackground,
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // タブ 1: 再生速度・その他
-          _buildPlaybackTab(context, localizations),
-          // タブ 2: ダンマク設定
-          _buildDanmakuTab(context, localizations),
-        ],
       ),
     );
   }
