@@ -154,56 +154,94 @@ class ApiService {
 
   /// モックダンマクデータを取得（テスト用）
   List<DanmakuModel> _getMockDanmakuData() {
-    return [
-      DanmakuModel(
-        time: 2.0,
-        type: 'right',
-        color: '#ffeaea',
-        author: 'User1',
-        text: 'ようこそ',
-        size: 'medium',
-      ),
-      DanmakuModel(
-        time: 5.0,
-        type: 'right',
-        color: '#ffcccc',
-        author: 'User2',
-        text: 'いい動画ですね！',
-        size: 'medium',
-      ),
-      DanmakuModel(
-        time: 8.0,
-        type: 'top',
-        color: '#ffe5e5',
-        author: 'User3',
-        text: 'これはすごい',
-        size: 'small',
-      ),
-      DanmakuModel(
-        time: 12.0,
-        type: 'right',
-        color: '#ffd9d9',
-        author: 'User4',
-        text: 'このコンテンツ大好きです',
-        size: 'medium',
-      ),
-      DanmakuModel(
-        time: 15.0,
-        type: 'bottom',
-        color: '#ffcdcd',
-        author: 'User5',
-        text: '素晴らしい作品！',
-        size: 'small',
-      ),
-      DanmakuModel(
-        time: 20.0,
-        type: 'right',
-        color: '#ffc1c1',
-        author: 'User6',
-        text: 'もっと動画を楽しみにしています',
-        size: 'medium',
-      ),
+    final mockData = <DanmakuModel>[];
+    final comments = [
+      'ようこそ',
+      'いい動画ですね！',
+      'これはすごい',
+      'このコンテンツ大好きです',
+      '素晴らしい作品！',
+      'もっと動画を楽しみにしています',
+      '最高',
+      '涙が出た',
+      'これほんと好き',
+      'マジで天才',
+      '感動しました',
+      'また見たい',
+      '面白すぎる',
+      'ありがとう',
+      '何回見ても飽きない',
+      '心に残る作品',
+      '素晴らしい',
+      'うわぁ...',
+      '凄い...',
+      'これだ！',
+      '良作だな',
+      'さすが',
+      '神作',
+      'ハマった',
+      'リピート決定',
+      'バイバイ',
+      'おわり',
+      '続きが気になる',
+      'このシーン最高',
+      'ずっと好きです',
+      '絶対また見る',
+      'この声優いいな',
+      '音楽いい',
+      '背景綺麗',
+      'ストーリー最高',
+      'キャラが可愛い',
+      'あぁ〜',
+      'ｗｗｗ',
+      'ｌｏｌ',
+      '知ってた',
+      'うんうん',
+      'そうそう',
+      'ですね',
+      '同感',
+      'その通り',
+      '完璧',
+      '違和感ない',
+      'クオリティ高い',
+      'プロの仕業',
+      'こういうのが好き',
     ];
+
+    // 20秒にわたって、ランダムなタイミングでコメントを生成
+    for (int i = 0; i < 50; i++) {
+      final randomTime = (i * 0.4 + (i % 3) * 0.2) % 20.0;
+      final randomComment = comments[i % comments.length];
+      final randomAuthor = 'User${i + 1}';
+      final colorIndex = i % 8;
+      final colors = [
+        '#ffeaea', // ピンク
+        '#ffcccc', // ライトピンク
+        '#ffe5e5', // ライトピンク2
+        '#ffd9d9', // ライトピンク3
+        '#ffcdcd', // ライトピンク4
+        '#ffc1c1', // ライトピンク5
+        '#ffffcc', // ライトイエロー
+        '#ccffcc', // ライトグリーン
+      ];
+      final typeIndex = i % 4;
+      final types = ['right', 'right', 'right', 'top'];
+
+      mockData.add(
+        DanmakuModel(
+          time: randomTime,
+          type: types[typeIndex],
+          color: colors[colorIndex],
+          author: randomAuthor,
+          text: randomComment,
+          size: i % 5 == 0 ? 'big' : (i % 3 == 0 ? 'small' : 'medium'),
+        ),
+      );
+    }
+
+    // タイムスタンプでソート
+    mockData.sort((a, b) => a.time.compareTo(b.time));
+    return mockData;
   }
 
   /// Dio のクリーンアップ

@@ -18,6 +18,7 @@ class AppConstants {
   static const double danmakuDistancePx = 1280.0;
   static const double danmakuLineHeight = 30.0;
   static const double danmakuCollisionMargin = 5.0;
+  static const double danmakuDisplayDurationSeconds = 6.0; // ダンマク表示時間（秒）
 
   // Video Player Configuration
   static const double minPlaybackSpeed = 0.25;

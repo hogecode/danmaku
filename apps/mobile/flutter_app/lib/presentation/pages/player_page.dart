@@ -60,9 +60,6 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
     final danmakuSpeedRate = ref.watch(danmakuSpeedRateProvider);
     final danmakuVisible = ref.watch(danmakuVisibilityProvider);
     
-    // ✅ DEBUG: playerState.currentTime を監視
-    debugPrint('🎬 PlayerPage build - currentTime: ${playerState.currentTime.inMilliseconds / 1000.0} s, isPlaying: ${playerState.isPlaying}');
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
