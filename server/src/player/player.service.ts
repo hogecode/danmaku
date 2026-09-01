@@ -7,8 +7,9 @@ import {
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import type { Database } from '../database/database.module';
-import { CommentDto } from './dto';
+import { CommentDto, DPlayerCommentDto } from './dto';
 import { XmlParser } from './utils/xml-parser';
+import { CommentConverter } from './utils/comment-converter';
 import { PlayerConstants } from './constants/player.constants';
 import { TokenService } from '../auth/services';
 import { GDriveService } from '../gdrive/gdrive.service';
@@ -47,6 +48,7 @@ export class PlayerService {
   constructor(
     @Inject('DATABASE_CONNECTION') private readonly db: Database,
     private readonly xmlParser: XmlParser,
+    private readonly commentConverter: CommentConverter,
     private readonly tokenService: TokenService,
     private readonly gdriveService: GDriveService,
   ) {}
@@ -126,11 +128,11 @@ export class PlayerService {
   }
 
   /**
-   * 動画に対応するコメントを取得
+   * 動画に対応するコメントを取得（CommentDto 形式）
    * @param userId - ユーザーID
    * @param videoFileId - 動画ファイルID
    * @param folderId - 動画ファイルが存在するフォルダID（フロント側から指定）
-   * @returns コメント配列（JSON）
+   * @returns ニコニコ実況形式コメント配列（JSON）
    */
   async getCommentsByVideoId(
     userId: bigint,
@@ -146,7 +148,7 @@ export class PlayerService {
       const videoFile = await this.getVideoMetadata(userId, videoFileId);
       console.log(`[PlayerService] Retrieved video metadata: name=${videoFile.name}`);
 
-      // 3. 対応するコメントファイルを検索
+      // 2. 対応するコメントファイルを検索
       const commentFile = await this.findCommentFile(userId, folderId, videoFile.name);
 
       if (!commentFile) {
@@ -157,7 +159,7 @@ export class PlayerService {
         return [];
       }
 
-      // 4. ファイルをダウンロード・パース
+      // 3. ファイルをダウンロード・パース
       const fileContent = await this.downloadFileContent(userId, commentFile.id);
       const comments = await this.xmlParser.parseCommentFile(
         fileContent,
@@ -171,6 +173,38 @@ export class PlayerService {
     } catch (error) {
       // エラー時はログして空配列を返す（動画再生は継続）
       console.error('[PlayerService] Failed to get comments:', {
+        error: error instanceof Error ? error.message : String(error),
+        videoFileId,
+      });
+      return [];
+    }
+  }
+
+  /**
+   * 動画に対応するコメントを取得（DPlayer 互換形式）
+   * @param userId - ユーザーID
+   * @param videoFileId - 動画ファイルID
+   * @param folderId - 動画ファイルが存在するフォルダID
+   * @returns DPlayer 互換コメント配列
+   */
+  async getCommentsByVideoIdForDPlayer(
+    userId: bigint,
+    videoFileId: string,
+    folderId: string,
+  ): Promise<DPlayerCommentDto[]> {
+    try {
+      // ✅ CommentDto 形式でコメントを取得
+      const comments = await this.getCommentsByVideoId(userId, videoFileId, folderId);
+
+      // ✅ DPlayer 互換形式に変換
+      const dplayerComments = this.commentConverter.convertCommentsToDPlayer(comments);
+
+      console.log(
+        `[PlayerService] Converted ${dplayerComments.length} comments to DPlayer format`,
+      );
+      return dplayerComments;
+    } catch (error) {
+      console.error('[PlayerService] Failed to get comments for DPlayer:', {
         error: error instanceof Error ? error.message : String(error),
         videoFileId,
       });

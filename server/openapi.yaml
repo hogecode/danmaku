@@ -196,28 +196,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommentListDto'
+                $ref: '#/components/schemas/DPlayerCommentListDto'
       summary: |-
-        動画に対応するコメントを取得
+        GET /api/player/comments/:videoFileId
+        DPlayer 互換形式でコメントを取得
 
         コメントファイルの自動検出:
         - 動画: "aaa.mp4"
         - コメント: "aaa.xml" または "aaa.json" を自動検索
-        - 見つかった場合: JSON に変換して返す
+        - 見つかった場合: DPlayer 互換形式に変換して返す
         - 見つからない場合: 空配列を返す
 
-        Response:
+        Query Parameters:
+        - folderId (required): 動画ファイルが存在するフォルダID
+
+        Response (DPlayer 互換形式):
         {
           "comments": [
             {
-              "thread": "1492023606",
-              "no": 19886,
-              "vpos": 0,
-              "date": 1492100460,
-              "mail": "184",
-              "user_id": "SlF_cF2J1CdotJTaojvbM9mDYAE",
-              "premium": 1,
-              "anonymity": 1,
+              "time": 10.5,
+              "type": "normal",
+              "size": "normal",
+              "color": "#ffffff",
+              "author": "SlF_cF2J1CdotJTaojvbM9mDYAE or null",
               "text": "てか無料期間中に見れば無料やん"
             }
           ]
@@ -332,50 +333,53 @@ components:
             あれば指定してリクエスト
       required:
         - items
-    CommentDto:
+    DPlayerCommentDto:
       type: object
       properties:
-        thread:
-          type: string
-          description: スレッドID
-        'no':
+        time:
           type: number
-          description: コメント番号
-        vpos:
-          type: number
-          description: 再生位置（ミリ秒単位）
-        date:
-          type: number
-          description: UNIXタイムスタンプ
-        mail:
+          description: |-
+            コメント表示時刻（秒単位の浮動小数点数）
+            例: 10.5 (10秒500ミリ秒)
+        type:
           type: string
           description: |-
-            表示フォーマット指定
-            例: "184", "184 big ue", "ue", "big" など
-        user_id:
+            コメント種類
+            - "normal" (中央)
+            - "top" / "ue" (上)
+            - "bottom" / "shita" (下)
+        size:
           type: string
-          description: ユーザーID
-        premium:
-          type: number
-          description: プレミアムユーザーフラグ
-        anonymity:
-          type: number
-          description: 匿名投稿フラグ
+          description: |-
+            コメント文字サイズ
+            - "small" (小)
+            - "normal" / "" (通常)
+            - "big" (大)
+        color:
+          type: string
+          description: |-
+            コメント色（16進数カラーコード）
+            例: "#ffffff" (白)
+        author:
+          type: string
+          nullable: true
+          description: コメント投稿者ID（匿名の場合は null）
         text:
           type: string
           description: コメント内容（テキスト）
       required:
-        - 'no'
-        - vpos
-        - date
+        - time
+        - type
+        - size
+        - color
         - text
-    CommentListDto:
+    DPlayerCommentListDto:
       type: object
       properties:
         comments:
-          description: コメント配列
+          description: DPlayer 互換コメント配列
           type: array
           items:
-            $ref: '#/components/schemas/CommentDto'
+            $ref: '#/components/schemas/DPlayerCommentDto'
       required:
         - comments

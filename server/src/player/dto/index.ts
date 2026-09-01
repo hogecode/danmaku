@@ -1,2 +1,3 @@
 export { CommentDto } from './comment.dto';
-export { CommentListDto } from './comment-list.dto';
+export { DPlayerCommentDto } from './dplayer-comment.dto';
+export { DPlayerCommentListDto } from './dplayer-comment-list.dto';

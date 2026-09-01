@@ -13,7 +13,7 @@ import {
 import type { Response } from 'express';
 import { PlayerService } from './player.service';
 import { AuthGuard } from '../auth/guards';
-import { CommentListDto } from './dto';
+import { DPlayerCommentListDto } from './dto';
 import { Express } from 'express';
 import { PlayerConstants } from './constants/player.constants';
 
@@ -92,30 +92,34 @@ export class PlayerController {
   }
 
   /**
-   * 動画に対応するコメントを取得
+   * GET /api/player/comments/:videoFileId
+   * DPlayer 互換形式でコメントを取得
    *
    * コメントファイルの自動検出:
    * - 動画: "aaa.mp4"
    * - コメント: "aaa.xml" または "aaa.json" を自動検索
-   * - 見つかった場合: JSON に変換して返す
+   * - 見つかった場合: DPlayer 互換形式に変換して返す
    * - 見つからない場合: 空配列を返す
    *
-   * Response:
+   * Query Parameters:
+   * - folderId (required): 動画ファイルが存在するフォルダID
+   *
+   * Response (DPlayer 互換形式):
    * {
    *   "comments": [
    *     {
-   *       "thread": "1492023606",
-   *       "no": 19886,
-   *       "vpos": 0,
-   *       "date": 1492100460,
-   *       "mail": "184",
-   *       "user_id": "SlF_cF2J1CdotJTaojvbM9mDYAE",
-   *       "premium": 1,
-   *       "anonymity": 1,
+   *       "time": 10.5,
+   *       "type": "normal",
+   *       "size": "normal",
+   *       "color": "#ffffff",
+   *       "author": "SlF_cF2J1CdotJTaojvbM9mDYAE or null",
    *       "text": "てか無料期間中に見れば無料やん"
    *     }
    *   ]
    * }
+   *
+   * @example
+   * GET /api/player/comments/abc123def456?folderId=folder123
    */
   @Get('comments/:videoFileId')
   @HttpCode(200)
@@ -123,7 +127,7 @@ export class PlayerController {
     @Param('videoFileId') videoFileId: string,
     @Query('folderId') folderId: string,
     @Session() session: Express.Session & { userId?: string },
-  ): Promise<CommentListDto> {
+  ): Promise<DPlayerCommentListDto> {
     if (!session.userId) {
       throw new BadRequestException('User ID not found in session');
     }
@@ -132,7 +136,8 @@ export class PlayerController {
       throw new BadRequestException('videoFileId parameter is required');
     }
 
-    const comments = await this.playerService.getCommentsByVideoId(
+    // ✅ DPlayer 互換形式で取得
+    const comments = await this.playerService.getCommentsByVideoIdForDPlayer(
       BigInt(session.userId),
       videoFileId,
       folderId,

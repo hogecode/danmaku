@@ -3,7 +3,7 @@
  * 自動生成されたコードの使用を簡潔にするため
  */
 
-import type { CommentListDto } from '@/lib/generated/models';
+import type { DPlayerComment, DPlayerCommentListResponse } from './dplayer-comment';
 import { PlayerApi, Configuration } from '@/lib/generated';
 
 /**
@@ -33,23 +33,27 @@ export function getPlayerApiClient(): PlayerApi {
 }
 
 /**
- * 動画のコメントを取得
+ * 動画のコメントを取得（DPlayer 互換形式）
  * @param videoFileId - GDrive 動画ファイル ID
  * @param folderId - 動画ファイルが存在するフォルダID
- * @returns コメントデータ
+ * @returns DPlayer 互換コメント配列
  */
 export async function fetchVideoComments(
   videoFileId: string,
   folderId?: string,
-): Promise<CommentListDto> {
+): Promise<DPlayerComment[]> {
   try {
     const playerApi = getPlayerApiClient();
-    // ✅ folderId をクエリパラメータで渡す
+    // ✅ DPlayer 互換形式でコメント取得
     const response = await playerApi.playerControllerGetComments(
       videoFileId,
       folderId || '',
     );
-    return response.data as CommentListDto;
+
+    // ✅ レスポンスをキャスト
+    const data = response.data as unknown as DPlayerCommentListResponse;
+    console.log('[PlayerClient] Comments fetched successfully:', data.comments.length);
+    return data.comments;
   } catch (error: any) {
     console.error('[PlayerClient] Failed to fetch comments:', {
       status: error?.response?.status,
@@ -62,7 +66,7 @@ export async function fetchVideoComments(
       },
     });
     // エラーの場合は空配列を返す
-    return { comments: [] };
+    return [];
   }
 }
 

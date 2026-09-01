@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { CommentDto } from '@/lib/generated/models';
+import type { DPlayerComment } from '@/lib/api/dplayer-comment';
 import { fetchVideoComments, generateVideoStreamUrl } from '@/lib/api/player-client';
 
 interface VideoPlayerProps {
@@ -65,7 +65,7 @@ export function VideoPlayer({
 }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const dplayerRef = useRef<any>(null);
-  const commentListRef = useRef<CommentDto[]>([]);
+  const commentListRef = useRef<DPlayerComment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -84,9 +84,9 @@ export function VideoPlayer({
       try {
         setIsLoading(true);
 
-        // コメントを取得（✅ folderId を渡す）
-        const commentData = await fetchVideoComments(videoFileId, folderId);
-        commentListRef.current = commentData.comments || [];
+        // コメントを取得（✅ DPlayer 互換形式）
+        const dplayerComments = await fetchVideoComments(videoFileId, folderId);
+        commentListRef.current = dplayerComments || [];
         console.log(`[VideoPlayer] Loaded ${commentListRef.current.length} comments`);
 
         // DPlayer の動的インポート
