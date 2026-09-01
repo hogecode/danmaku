@@ -7,6 +7,7 @@ import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { GDriveModule } from './gdrive/gdrive.module';
 import { PlayerModule } from './player/player.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -14,6 +15,8 @@ import { PlayerModule } from './player/player.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    // ✅ Pino ロギングと traceId を提供する Common Module
+    CommonModule,
     DatabaseModule,
     RedisModule,
     AuthModule,

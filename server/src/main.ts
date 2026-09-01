@@ -6,9 +6,15 @@ import { createClient } from 'redis';
 import { RedisStore } from 'connect-redis';
 import { AppModule } from './app.module';
 import { generateOpenAPIYaml } from './utils/openapi-generator';
+import { TraceIdMiddleware } from './common/middleware/trace-id.middleware';
+import { LoggerInterceptor } from './common/interceptors/logger.interceptor';
+import { pinoLogger } from './common/logger/pino.logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // ✅ Pino ロギングを NestJS に統合
+  app.useLogger(pinoLogger);
 
   // Redis セッションストア設定
   const redisClient = createClient({
@@ -31,6 +37,9 @@ async function bootstrap() {
   const sessionSecret = process.env.SESSION_SECRET || 'your-secret-key';
   const cookieSecure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
 
+  // ✅ TraceId middleware を登録
+  app.use(new TraceIdMiddleware().use.bind(new TraceIdMiddleware()));
+
   app.use(
     session({
       store: redisStore,
@@ -46,6 +55,9 @@ async function bootstrap() {
       name: 'danmaku.sid',
     }),
   );
+
+  // ✅ Logger interceptor を登録
+  app.useGlobalInterceptors(new LoggerInterceptor());
 
   // Enable CORS
   const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:3001';
