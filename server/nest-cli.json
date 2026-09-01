@@ -6,16 +6,8 @@
     "deleteOutDir": false,
     "assets": [
       "database/migrations/**/*.sql"
-    ],
-    "plugins": [
-      {
-        "name": "@nestjs/swagger",
-        "options": {
-          "classValidatorShim": true,
-          "introspectComments": true,
-          "dtoFileNameSuffix": [".dto.ts"]
-        }
-      }
     ]
   }
 }
+
+

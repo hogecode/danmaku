@@ -7,10 +7,6 @@ paths:
       responses:
         '200':
           description: ''
-          content:
-            application/json:
-              schema:
-                type: string
       tags:
         - App
   /api/auth/login:
@@ -20,43 +16,15 @@ paths:
       responses:
         '200':
           description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponseDto'
-      summary: POST /api/auth/login - ログイン開始
       tags:
         - Auth
   /api/auth/callback:
     get:
       operationId: AuthController_callback
-      parameters:
-        - name: code
-          required: true
-          in: query
-          schema:
-            type: string
-        - name: state
-          required: true
-          in: query
-          schema:
-            type: string
-        - name: error
-          required: false
-          in: query
-          schema:
-            type: string
-        - name: error_description
-          required: false
-          in: query
-          schema:
-            type: string
+      parameters: []
       responses:
         '200':
           description: ''
-      summary: |-
-        GET /api/auth/callback - OAuth コールバック
-        Google OAuth 認証後にリダイレクトされるエンドポイント
       tags:
         - Auth
   /api/auth/me:
@@ -66,11 +34,6 @@ paths:
       responses:
         '200':
           description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserInfoDto'
-      summary: GET /api/auth/me - ユーザー情報取得
       tags:
         - Auth
   /api/auth/refresh:
@@ -80,11 +43,6 @@ paths:
       responses:
         '200':
           description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RefreshTokenResponseDto'
-      summary: POST /api/auth/refresh - トークン更新
       tags:
         - Auth
   /api/auth/logout:
@@ -94,7 +52,6 @@ paths:
       responses:
         '200':
           description: ''
-      summary: POST /api/auth/logout - ログアウト
       tags:
         - Auth
   /api/gdrive/list:
@@ -102,20 +59,13 @@ paths:
       operationId: GDriveController_listFolder
       parameters:
         - name: folderId
-          required: false
+          required: true
           in: query
           schema:
             type: string
       responses:
         '200':
           description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FolderListDto'
-      summary: |-
-        GET /api/gdrive/list
-        フォルダ内容を取得
       tags:
         - GDrive
   /api/gdrive/search:
@@ -135,13 +85,6 @@ paths:
       responses:
         '200':
           description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FolderListDto'
-      summary: |-
-        GET /api/gdrive/search
-        フォルダ内でキーワード検索
       tags:
         - GDrive
   /api/player/stream/{fileId}:
@@ -161,19 +104,6 @@ paths:
       responses:
         '200':
           description: ''
-      summary: |-
-        GET /api/player/stream/:fileId
-        動画ファイルをストリーミング再生
-
-        Range リクエスト対応:
-        - Range: bytes=0-1023 （最初の1KBのみ取得）
-        - Range: bytes=1024- （1KBから最後まで取得）
-        - Range: bytes=-512 （最後の512バイトを取得）
-
-        レスポンス:
-        - Range ヘッダーなし: HTTP 200 + Content-Length
-        - Range ヘッダーあり（有効）: HTTP 206 + Content-Range
-        - Range ヘッダーあり（無効）: HTTP 400 Bad Request
       tags:
         - Player
   /api/player/comments/{videoFileId}:
@@ -193,38 +123,38 @@ paths:
       responses:
         '200':
           description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DPlayerCommentListDto'
-      summary: |-
-        GET /api/player/comments/:videoFileId
-        DPlayer 互換形式でコメントを取得
-
-        コメントファイルの自動検出:
-        - 動画: "aaa.mp4"
-        - コメント: "aaa.xml" または "aaa.json" を自動検索
-        - 見つかった場合: DPlayer 互換形式に変換して返す
-        - 見つからない場合: 空配列を返す
-
-        Query Parameters:
-        - folderId (required): 動画ファイルが存在するフォルダID
-
-        Response (DPlayer 互換形式):
-        {
-          "comments": [
-            {
-              "time": 10.5,
-              "type": "normal",
-              "size": "normal",
-              "color": "#ffffff",
-              "author": "SlF_cF2J1CdotJTaojvbM9mDYAE or null",
-              "text": "てか無料期間中に見れば無料やん"
-            }
-          ]
-        }
       tags:
         - Player
+  /api/nicovideo/download/video:
+    post:
+      operationId: NicovideoController_downloadVideo
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DownloadVideoRequestDto'
+      responses:
+        '201':
+          description: ''
+      tags:
+        - Nicovideo
+  /api/nicovideo/download/comments:
+    post:
+      operationId: NicovideoController_downloadComments
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DownloadCommentRequestDto'
+      responses:
+        '201':
+          description: ''
+      tags:
+        - Nicovideo
 info:
   title: danmaku API
   description: Danmaku API documentation
@@ -234,152 +164,9 @@ tags: []
 servers: []
 components:
   schemas:
-    LoginResponseDto:
+    DownloadVideoRequestDto:
       type: object
-      properties:
-        authorize_url:
-          type: string
-        state:
-          type: string
-        expires_in:
-          type: number
-      required:
-        - authorize_url
-        - state
-        - expires_in
-    UserInfoDto:
+      properties: {}
+    DownloadCommentRequestDto:
       type: object
-      properties:
-        id:
-          type: string
-        email:
-          type: string
-        name:
-          type: string
-          nullable: true
-        picture_url:
-          type: string
-          nullable: true
-        oauth_provider:
-          type: string
-        last_login:
-          format: date-time
-          type: string
-          nullable: true
-      required:
-        - id
-        - email
-        - oauth_provider
-    RefreshTokenResponseDto:
-      type: object
-      properties:
-        access_token:
-          type: string
-        expires_in:
-          type: number
-      required:
-        - access_token
-        - expires_in
-    FileItemDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: ファイル/フォルダID
-        name:
-          type: string
-          description: ファイル/フォルダ名
-        mimeType:
-          type: string
-          description: |-
-            MIME タイプ
-            - 'application/vnd.google-apps.folder' = フォルダ
-            - 'video/mp4' = MP4 ビデオ
-        size:
-          type: number
-          description: |-
-            ファイル/フォルダサイズ（バイト）
-            フォルダの場合は null
-        modifiedTime:
-          type: string
-          description: 最終更新日時（ISO 8601形式）
-        webViewLink:
-          type: string
-          description: Google Drive WebView URL
-        thumbnailLink:
-          type: string
-          description: サムネイル URL（ビデオファイルの場合のみ）
-        parentId:
-          type: string
-          description: 親フォルダID
-      required:
-        - id
-        - name
-        - mimeType
-        - modifiedTime
-        - webViewLink
-    FolderListDto:
-      type: object
-      properties:
-        items:
-          description: フォルダ内のファイル/フォルダ一覧
-          type: array
-          items:
-            $ref: '#/components/schemas/FileItemDto'
-        nextPageToken:
-          type: string
-          description: |-
-            次のページトークン（ページネーション用）
-            あれば指定してリクエスト
-      required:
-        - items
-    DPlayerCommentDto:
-      type: object
-      properties:
-        time:
-          type: number
-          description: |-
-            コメント表示時刻（秒単位の浮動小数点数）
-            例: 10.5 (10秒500ミリ秒)
-        type:
-          type: string
-          description: |-
-            コメント種類
-            - "normal" (中央)
-            - "top" / "ue" (上)
-            - "bottom" / "shita" (下)
-        size:
-          type: string
-          description: |-
-            コメント文字サイズ
-            - "small" (小)
-            - "normal" / "" (通常)
-            - "big" (大)
-        color:
-          type: string
-          description: |-
-            コメント色（16進数カラーコード）
-            例: "#ffffff" (白)
-        author:
-          type: string
-          nullable: true
-          description: コメント投稿者ID（匿名の場合は null）
-        text:
-          type: string
-          description: コメント内容（テキスト）
-      required:
-        - time
-        - type
-        - size
-        - color
-        - text
-    DPlayerCommentListDto:
-      type: object
-      properties:
-        comments:
-          description: DPlayer 互換コメント配列
-          type: array
-          items:
-            $ref: '#/components/schemas/DPlayerCommentDto'
-      required:
-        - comments
+      properties: {}

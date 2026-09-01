@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { GDriveModule } from './gdrive/gdrive.module';
 import { PlayerModule } from './player/player.module';
 import { CommonModule } from './common/common.module';
+import { NicovideoModule } from './nicovideo/nicovideo.module';
 
 @Module({
   imports: [
@@ -15,13 +16,13 @@ import { CommonModule } from './common/common.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    // ✅ Pino ロギングと traceId を提供する Common Module
     CommonModule,
     DatabaseModule,
     RedisModule,
     AuthModule,
     GDriveModule,
     PlayerModule,
+    NicovideoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

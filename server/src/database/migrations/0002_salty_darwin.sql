@@ -1,0 +1,1 @@
+DROP TABLE "nicovideo_auth_tokens" CASCADE;

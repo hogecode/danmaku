@@ -10,6 +10,8 @@ Google Drive ビデオプレイヤー + リアルタイムコメント表示
 
 ## Backend (server/) - NestJS
 
+- APIを更新したら、make api-generate-clientを実行し、APIクライアントを最新の状態に保つこと
+- yarnを使う、npmコマンドは使用しない
 
 ---
 
@@ -44,3 +46,5 @@ JSONも同様にコメントデータを表現できる
   <chat thread="1492023606" no="19883" vpos="6" date="1492100460" mail="184 big ue" user_id="OivGSHjEe7qNCpVDcOz9nmm42cI" anonymity="1">３０秒前</chat>
 </packet>
 ```
+
+ただし、動画プレイヤーDplayerは別形式のJSONを用いる。

@@ -8,6 +8,27 @@
       "when": 1787984236435,
       "tag": "0001_vengeful_night_thrasher",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788289280609,
+      "tag": "0001_nappy_lockjaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788289373201,
+      "tag": "0002_salty_darwin",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788289387849,
+      "tag": "0003_fantastic_nuke",
+      "breakpoints": true
     }
   ]
 }

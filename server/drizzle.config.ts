@@ -6,6 +6,7 @@ export default {
     './src/database/session.schema.ts',
     './src/database/content.schema.ts',
     './src/database/history.schema.ts',
+    './src/database/nicovideo.schema.ts',
   ],
   out: './src/database/migrations',
   dialect: 'postgresql',
