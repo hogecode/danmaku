@@ -3,9 +3,6 @@
  * @see https://dplayer.js.org/
  */
 export interface DPlayerComment {
-  /**
-   * コメント表示時刻（秒単位の浮動小数点数）
-   */
   time: number;
 
   /**
@@ -16,12 +13,6 @@ export interface DPlayerComment {
    */
   type: 'normal' | 'top' | 'bottom';
 
-  /**
-   * コメント文字サイズ
-   * - "small": 小
-   * - "normal": 通常
-   * - "big": 大
-   */
   size: 'small' | 'normal' | 'big';
 
   /**
@@ -29,14 +20,8 @@ export interface DPlayerComment {
    */
   color: string;
 
-  /**
-   * コメント投稿者ID（匿名の場合は null）
-   */
   author?: string | null;
 
-  /**
-   * コメント内容
-   */
   text: string;
 }
 

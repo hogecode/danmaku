@@ -12,43 +12,44 @@ import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Pino logger インスタンス
+ * 
+ * シンプルな JSON フォーマット（開発環境・本番環境共通）
+ * ログ量を削減し、可読性を保つ
  */
-export const pinoLogger = pino(
-  {
-    // ✅ ログレベル（環境変数で制御可能）
-    level: process.env.LOG_LEVEL || 'info',
+const basePinoLogger = pino({
+  // ✅ ログレベル（環境変数で制御可能）
+  level: process.env.LOG_LEVEL || 'info',
 
-    // ✅ タイムスタンプフォーマット
-    timestamp: pino.stdTimeFunctions.isoTime,
+  // ✅ タイムスタンプフォーマット
+  timestamp: pino.stdTimeFunctions.isoTime,
 
-    // ✅ メタデータ
-    base: {
-      env: process.env.NODE_ENV || 'development',
-      version: process.env.APP_VERSION || '0.0.1',
-    },
-
-    // ✅ マーク付きキー（パフォーマンス計測用）
-    mixin() {
-      return {
-        traceId: getTraceId(),
-      };
-    },
+  // ✅ メタデータ（最小限）
+  base: {
+    env: process.env.NODE_ENV || 'development',
   },
 
-  // ✅ 開発環境では見やすく整形、本番環境では JSON
-  process.env.NODE_ENV === 'development'
-    ? pino.transport({
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'SYS:standard',
-          ignore: 'pid,hostname',
-          singleLine: false,
-          messageFormat: '[{levelLabel}] {msg}',
-        },
-      })
-    : undefined,
-);
+  // ✅ トレースID
+  mixin() {
+    return {
+      traceId: getTraceId(),
+    };
+  },
+});
+
+/**
+ * NestJS LoggerService インターフェースに適合させたラッパー
+ * 
+ * basePinoLogger をそのまま使い、NestJS の log() メソッドのみ追加
+ */
+// NestJS logger スタイルのメソッドを作成
+const nestJsLoggerAdapter = {
+  log(message: string, context?: string): void {
+    basePinoLogger.info({ context }, message);
+  },
+};
+
+// basePinoLogger に log メソッドを追加
+export const pinoLogger = Object.assign(basePinoLogger, nestJsLoggerAdapter) as typeof basePinoLogger & typeof nestJsLoggerAdapter;
 
 /**
  * traceId の管理（AsyncLocalStorage を使用）

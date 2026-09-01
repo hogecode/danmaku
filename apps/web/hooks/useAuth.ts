@@ -101,6 +101,7 @@ export function useAuth() {
   });
 
   // ✅ ログイン開始（mutation を実行）
+  // TODO: tanstack queryを利用
   const startLogin = useCallback(async () => {
     await loginMutation.mutateAsync();
   }, [loginMutation]);
@@ -115,7 +116,7 @@ export function useAuth() {
     await refreshTokenMutation.mutateAsync();
   }, [refreshTokenMutation]);
 
-  
+
   return {
     // ✅ ユーザー情報
     user,

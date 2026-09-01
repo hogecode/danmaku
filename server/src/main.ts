@@ -7,14 +7,13 @@ import { RedisStore } from 'connect-redis';
 import { AppModule } from './app.module';
 import { generateOpenAPIYaml } from './utils/openapi-generator';
 import { TraceIdMiddleware } from './common/middleware/trace-id.middleware';
-import { LoggerInterceptor } from './common/interceptors/logger.interceptor';
 import { pinoLogger } from './common/logger/pino.logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // ✅ Pino ロギングを NestJS に統合
-  app.useLogger(pinoLogger);
+  app.useLogger(pinoLogger as any);
 
   // Redis セッションストア設定
   const redisClient = createClient({
@@ -56,8 +55,7 @@ async function bootstrap() {
     }),
   );
 
-  // ✅ Logger interceptor を登録
-  app.useGlobalInterceptors(new LoggerInterceptor());
+
 
   // Enable CORS
   const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:3001';

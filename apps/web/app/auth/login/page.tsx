@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 /**
  * ログイン画面
+ * TODO: 通常ログインフローの実装
  */
 export default function LoginPage() {
   const router = useRouter();
@@ -22,11 +23,14 @@ export default function LoginPage() {
   useEffect(() => {
     // useAuthContextがマウントされる前に実行されるのを防ぐため、isMountedをチェック
     if (!isMounted) return;
+
+    // TODO: ミドルウェアでの認証チェックを追加する
     if (isAuthenticated && !loading) {
       router.push('/home');
     }
   }, [isMounted, isAuthenticated, loading, router]);
 
+  // TODO: tanstack queryを利用してログイン状態を管理する
   const handleGoogleLogin = async () => {
     try {
       setLoginLoading(true);
@@ -61,7 +65,9 @@ export default function LoginPage() {
           <p className="text-center text-gray-600 text-sm mb-6">
             Google アカウントでログインしてください
           </p>
-
+          
+          {/* サーバーで生成したURLにリダイレクトする */}
+          {/* TODO: Google ログインボタンのスタイルを改善する */}
           <button
             onClick={handleGoogleLogin}
             disabled={loginLoading}

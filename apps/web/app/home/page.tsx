@@ -33,9 +33,7 @@ export default function HomePage() {
   }
 
   const handleLogout = async () => {
-    if (confirm('ログアウトしますか？')) {
-      await logout();
-    }
+    await logout();
   };
 
   return (
@@ -89,6 +87,7 @@ export default function HomePage() {
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-xs text-gray-500 mb-2">最終ログイン</p>
                     <p className="text-sm text-gray-900">
+                      {/* TODO: dayjs などを使ってフォーマットを改善する */}
                       {new Date(user.last_login).toLocaleDateString('ja-JP', {
                         year: 'numeric',
                         month: '2-digit',
