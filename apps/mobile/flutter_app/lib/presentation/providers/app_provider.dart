@@ -9,11 +9,12 @@ import 'package:flutter_app/domain/usecases/fetch_danmaku_usecase.dart';
 // ============================================================================
 
 /// API サービスプロバイダー（シングルトン）
+// ref.watch(apiServiceProvider);で取得する
 final apiServiceProvider = Provider<ApiService>((ref) {
   return ApiService();
 });
 
-/// ストレージサービスプロバイダー（シングルトン）
+// Hiveストレージサービスプロバイダー（シングルトン）
 final storageServiceProvider = Provider<StorageService>((ref) {
   return StorageService();
 });
@@ -37,6 +38,7 @@ final danmakuRepositoryProvider = Provider<DanmakuRepository>((ref) {
 // ============================================================================
 
 /// ダンマク取得 UseCase プロバイダー
+// 弾幕取得APIを呼び出すためのユースケースを提供するプロバイダーです。
 final fetchDanmakuUseCaseProvider = Provider<FetchDanmakuUseCase>((ref) {
   final repository = ref.watch(danmakuRepositoryProvider);
   return FetchDanmakuUseCase(repository);

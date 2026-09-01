@@ -31,8 +31,10 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
   @override
   void initState() {
     super.initState();
+    // videowidgetの状態を管理するためのGlobalKeyを初期化
     _videoViewKey = GlobalKey<VideoViewState>();
     
+    // 画面の描画が1回終わったあとに、この処理を実行する
     // ダンマクを取得
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchDanmaku();
@@ -42,6 +44,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
   /// ダンマクを取得
   void _fetchDanmaku() {
     final fetchUseCase = ref.read(fetchDanmakuUseCaseProvider);
+    // presentation/notifiers/danmaku_notifier.dart の DanmakuNotifier を利用して状態を更新
     final notifier = ref.read(
       danmakuStateProvider(fetchUseCase).notifier,
     );
@@ -50,7 +53,10 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
 
   @override
   Widget build(BuildContext context) {
+    // プレイヤー状態をplayer_notifierから取得
     final playerState = ref.watch(playerStateProvider);
+
+    // ui_provider.dart から UI 状態を取得
     final controllerVisible = ref.watch(controllerVisibleProvider);
     final danmakuOpacity = ref.watch(danmakuOpacityProvider);
     final danmakuSpeedRate = ref.watch(danmakuSpeedRateProvider);
@@ -65,7 +71,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
             Expanded(
               child: Stack(
                 children: [
-                  // ビデオビュー
+                  // ビデオwidget
                   VideoView(
                     key: _videoViewKey,
                     videoUrl: widget.videoUrl,
@@ -83,10 +89,18 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
                   
                   // ダンマク Canvas（ビデオの上に重ねる）
                   if (danmakuVisible)
-                    DanmakuCanvas(
-                      currentTime: playerState.currentTime.inMilliseconds / 1000.0,
-                      globalOpacity: danmakuOpacity,
-                      globalSpeedRate: danmakuSpeedRate,
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: IgnorePointer(
+                        child: DanmakuCanvas(
+                          currentTime: playerState.currentTime.inMilliseconds / 1000.0,
+                          globalOpacity: danmakuOpacity,
+                          globalSpeedRate: danmakuSpeedRate,
+                        ),
+                      ),
                     ),
                   
                   // ローディング表示
@@ -108,42 +122,44 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      child: ControllerBar(
-                        onPlayTapped: () {
-                          _videoViewKey.currentState?.play();
-                          ref
-                              .read(playerStateProvider.notifier)
-                              .updatePlayingState(true);
-                        },
-                        onPauseTapped: () {
-                          _videoViewKey.currentState?.pause();
-                          ref
-                              .read(playerStateProvider.notifier)
-                              .updatePlayingState(false);
-                        },
-                        onSeek: (position) {
-                          _videoViewKey.currentState?.seek(position);
-                        },
-                        onSpeedChange: (speed) {
-                          _videoViewKey.currentState?.setPlaybackSpeed(speed);
-                          ref
-                              .read(playerStateProvider.notifier)
-                              .updatePlaybackSpeed(speed);
-                        },
-                        onSettingsTapped: () {
-                          ref
-                              .read(settingsPanelVisibleProvider.notifier)
-                              .state = true;
-                        },
-                        onFullscreenTapped: () {
-                          ref
-                              .read(playerStateProvider.notifier)
-                              .updateFullscreen(
-                                !playerState.isFullscreen,
-                              );
-                        },
+                      child: SafeArea(
+                        child: ControllerBar(
+                          onPlayTapped: () {
+                            _videoViewKey.currentState?.play();
+                            ref
+                                .read(playerStateProvider.notifier)
+                                .updatePlayingState(true);
+                          },
+                          onPauseTapped: () {
+                            _videoViewKey.currentState?.pause();
+                            ref
+                                .read(playerStateProvider.notifier)
+                                .updatePlayingState(false);
+                          },
+                          onSeek: (position) {
+                            _videoViewKey.currentState?.seek(position);
+                          },
+                          onSpeedChange: (speed) {
+                            _videoViewKey.currentState?.setPlaybackSpeed(speed);
+                            ref
+                                .read(playerStateProvider.notifier)
+                                .updatePlaybackSpeed(speed);
+                          },
+                          onSettingsTapped: () {
+                            ref
+                                .read(settingsPanelVisibleProvider.notifier)
+                                .state = true;
+                          },
+                          onFullscreenTapped: () {
+                            ref
+                                .read(playerStateProvider.notifier)
+                                .updateFullscreen(
+                                  !playerState.isFullscreen,
+                                );
+                          },
+                        ),
                       ),
-                    ),
+                    )
                 ],
               ),
             ),

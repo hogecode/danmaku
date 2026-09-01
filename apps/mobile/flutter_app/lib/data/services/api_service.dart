@@ -78,7 +78,6 @@ class ApiService {
   /// GET /api/danmaku?video_id=xxx
   Future<List<DanmakuModel>> fetchDanmaku({
     required String videoId,
-    int limit = 1000,
   }) async {
     // テストモード：モックデータを返す
     if (AppConstants.useMockData) {
@@ -92,7 +91,6 @@ class ApiService {
         '/api/danmaku',
         queryParameters: {
           'video_id': videoId,
-          'limit': limit,
         },
       );
 
@@ -152,58 +150,6 @@ class ApiService {
         return null;
       }
     }).whereType<DanmakuModel>().toList();
-  }
-
-  /// ダンマク送信（後実装）
-  Future<void> sendDanmaku({
-    required String videoId,
-    required double time,
-    required String type,
-    required String color,
-    required String text,
-    required String size,
-  }) async {
-    try {
-      final response = await _dio.post<Map<String, dynamic>>(
-        '/api/danmaku',
-        data: {
-          'video_id': videoId,
-          'time': time,
-          'type': type,
-          'color': color,
-          'text': text,
-          'size': size,
-        },
-        options: Options(
-          contentType: 'application/json',
-        ),
-      );
-
-      if (response.data == null) {
-        throw ApiException('No response data');
-      }
-
-      final apiResponse = ApiResponseModel<dynamic>.fromJson(
-        response.data!,
-        (obj) => obj,
-      );
-
-      if (!apiResponse.isSuccess) {
-        throw ApiException(
-          apiResponse.msg ?? 'Failed to send danmaku',
-          apiResponse.code,
-        );
-      }
-
-      _logger.i('Danmaku sent successfully');
-    } on DioException catch (e) {
-      throw ApiException(
-        'Network error: ${e.message}',
-        e.response?.statusCode,
-      );
-    } catch (e) {
-      throw ApiException('Failed to send danmaku: $e');
-    }
   }
 
   /// モックダンマクデータを取得（テスト用）

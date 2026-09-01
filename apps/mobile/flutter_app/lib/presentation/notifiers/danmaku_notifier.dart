@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 
 /// ダンマク状態
 class DanmakuState {
+  // 弾幕のドメインエンティティ
   final List<DanmakuEntity> danmakuList;
   final bool isLoading;
   final String? errorMessage;
@@ -54,6 +55,7 @@ class DanmakuState {
   String toString() =>
       'DanmakuState(count: ${danmakuList.length}, isLoading: $isLoading, opacity: $opacity, speedRate: $speedRate)';
 }
+
 
 /// ダンマク状態を管理するNotifier
 class DanmakuNotifier extends StateNotifier<DanmakuState> {

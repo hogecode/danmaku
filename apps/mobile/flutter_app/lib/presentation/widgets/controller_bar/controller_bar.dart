@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/core/constants/color_constants.dart';
 import 'package:flutter_app/presentation/notifiers/player_notifier.dart';
 import 'package:flutter_app/presentation/providers/ui_provider.dart';
-import 'package:flutter_app/presentation/widgets/settings/danmaku_settings.dart';
 
+/// ビデオプレイヤーのコントローラーバー
+/// 再生/一時停止、シークバー、速度変更などを管理
 class ControllerBar extends ConsumerWidget {
+  /// コールバック関数
   final VoidCallback? onPlayTapped;
   final VoidCallback? onPauseTapped;
   final Function(Duration)? onSeek;
@@ -25,85 +27,110 @@ class ControllerBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playerState = ref.watch(playerStateProvider);
-    final opacity = ref.watch(danmakuOpacityProvider);
-    final speedRate = ref.watch(danmakuSpeedRateProvider);
+    try {
+      final playerState = ref.watch(playerStateProvider);
+      // ui_provider.dart から UI 状態を取得
+      // TODO: まだ未使用
+      final opacity = ref.watch(danmakuOpacityProvider);
+      final speedRate = ref.watch(danmakuSpeedRateProvider);
 
-    return Container(
-      color: ColorConstants.lightControllerBg,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SliderTheme(
-            data: SliderThemeData(
-              trackHeight: 4,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-            ),
-            child: Slider(
-              value: playerState.currentTime.inSeconds.toDouble(),
-              max: playerState.duration.inSeconds.toDouble(),
-              onChanged: (value) => onSeek?.call(Duration(seconds: value.toInt())),
-              activeColor: ColorConstants.lightPrimary,
-              inactiveColor: Colors.grey[400],
-            ),
-          ),
-          Row(
-            children: [
-              IconButton(
-                icon: Icon(
-                  playerState.isPlaying ? Icons.pause : Icons.play_arrow,
-                  color: Colors.white,
-                  size: 20,
+      // 再生時間と総時間を秒単位で取得（ゼロ除算を避ける）
+      final currentSeconds = playerState.currentTime.inSeconds.toDouble();
+      final maxSeconds = playerState.duration.inSeconds.toDouble();
+      // safeMax が 0 の場合は Slider を表示しないようにする
+      final safeMax = maxSeconds > 0 ? maxSeconds : 1.0;
+
+      return Container(
+        color: ColorConstants.lightControllerBg,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (safeMax > 0)  // Slider は safeMax が有効な場合のみ表示
+              SliderTheme(
+                data: SliderThemeData(
+                  trackHeight: 4,
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
                 ),
-                onPressed: () {
-                  if (playerState.isPlaying) onPauseTapped?.call();
-                  else onPlayTapped?.call();
-                },
-              ),
-              Text(
-                '${_fmt(playerState.currentTime)} / ${_fmt(playerState.duration)}',
-                style: const TextStyle(color: Colors.white, fontSize: 12),
-              ),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: _SpeedButton(
-                  currentSpeed: playerState.playbackSpeed,
-                  onSpeedChange: onSpeedChange,
+                child: Slider(
+                  value: currentSeconds.clamp(0, safeMax),
+                  min: 0,
+                  max: safeMax,
+                  onChanged: (value) => onSeek?.call(Duration(seconds: value.toInt())),
+                  activeColor: ColorConstants.lightPrimary,
+                  inactiveColor: Colors.grey[400],
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.subtitles, color: Colors.white, size: 20),
-                onPressed: () => showModalBottomSheet(
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                    ),
-                    child: const DanmakuSettingsPanel(),
+              )
+            else
+              Container(height: 4),  // Slider の代わりに空のスペース
+            Row(
+              children: [
+                // 再生/一時停止ボタン
+                IconButton(
+                  icon: Icon(
+                    playerState.isPlaying ? Icons.pause : Icons.play_arrow,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    if (playerState.isPlaying) onPauseTapped?.call();
+                    else onPlayTapped?.call();
+                  },
+                ),
+                // 再生時間 / 総時間
+                SizedBox(
+                  width: 80,
+                  child: Text(
+                    '${_fmt(playerState.currentTime)} / ${_fmt(playerState.duration)}',
+                    style: const TextStyle(color: Colors.white, fontSize: 11),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.settings, color: Colors.white, size: 20),
-                onPressed: onSettingsTapped,
-              ),
-              IconButton(
-                icon: Icon(
-                  playerState.isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                  color: Colors.white,
-                  size: 20,
+                const Spacer(),
+                // 再生速度変更ボタン
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: _SpeedButton(
+                    currentSpeed: playerState.playbackSpeed,
+                    onSpeedChange: onSpeedChange,
+                  ),
                 ),
-                onPressed: onFullscreenTapped,
-              ),
-            ],
+                // TODO: 設定ボタン
+                IconButton(
+                  icon: const Icon(Icons.settings, color: Colors.white, size: 20),
+                  onPressed: onSettingsTapped,
+                ),
+                // TODO: フルスクリーン切替ボタン
+                IconButton(
+                  icon: Icon(
+                    playerState.isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  onPressed: onFullscreenTapped,
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } catch (e, st) {
+      debugPrint('=== Error in ControllerBar build ===');
+      debugPrint('Error: $e');
+      debugPrint('StackTrace: $st');
+      debugPrint('====================================');
+      return Container(
+        color: ColorConstants.lightControllerBg,
+        height: 50,
+        child: Center(
+          child: Text('エラー: ${e.toString()}',
+            style: const TextStyle(color: Colors.white, fontSize: 10),
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
   }
 
   static String _fmt(Duration d) {

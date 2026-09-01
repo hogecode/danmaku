@@ -12,6 +12,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  
+  flutter_localizations:
+    sdk: flutter
 
   # Video Playback
   video_player: ^2.11.0
@@ -26,7 +29,7 @@ dependencies:
   json_annotation: ^4.8.0
 
   # Localization
-  intl: ^0.20.3
+  intl: ^0.20.2
 
   # Storage
   hive: ^2.2.0

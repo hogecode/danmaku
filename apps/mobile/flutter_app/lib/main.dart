@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_app/core/themes/app_theme.dart';
-import 'package:flutter_app/core/utils/i18n.dart';
+import 'package:flutter_app/core/i18n/i18n.dart';
 import 'package:flutter_app/data/services/storage_service.dart';
 import 'package:flutter_app/presentation/pages/player_page.dart';
 import 'package:flutter_app/presentation/providers/ui_provider.dart';
@@ -41,10 +42,16 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme(),
       darkTheme: AppTheme.darkTheme(),
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      localizationsDelegates: const [
-        AppLocalizationsDelegate(),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        const AppLocalizationsDelegate(),
       ],
-      supportedLocales: supportedLocales,
+      supportedLocales: const [
+        Locale('ja'),
+        Locale('en'),
+      ],
       home: const HomePage(),
     );
   }
@@ -78,10 +85,12 @@ class HomePage extends ConsumerWidget {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
+                      // TODO: 後でページを追加する
                       builder: (context) => const PlayerPage(
                         videoId: 'test_video_1',
+                        // TODO: ビデオURLを動的に設定する
                         videoUrl:
-                            'https://commondatastorage.googleapis.com/gtv-videos-library/sample/BigBuckBunny.mp4',
+                            'http://100.72.160.115:8000/api/v1/files/6/mono02.mp4',
                         videoTitle: 'Big Buck Bunny',
                       ),
                     ),

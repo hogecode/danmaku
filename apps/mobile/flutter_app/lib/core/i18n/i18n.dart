@@ -7,6 +7,7 @@ class AppLocalizations {
 
   AppLocalizations(this.locale);
 
+  // TODO: 後で変更する
   static AppLocalizations of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations) ??
         AppLocalizations(const Locale('ja'));

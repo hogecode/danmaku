@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/domain/entities/danmaku_entity.dart';
+import 'package:flutter_app/domain/usecases/fetch_danmaku_usecase.dart';
 import 'package:flutter_app/presentation/widgets/danmaku/danmaku_engine.dart';
 import 'package:flutter_app/presentation/notifiers/danmaku_notifier.dart';
 import 'package:flutter_app/presentation/providers/app_provider.dart';
@@ -28,6 +29,7 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas>
   late AnimationController _animationController;
   late DanmakuEngine _engine;
   late Logger _logger;
+  late FetchDanmakuUseCase _fetchUseCase;
 
   @override
   void initState() {
@@ -39,6 +41,9 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas>
       globalOpacity: widget.globalOpacity,
       globalSpeedRate: widget.globalSpeedRate,
     );
+
+    // FetchDanmakuUseCase を事前に取得
+    _fetchUseCase = ref.read(fetchDanmakuUseCaseProvider);
 
     // アニメーションコントローラーを設定（60fps）
     _animationController = AnimationController(
@@ -88,24 +93,29 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas>
 
   @override
   Widget build(BuildContext context) {
-    final danmakuState = ref.watch(
-      danmakuStateProvider(ref.watch(fetchDanmakuUseCaseProvider)),
-    );
+    try {
+      // 既に保存した FetchDanmakuUseCase を使用
+      final danmakuState = ref.watch(danmakuStateProvider(_fetchUseCase));
 
-    // ダンマクをエンジンに追加
-    if (danmakuState.danmakuList.isNotEmpty) {
-      _addDanmakuToEngine(danmakuState.danmakuList);
-    }
+      // ダンマクをエンジンに追加
+      if (danmakuState.danmakuList.isNotEmpty) {
+        _addDanmakuToEngine(danmakuState.danmakuList);
+      }
 
-    return RepaintBoundary(
-      child: CustomPaint(
-        painter: _DanmakuPainter(
-          engine: _engine,
-          globalOpacity: widget.globalOpacity,
+      return RepaintBoundary(
+        child: CustomPaint(
+          painter: _DanmakuPainter(
+            engine: _engine,
+            globalOpacity: widget.globalOpacity,
+          ),
+          size: Size.infinite,
         ),
-        size: Size.infinite,
-      ),
-    );
+      );
+    } catch (e) {
+      _logger.e('Error in DanmakuCanvas build: $e');
+      // エラー時は何も描画しない（透明）
+      return Container();
+    }
   }
 
   /// ダンマクをエンジンに追加

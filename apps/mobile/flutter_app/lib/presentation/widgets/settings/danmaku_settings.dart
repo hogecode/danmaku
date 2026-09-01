@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/core/constants/color_constants.dart';
-import 'package:flutter_app/core/utils/i18n.dart';
+import 'package:flutter_app/core/i18n/i18n.dart';
 import 'package:flutter_app/presentation/providers/ui_provider.dart';
 
 /// ダンマク設定スライダーウィジェット

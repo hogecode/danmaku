@@ -3,6 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 part 'danmaku_model.g.dart';
 
 /// ダンマクAPI用モデル
+// TODO: 後で変更する
 @JsonSerializable()
 class DanmakuModel {
   /// コメント投稿時間（秒）

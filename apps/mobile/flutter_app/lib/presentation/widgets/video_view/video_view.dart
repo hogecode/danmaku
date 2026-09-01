@@ -42,9 +42,14 @@ class VideoViewState extends ConsumerState<VideoView> {
           });
           widget.onReady?.call();
           
-          // プレイヤー状態を更新
+          // プレイヤー状態をplayerStateProviderを利用して更新
+          // presentaions/notifiers/player_notifier.dart の PlayerNotifier を利用して状態を更新
           final notifier = ref.read(playerStateProvider.notifier);
           notifier.updateDuration(_controller.value.duration);
+          
+          // ビデオを自動再生
+          _controller.play();
+          notifier.updatePlayingState(true);
         }
       }).catchError((error) {
         if (mounted) {
@@ -130,6 +135,7 @@ class VideoViewState extends ConsumerState<VideoView> {
     );
   }
 
+// 以下のメソッドを追加して、ビデオの再生、一時停止、シーク、再生速度、音量を制御する
   /// ビデオを再生
   void play() {
     _controller.play();
