@@ -32,6 +32,7 @@ class DanmakuItemWidget extends StatefulWidget {
   State<DanmakuItemWidget> createState() => _DanmakuItemWidgetState();
 }
 
+
 class _DanmakuItemWidgetState extends State<DanmakuItemWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;

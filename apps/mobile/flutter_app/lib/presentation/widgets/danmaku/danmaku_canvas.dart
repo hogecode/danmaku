@@ -19,6 +19,7 @@ class _ActiveDanmaku {
   });
 }
 
+
 class DanmakuCanvas extends ConsumerStatefulWidget {
   final double currentTime;
   final double globalOpacity;
@@ -35,12 +36,15 @@ class DanmakuCanvas extends ConsumerStatefulWidget {
   ConsumerState<DanmakuCanvas> createState() => _DanmakuCanvasState();
 }
 
+
 class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas> {
   late Logger _logger;
   late FetchDanmakuUseCase _fetchUseCase;
   DanmakuLaneManager? _laneManager;
 
+  // アクティブなダンマクのリスト
   final List<_ActiveDanmaku> _activeDanmaku = [];
+  // すでに処理済みのダンマクIDのセット
   final Set<String> _processedDanmakuIds = {};
 
   @override
@@ -61,8 +65,9 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
+    // DanmakuLaneManager を初期化（高さとコンテナサイズを指定）
     _laneManager ??= DanmakuLaneManager(
-      laneHeight: 50,
+      laneHeight: AppConstants.danmakuLineHeight,
       containerHeight: size.height,
     );
 
@@ -78,11 +83,12 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas> {
         ..._activeDanmaku.map((item) {
           final id = item.danmaku.id ??
               '${item.danmaku.time}_${item.danmaku.author}_${item.danmaku.text}';
+
           return DanmakuItemWidget(
             key: ValueKey(id),
             danmaku: item.danmaku,
             laneIndex: item.laneIndex,
-            laneHeight: 50,
+            laneHeight: AppConstants.danmakuLineHeight,
             containerWidth: size.width,
             containerHeight: size.height,
             globalOpacity: widget.globalOpacity,
@@ -92,6 +98,7 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas> {
               if (!mounted) return;
               final removeId = item.danmaku.id ??
                   '${item.danmaku.time}_${item.danmaku.author}_${item.danmaku.text}';
+
               setState(() {
                 _activeDanmaku.removeWhere((a) =>
                     (a.danmaku.id ??

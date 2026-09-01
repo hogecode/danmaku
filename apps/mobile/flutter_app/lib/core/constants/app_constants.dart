@@ -16,7 +16,7 @@ class AppConstants {
   static const int maxDanmakuCount = 1000;
   static const double danmakuDurationSeconds = 8.0;
   static const double danmakuDistancePx = 1280.0;
-  static const double danmakuLineHeight = 30.0;
+  static const double danmakuLineHeight = 50.0;
   static const double danmakuCollisionMargin = 5.0;
   static const double danmakuDisplayDurationSeconds = 6.0; // ダンマク表示時間（秒）
 
@@ -29,14 +29,10 @@ class AppConstants {
   static const double minDanmakuSpeed = 0.5;
   static const double maxDanmakuSpeed = 3.0;
   static const double defaultDanmakuSpeed = 1.0;
-
+  
   // UI Configuration
   static const int animationDurationMs = 300;
   static const int controllerHideDurationMs = 3000;
-
-  // Cache Configuration
-  static const String danmakuCacheKey = 'danmaku_cache';
-  static const Duration cacheDuration = Duration(hours: 24);
 
   // Localization
   static const String defaultLanguage = 'ja';
