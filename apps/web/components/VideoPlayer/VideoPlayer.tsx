@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { DPlayerComment } from '@/lib/api/dplayer-comment';
-import { fetchVideoComments, generateVideoStreamUrl } from '@/lib/api/player-client';
+import { generateVideoStreamUrl } from '@/lib/api/player-client';
+import { usePlayerComments } from '@/hooks';
 
 interface VideoPlayerProps {
   /**
@@ -69,6 +70,12 @@ export function VideoPlayer({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ✅ TanStack Query でコメント取得
+  const { data: dplayerComments = [], isLoading: commentsLoading, error: commentsError } = usePlayerComments(
+    videoFileId,
+    folderId,
+  );
+
   /**
    * DPlayer の初期化
    */
@@ -84,8 +91,7 @@ export function VideoPlayer({
       try {
         setIsLoading(true);
 
-        // コメントを取得（✅ DPlayer 互換形式）
-        const dplayerComments = await fetchVideoComments(videoFileId, folderId);
+        // ✅ usePlayerComments から取得したコメントを使用
         commentListRef.current = dplayerComments || [];
         console.log(`[VideoPlayer] Loaded ${commentListRef.current.length} comments`);
 
@@ -159,6 +165,13 @@ export function VideoPlayer({
       }
     };
 
+    // ✅ コメント取得エラーをハンドル
+    if (commentsError) {
+      console.warn('[VideoPlayer] Comments loading error (non-fatal):', commentsError);
+      // コメント取得エラーは動画再生を妨げない
+    }
+
+    // ✅ DPlayer を初期化
     initializeDPlayer();
 
     // クリーンアップ
@@ -173,7 +186,7 @@ export function VideoPlayer({
         dplayerRef.current = null;
       }
     };
-  }, [videoFileId, folderId, playerSettings, commentSettings]);
+  }, [videoFileId, folderId, dplayerComments, playerSettings, commentSettings]);
 
   return (
     <div className={containerClassName} style={{ position: 'relative' }}>

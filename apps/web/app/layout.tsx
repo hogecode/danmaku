@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/AuthProvider";
-import { QueryProvider } from "@/components/QueryProvider";
+import { QueryProvider } from "@/lib/providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Danmaku - リアルタイムコメント配信プラットフォーム",
-  description: "ライブストリーミング中にリアルタイムでコメントを表示できるプラットフォーム",
+  title: "Danmaku",
+  description: "ドライブの動画にリアルタイムでコメントを表示できるプラットフォーム",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

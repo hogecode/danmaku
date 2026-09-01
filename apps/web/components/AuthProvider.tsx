@@ -45,7 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         startLogin: auth.startLogin,
         logout: auth.logout,
         refreshToken: auth.refreshToken,
-        fetchUserInfo: auth.fetchUserInfo,
+        fetchUserInfo: async () => {
+          await auth.fetchUserInfo();
+        },
       }}
     >
       {children}

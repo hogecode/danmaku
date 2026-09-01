@@ -34,9 +34,6 @@ export function getPlayerApiClient(): PlayerApi {
 
 /**
  * 動画のコメントを取得（DPlayer 互換形式）
- * @param videoFileId - GDrive 動画ファイル ID
- * @param folderId - 動画ファイルが存在するフォルダID
- * @returns DPlayer 互換コメント配列
  */
 export async function fetchVideoComments(
   videoFileId: string,
@@ -50,10 +47,9 @@ export async function fetchVideoComments(
       folderId || '',
     );
 
-    // ✅ レスポンスをキャスト
     const data = response.data as unknown as DPlayerCommentListResponse;
-    console.log('[PlayerClient] Comments fetched successfully:', data.comments.length);
     return data.comments;
+    
   } catch (error: any) {
     console.error('[PlayerClient] Failed to fetch comments:', {
       status: error?.response?.status,
