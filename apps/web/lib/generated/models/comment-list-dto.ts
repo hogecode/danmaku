@@ -13,13 +13,14 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { CommentDto } from './comment-dto';
 
-export interface UserInfoDto {
-    'id': string;
-    'email': string;
-    'name'?: string | null;
-    'picture_url'?: string | null;
-    'oauth_provider': string;
-    'last_login'?: string | null;
+export interface CommentListDto {
+    /**
+     * コメント配列
+     */
+    'comments': Array<CommentDto>;
 }
 

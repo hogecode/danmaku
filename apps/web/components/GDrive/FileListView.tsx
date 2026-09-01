@@ -10,7 +10,7 @@ interface FileListViewProps {
   items: FileItem[];
   isLoading?: boolean;
   onFolderClick: (folderId: string, folderName: string) => void;
-  onVideoClick?: (fileId: string, fileName: string) => void;
+  onVideoClick?: (fileId: string, fileName: string, folderId?: string) => void;
 }
 
 export function FileListView({
@@ -58,7 +58,7 @@ export function FileListView({
 interface FileListItemProps {
   item: FileItem;
   onFolderClick: (folderId: string, folderName: string) => void;
-  onVideoClick?: (fileId: string, fileName: string) => void;
+  onVideoClick?: (fileId: string, fileName: string, folderId?: string) => void;
 }
 
 function FileListItem({
@@ -73,10 +73,12 @@ function FileListItem({
     if (isFolder) {
       onFolderClick(item.id, item.name);
     } else if (isVideo && onVideoClick) {
-      onVideoClick(item.id, item.name);
+      // ✅ folderId を parentId から取得して渡す
+      onVideoClick(item.id, item.name, item.parentId);
     }
   };
 
+  // TODO: ファイルサイズや更新日時のフォーマットを共通化する
   const formatSize = (bytes?: number) => {
     if (!bytes) return '-';
     if (bytes < 1024) return `${bytes} B`;

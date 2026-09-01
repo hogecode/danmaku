@@ -24,12 +24,14 @@ class DanmakuCanvas extends ConsumerStatefulWidget {
   final double currentTime;
   final double globalOpacity;
   final double globalSpeedRate;
+  final bool isPaused;
 
   const DanmakuCanvas({
     Key? key,
     required this.currentTime,
     required this.globalOpacity,
     required this.globalSpeedRate,
+    required this.isPaused,
   }) : super(key: key);
 
   @override
@@ -94,6 +96,7 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas> {
             globalOpacity: widget.globalOpacity,
             globalSpeedRate: widget.globalSpeedRate,
             currentTime: widget.currentTime,
+            isPaused: widget.isPaused,
             onRemove: () {
               if (!mounted) return;
               final removeId = item.danmaku.id ??
@@ -116,15 +119,20 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas> {
     if (!mounted || _laneManager == null) return;
 
     final newDanmaku = <_ActiveDanmaku>[];
+    final displayDuration = AppConstants.danmakuDisplayDurationSeconds;
 
     for (final danmaku in danmakuList) {
       final id = danmaku.id ??
           '${danmaku.time}_${danmaku.author}_${danmaku.text}';
 
+      // 既に処理済みの場合はスキップ（重複防止）
       if (_processedDanmakuIds.contains(id)) continue;
+
+      // コメント開始時刻より前の場合はスキップ（まだ表示時間ではない）
       if (widget.currentTime < danmaku.time) continue;
-      if (widget.currentTime >
-          danmaku.time + AppConstants.danmakuDisplayDurationSeconds + 0.5) {
+      
+      // コメント終了時刻を超えている場合はスキップ（表示完了済み）
+      if (widget.currentTime > danmaku.time + displayDuration + 0.5) {
         continue;
       }
 
@@ -140,6 +148,41 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas> {
       setState(() {
         _activeDanmaku.addAll(newDanmaku);
       });
+    }
+  }
+
+  /// DPlayer の clear() 実装を参考した、シーク時のクリア
+  void _clearExpiredDanmaku() {
+    if (!mounted) return;
+    
+    final displayDuration = AppConstants.danmakuDisplayDurationSeconds;
+    
+    setState(() {
+      // 表示期限切れのコメントを削除
+      final idsToRemove = <String>{};
+      _activeDanmaku.removeWhere((item) {
+        final endTime = item.danmaku.time + displayDuration + 0.5;
+        final isExpired = widget.currentTime > endTime;
+        if (isExpired) {
+          final id = item.danmaku.id ??
+              '${item.danmaku.time}_${item.danmaku.author}_${item.danmaku.text}';
+          idsToRemove.add(id);
+        }
+        return isExpired;
+      });
+      
+      // 削除されたコメントを processed から削除
+      _processedDanmakuIds.removeAll(idsToRemove);
+    });
+  }
+
+  @override
+  void didUpdateWidget(DanmakuCanvas oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // DPlayer の seek() 実装を参考：シーク時（currentTime が大きく変わった）
+    if ((widget.currentTime - oldWidget.currentTime).abs() > 0.5) {
+      _clearExpiredDanmaku();
     }
   }
 

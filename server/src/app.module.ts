@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { GDriveModule } from './gdrive/gdrive.module';
+import { PlayerModule } from './player/player.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { GDriveModule } from './gdrive/gdrive.module';
     RedisModule,
     AuthModule,
     GDriveModule,
+    PlayerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

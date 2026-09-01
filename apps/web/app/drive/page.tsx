@@ -25,18 +25,19 @@ export default function DrivePage() {
 
   // 未認証の場合はログインページへリダイレクト
   useEffect(() => {
+    // TODO: ミドルウェアで認証を行うようにする
     if (!authLoading && !isAuthenticated) {
       router.push('/auth/login');
     }
   }, [isAuthenticated, authLoading, router]);
 
   const handleFolderClick = useCallback(
-    (clickedFolderId: string, clickedFolderName: string) => {
+    (clickedFolderId: string, clickedFolderName?: string) => {
       setFolderId(clickedFolderId);
-      setFolderName(clickedFolderName);
+      setFolderName(clickedFolderName ?? folderName);
       setSearchResults(null);
     },
-    [],
+    [folderName],
   );
 
   const handleSearch = useCallback(
@@ -59,11 +60,17 @@ export default function DrivePage() {
   }, []);
 
   const handleVideoClick = useCallback(
-    (fileId: string, fileName: string) => {
-      // TODO: ビデオプレイヤーページにナビゲート
-      console.log('Video clicked:', fileId, fileName);
+    (fileId: string, fileName: string, folderId?: string) => {
+      // /watch ページにナビゲート（fileId と folderId をクエリパラメータで渡す）
+      const params = new URLSearchParams({
+        fileId: encodeURIComponent(fileId),
+      });
+      if (folderId) {
+        params.append('folderId', encodeURIComponent(folderId));
+      }
+      router.push(`/watch?${params.toString()}`);
     },
-    [],
+    [router],
   );
 
   if (authLoading) {

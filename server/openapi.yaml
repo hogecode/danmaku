@@ -144,6 +144,86 @@ paths:
         フォルダ内でキーワード検索
       tags:
         - GDrive
+  /api/player/stream/{fileId}:
+    get:
+      operationId: PlayerController_streamVideo
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: range
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        GET /api/player/stream/:fileId
+        動画ファイルをストリーミング再生
+
+        Range リクエスト対応:
+        - Range: bytes=0-1023 （最初の1KBのみ取得）
+        - Range: bytes=1024- （1KBから最後まで取得）
+        - Range: bytes=-512 （最後の512バイトを取得）
+
+        レスポンス:
+        - Range ヘッダーなし: HTTP 200 + Content-Length
+        - Range ヘッダーあり（有効）: HTTP 206 + Content-Range
+        - Range ヘッダーあり（無効）: HTTP 400 Bad Request
+      tags:
+        - Player
+  /api/player/comments/{videoFileId}:
+    get:
+      operationId: PlayerController_getComments
+      parameters:
+        - name: videoFileId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: folderId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentListDto'
+      summary: |-
+        動画に対応するコメントを取得
+
+        コメントファイルの自動検出:
+        - 動画: "aaa.mp4"
+        - コメント: "aaa.xml" または "aaa.json" を自動検索
+        - 見つかった場合: JSON に変換して返す
+        - 見つからない場合: 空配列を返す
+
+        Response:
+        {
+          "comments": [
+            {
+              "thread": "1492023606",
+              "no": 19886,
+              "vpos": 0,
+              "date": 1492100460,
+              "mail": "184",
+              "user_id": "SlF_cF2J1CdotJTaojvbM9mDYAE",
+              "premium": 1,
+              "anonymity": 1,
+              "text": "てか無料期間中に見れば無料やん"
+            }
+          ]
+        }
+      tags:
+        - Player
 info:
   title: danmaku API
   description: Danmaku API documentation
@@ -252,3 +332,50 @@ components:
             あれば指定してリクエスト
       required:
         - items
+    CommentDto:
+      type: object
+      properties:
+        thread:
+          type: string
+          description: スレッドID
+        'no':
+          type: number
+          description: コメント番号
+        vpos:
+          type: number
+          description: 再生位置（ミリ秒単位）
+        date:
+          type: number
+          description: UNIXタイムスタンプ
+        mail:
+          type: string
+          description: |-
+            表示フォーマット指定
+            例: "184", "184 big ue", "ue", "big" など
+        user_id:
+          type: string
+          description: ユーザーID
+        premium:
+          type: number
+          description: プレミアムユーザーフラグ
+        anonymity:
+          type: number
+          description: 匿名投稿フラグ
+        text:
+          type: string
+          description: コメント内容（テキスト）
+      required:
+        - 'no'
+        - vpos
+        - date
+        - text
+    CommentListDto:
+      type: object
+      properties:
+        comments:
+          description: コメント配列
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentDto'
+      required:
+        - comments

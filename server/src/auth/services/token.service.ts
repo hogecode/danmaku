@@ -170,4 +170,40 @@ export class TokenService {
       // リボーク失敗は無視（既に失効している可能性）
     }
   }
+
+  /**
+   * ユーザーの有効なアクセストークンを取得
+   * トークンが期限切れの場合は自動的にリフレッシュして返す
+   *
+   * @param userId - ユーザーID
+   * @param providerName - プロバイダー名（デフォルト: 'google'）
+   * @returns 有効なアクセストークン
+   * @throws UnauthorizedException - 認証情報が見つからない場合
+   */
+  async getValidAccessToken(
+    userId: bigint,
+    providerName: string = 'google',
+  ): Promise<string> {
+    const oauthAccount = await this.db.query.oauthAccounts.findFirst({
+      where: and(
+        eq(oauthAccounts.user_id, userId),
+        eq(oauthAccounts.provider_name, providerName),
+      ),
+    });
+
+    if (!oauthAccount?.access_token) {
+      throw new InternalServerErrorException('認証情報が見つかりません');
+    }
+
+    // トークンが期限切れまたは5分以内に期限切れの場合はリフレッシュ
+    if (
+      oauthAccount.access_token_expires_at &&
+      this.isTokenExpiringSoon(oauthAccount.access_token_expires_at)
+    ) {
+      const newToken = await this.refreshAccessToken(userId, providerName);
+      return newToken.access_token;
+    }
+
+    return oauthAccount.access_token;
+  }
 }

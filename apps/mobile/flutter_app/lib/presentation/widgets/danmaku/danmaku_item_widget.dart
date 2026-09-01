@@ -13,6 +13,7 @@ class DanmakuItemWidget extends StatefulWidget {
   final double globalOpacity;
   final double globalSpeedRate;
   final double currentTime;
+  final bool isPaused;
   final VoidCallback onRemove;
 
   const DanmakuItemWidget({
@@ -25,6 +26,7 @@ class DanmakuItemWidget extends StatefulWidget {
     required this.globalOpacity,
     required this.globalSpeedRate,
     required this.currentTime,
+    required this.isPaused,
     required this.onRemove,
   }) : super(key: key);
 
@@ -38,11 +40,13 @@ class _DanmakuItemWidgetState extends State<DanmakuItemWidget>
   late AnimationController _animationController;
   late Animation<double> _animation;
   double _estimatedTextWidth = 0;
+  late bool _lastIsPaused;
 
   @override
   void initState() {
     super.initState();
     _estimateTextWidth();
+    _lastIsPaused = widget.isPaused;
 
     // AnimationController を作成（表示時間で動く）
     _animationController = AnimationController(
@@ -57,12 +61,14 @@ class _DanmakuItemWidgetState extends State<DanmakuItemWidget>
     // animation を作成（0 -> 1）
     _animation = Tween<double>(begin: 0, end: 1).animate(_animationController);
 
-    // animation が完了したら削除
-    _animationController.forward().then((_) {
-      if (mounted) {
-        widget.onRemove();
-      }
-    });
+    // 初期状態が一時停止の場合は start しない
+    if (!widget.isPaused) {
+      _animationController.forward().then((_) {
+        if (mounted) {
+          widget.onRemove();
+        }
+      });
+    }
   }
 
   @override

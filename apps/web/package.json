@@ -13,7 +13,9 @@
     "axios": "^1.6.0",
     "next": "16.3.3",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "date-fns": "^4.1.0",
+    "dplayer": "https://github.com/tsukumijima/DPlayer.git#v1.32.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

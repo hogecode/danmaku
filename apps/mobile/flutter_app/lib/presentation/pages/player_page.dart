@@ -35,7 +35,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
     super.initState();
     _videoViewKey = GlobalKey<VideoViewState>();
     
-    // レンダリング後に弾幕を取得する
+    // レンダリング後に弾幕を取得すめE
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchDanmaku();
     });
@@ -86,7 +86,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
     );
   }
 
-/// ビデオビューを構築
+/// ビデオビューを構篁E
   Widget _buildVideoView() {
     return VideoView(
       key: _videoViewKey,
@@ -100,7 +100,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
     );
   }
 
-/// ダンマクレイヤーを構築
+/// ダンマクレイヤーを構篁E
   Widget _buildDanmakuLayer(double opacity, double speedRate, PlayerEntity playerState) {
     return Positioned(
       top: 0,
@@ -112,6 +112,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
           currentTime: playerState.currentTime.inMilliseconds / 1000.0,
           globalOpacity: opacity,
           globalSpeedRate: speedRate,
+           isPaused: playerState.isPaused,
         ),
       ),
     );
