@@ -23,7 +23,7 @@ Google Drive ビデオプレイヤー + リアルタイムコメント表示
 ---
 
 
-## Mobile (apps/mobile/flutter_app/) - Flutter
+## Mobile (apps/mobile/mobile/) - Flutter
 
 
 ### クリーンアーキテクチャ

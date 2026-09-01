@@ -7,4 +7,4 @@ generate-api-client: ## Axios TypeScriptクライアント生成
 
 
 run-mobile: ## Flutterアプリを起動する
-	cd apps/mobile/flutter_app && flutter run -d chrome
+	cd apps/mobile/mobile && flutter run -d chrome

@@ -1,0 +1,1766 @@
+[
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "argparse",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "argparse",
+        "description": "argparse",
+        "detail": "argparse",
+        "documentation": {}
+    },
+    {
+        "label": "asyncio",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "asyncio",
+        "description": "asyncio",
+        "detail": "asyncio",
+        "documentation": {}
+    },
+    {
+        "label": "collections",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "collections",
+        "description": "collections",
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "getpass",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "getpass",
+        "description": "getpass",
+        "detail": "getpass",
+        "documentation": {}
+    },
+    {
+        "label": "logging",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "logging",
+        "description": "logging",
+        "detail": "logging",
+        "documentation": {}
+    },
+    {
+        "label": "math",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "math",
+        "description": "math",
+        "detail": "math",
+        "documentation": {}
+    },
+    {
+        "label": "mimetypes",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "mimetypes",
+        "description": "mimetypes",
+        "detail": "mimetypes",
+        "documentation": {}
+    },
+    {
+        "label": "netrc",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "netrc",
+        "description": "netrc",
+        "detail": "netrc",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "random",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "random",
+        "description": "random",
+        "detail": "random",
+        "documentation": {}
+    },
+    {
+        "label": "copy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "copy",
+        "description": "copy",
+        "detail": "copy",
+        "documentation": {}
+    },
+    {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
+        "documentation": {}
+    },
+    {
+        "label": "shutil",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "shutil",
+        "description": "shutil",
+        "detail": "shutil",
+        "documentation": {}
+    },
+    {
+        "label": "string",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "string",
+        "description": "string",
+        "detail": "string",
+        "documentation": {}
+    },
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "threading",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "threading",
+        "description": "threading",
+        "detail": "threading",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "xml.dom.minidom",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "xml.dom.minidom",
+        "description": "xml.dom.minidom",
+        "detail": "xml.dom.minidom",
+        "documentation": {}
+    },
+    {
+        "label": "AnyStr",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Match",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "timezone",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "aiohttp",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "aiohttp",
+        "description": "aiohttp",
+        "detail": "aiohttp",
+        "documentation": {}
+    },
+    {
+        "label": "requests",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "requests",
+        "description": "requests",
+        "detail": "requests",
+        "documentation": {}
+    },
+    {
+        "label": "ProxyConnector",
+        "importPath": "aiohttp_socks",
+        "description": "aiohttp_socks",
+        "isExtraImport": true,
+        "detail": "aiohttp_socks",
+        "documentation": {}
+    },
+    {
+        "label": "BeautifulSoup",
+        "importPath": "bs4",
+        "description": "bs4",
+        "isExtraImport": true,
+        "detail": "bs4",
+        "documentation": {}
+    },
+    {
+        "label": "MP4",
+        "importPath": "mutagen.mp4",
+        "description": "mutagen.mp4",
+        "isExtraImport": true,
+        "detail": "mutagen.mp4",
+        "documentation": {}
+    },
+    {
+        "label": "MP4StreamInfoError",
+        "importPath": "mutagen.mp4",
+        "description": "mutagen.mp4",
+        "isExtraImport": true,
+        "detail": "mutagen.mp4",
+        "documentation": {}
+    },
+    {
+        "label": "HTTPAdapter",
+        "importPath": "requests.adapters",
+        "description": "requests.adapters",
+        "isExtraImport": true,
+        "detail": "requests.adapters",
+        "documentation": {}
+    },
+    {
+        "label": "add_dict_to_cookiejar",
+        "importPath": "requests.utils",
+        "description": "requests.utils",
+        "isExtraImport": true,
+        "detail": "requests.utils",
+        "documentation": {}
+    },
+    {
+        "label": "Progress",
+        "importPath": "rich.progress",
+        "description": "rich.progress",
+        "isExtraImport": true,
+        "detail": "rich.progress",
+        "documentation": {}
+    },
+    {
+        "label": "TextColumn",
+        "importPath": "rich.progress",
+        "description": "rich.progress",
+        "isExtraImport": true,
+        "detail": "rich.progress",
+        "documentation": {}
+    },
+    {
+        "label": "BarColumn",
+        "importPath": "rich.progress",
+        "description": "rich.progress",
+        "isExtraImport": true,
+        "detail": "rich.progress",
+        "documentation": {}
+    },
+    {
+        "label": "TaskProgressColumn",
+        "importPath": "rich.progress",
+        "description": "rich.progress",
+        "isExtraImport": true,
+        "detail": "rich.progress",
+        "documentation": {}
+    },
+    {
+        "label": "TimeRemainingColumn",
+        "importPath": "rich.progress",
+        "description": "rich.progress",
+        "isExtraImport": true,
+        "detail": "rich.progress",
+        "documentation": {}
+    },
+    {
+        "label": "Retry",
+        "importPath": "urllib3.util",
+        "description": "urllib3.util",
+        "isExtraImport": true,
+        "detail": "urllib3.util",
+        "documentation": {}
+    },
+    {
+        "label": "urlparse",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
+        "label": "_Known",
+        "kind": 6,
+        "importPath": "apps.web.node_modules.flatted.python.flatted",
+        "description": "apps.web.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _Known:\n    def __init__(self):\n        self.key = []\n        self.value = []\nclass _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    for i in range(len(value)):\n        yield i",
+        "detail": "apps.web.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "_String",
+        "kind": 6,
+        "importPath": "apps.web.node_modules.flatted.python.flatted",
+        "description": "apps.web.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    for i in range(len(value)):\n        yield i\ndef _object_keys(value):\n    for key in value:\n        yield key\ndef _is_array(value):",
+        "detail": "apps.web.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "parse",
+        "kind": 2,
+        "importPath": "apps.web.node_modules.flatted.python.flatted",
+        "description": "apps.web.node_modules.flatted.python.flatted",
+        "peekOfCode": "def parse(value, *args, **kwargs):\n    json = _json.loads(value, *args, **kwargs)\n    wrapped = []\n    for value in json:\n        wrapped.append(_wrap(value))\n    input = []\n    for value in wrapped:\n        if isinstance(value, _String):\n            input.append(value.value)\n        else:",
+        "detail": "apps.web.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "stringify",
+        "kind": 2,
+        "importPath": "apps.web.node_modules.flatted.python.flatted",
+        "description": "apps.web.node_modules.flatted.python.flatted",
+        "peekOfCode": "def stringify(value, *args, **kwargs):\n    known = _Known()\n    input = []\n    output = []\n    i = int(_index(known, input, value))\n    while i < len(input):\n        output.append(_transform(known, input, input[i]))\n        i += 1\n    return _json.dumps(output, *args, **kwargs)",
+        "detail": "apps.web.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "_Known",
+        "kind": 6,
+        "importPath": "server.node_modules.flatted.python.flatted",
+        "description": "server.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _Known:\n    def __init__(self):\n        self.key = []\n        self.value = []\nclass _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    for i in range(len(value)):\n        yield i",
+        "detail": "server.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "_String",
+        "kind": 6,
+        "importPath": "server.node_modules.flatted.python.flatted",
+        "description": "server.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    for i in range(len(value)):\n        yield i\ndef _object_keys(value):\n    for key in value:\n        yield key\ndef _is_array(value):",
+        "detail": "server.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "parse",
+        "kind": 2,
+        "importPath": "server.node_modules.flatted.python.flatted",
+        "description": "server.node_modules.flatted.python.flatted",
+        "peekOfCode": "def parse(value, *args, **kwargs):\n    json = _json.loads(value, *args, **kwargs)\n    wrapped = []\n    for value in json:\n        wrapped.append(_wrap(value))\n    input = []\n    for value in wrapped:\n        if isinstance(value, _String):\n            input.append(value.value)\n        else:",
+        "detail": "server.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "stringify",
+        "kind": 2,
+        "importPath": "server.node_modules.flatted.python.flatted",
+        "description": "server.node_modules.flatted.python.flatted",
+        "peekOfCode": "def stringify(value, *args, **kwargs):\n    known = _Known()\n    input = []\n    output = []\n    i = int(_index(known, input, value))\n    while i < len(input):\n        output.append(_transform(known, input, input[i]))\n        i += 1\n    return _json.dumps(output, *args, **kwargs)",
+        "detail": "server.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "CommentsFromAction",
+        "kind": 6,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "class CommentsFromAction(argparse.Action):\n    \"\"\"Store both the raw comments date value and its parsed timestamp.\"\"\"\n    def __call__(self, parser, namespace, values, option_string=None):\n        setattr(namespace, self.dest, parse_datetime_to_timestamp(values))\n        setattr(namespace, f\"{self.dest}_raw\", values)\nCMDL_USAGE = \"%(prog)s [options] input\"\nCMDL_VERSION = __version__\ncmdl_parser = argparse.ArgumentParser(usage=CMDL_USAGE, conflict_handler=\"resolve\", formatter_class=argparse.RawTextHelpFormatter)\ncmdl_parser.set_defaults(comments_from_raw=None)\ncmdl_parser.add_argument(\"-u\", \"--username\", dest=\"username\", metavar=\"EMAIL/TEL\",",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "AuthenticationException",
+        "kind": 6,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "class AuthenticationException(Exception):\n    \"\"\"Raised when logging in to Niconico failed.\"\"\"\nclass ArgumentException(Exception):\n    \"\"\"Raised when reading the argument failed.\"\"\"\nclass FormatNotSupportedException(Exception):\n    \"\"\"Raised when the response format is not supported.\"\"\"\nclass FormatNotAvailableException(Exception):\n    \"\"\"Raised when the requested format is not available.\"\"\"\nclass ParameterExtractionException(Exception):\n    \"\"\"Raised when parameters could not be successfully extracted.\"\"\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "ArgumentException",
+        "kind": 6,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "class ArgumentException(Exception):\n    \"\"\"Raised when reading the argument failed.\"\"\"\nclass FormatNotSupportedException(Exception):\n    \"\"\"Raised when the response format is not supported.\"\"\"\nclass FormatNotAvailableException(Exception):\n    \"\"\"Raised when the requested format is not available.\"\"\"\nclass ParameterExtractionException(Exception):\n    \"\"\"Raised when parameters could not be successfully extracted.\"\"\"\nclass ExistingDownloadEncounteredQuit(Exception):\n    \"\"\"Raised when an existing and complete download is encountered.\"\"\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "FormatNotSupportedException",
+        "kind": 6,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "class FormatNotSupportedException(Exception):\n    \"\"\"Raised when the response format is not supported.\"\"\"\nclass FormatNotAvailableException(Exception):\n    \"\"\"Raised when the requested format is not available.\"\"\"\nclass ParameterExtractionException(Exception):\n    \"\"\"Raised when parameters could not be successfully extracted.\"\"\"\nclass ExistingDownloadEncounteredQuit(Exception):\n    \"\"\"Raised when an existing and complete download is encountered.\"\"\"\nclass ListQualitiesQuit(Exception):\n    \"\"\"Raised when listing available qualities for a video.\"\"\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "FormatNotAvailableException",
+        "kind": 6,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "class FormatNotAvailableException(Exception):\n    \"\"\"Raised when the requested format is not available.\"\"\"\nclass ParameterExtractionException(Exception):\n    \"\"\"Raised when parameters could not be successfully extracted.\"\"\"\nclass ExistingDownloadEncounteredQuit(Exception):\n    \"\"\"Raised when an existing and complete download is encountered.\"\"\"\nclass ListQualitiesQuit(Exception):\n    \"\"\"Raised when listing available qualities for a video.\"\"\"\n## Utility methods\ndef configure_logger():",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "ParameterExtractionException",
+        "kind": 6,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "class ParameterExtractionException(Exception):\n    \"\"\"Raised when parameters could not be successfully extracted.\"\"\"\nclass ExistingDownloadEncounteredQuit(Exception):\n    \"\"\"Raised when an existing and complete download is encountered.\"\"\"\nclass ListQualitiesQuit(Exception):\n    \"\"\"Raised when listing available qualities for a video.\"\"\"\n## Utility methods\ndef configure_logger():\n    \"\"\"Initialize logger.\"\"\"\n    if _CMDL_OPTS.log:",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "ExistingDownloadEncounteredQuit",
+        "kind": 6,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "class ExistingDownloadEncounteredQuit(Exception):\n    \"\"\"Raised when an existing and complete download is encountered.\"\"\"\nclass ListQualitiesQuit(Exception):\n    \"\"\"Raised when listing available qualities for a video.\"\"\"\n## Utility methods\ndef configure_logger():\n    \"\"\"Initialize logger.\"\"\"\n    if _CMDL_OPTS.log:\n        logger.setLevel(logging.INFO)\n        log_handler = logging.FileHandler(_CMDL_OPTS.log, encoding=\"utf-8\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "ListQualitiesQuit",
+        "kind": 6,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "class ListQualitiesQuit(Exception):\n    \"\"\"Raised when listing available qualities for a video.\"\"\"\n## Utility methods\ndef configure_logger():\n    \"\"\"Initialize logger.\"\"\"\n    if _CMDL_OPTS.log:\n        logger.setLevel(logging.INFO)\n        log_handler = logging.FileHandler(_CMDL_OPTS.log, encoding=\"utf-8\")\n        formatter = logging.Formatter(\"%(asctime)s %(levelname)s: %(message)s\")\n        log_handler.setFormatter(formatter)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "parse_datetime_to_timestamp",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def parse_datetime_to_timestamp(value) -> int:\n    \"\"\"\n    Parse either ISO 8601 datetime or Unix timestamp, returning Unix timestamp.\n    Validates date is between 2007-03-03 and today.\n    For ISO dates without time, defaults to 23:59:59 of that day.\n    \"\"\"\n    try:\n        # First try to parse as Unix timestamp\n        timestamp = float(value)\n        dt = datetime.fromtimestamp(timestamp, timezone.utc)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "configure_logger",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def configure_logger():\n    \"\"\"Initialize logger.\"\"\"\n    if _CMDL_OPTS.log:\n        logger.setLevel(logging.INFO)\n        log_handler = logging.FileHandler(_CMDL_OPTS.log, encoding=\"utf-8\")\n        formatter = logging.Formatter(\"%(asctime)s %(levelname)s: %(message)s\")\n        log_handler.setFormatter(formatter)\n        logger.addHandler(log_handler)\ndef log_exception(error: Exception):\n    \"\"\"Process exception for logger.\"\"\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "log_exception",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def log_exception(error: Exception):\n    \"\"\"Process exception for logger.\"\"\"\n    if _CMDL_OPTS.log:\n        sys.stdout.write(\"{0}: {1}\\n\".format(type(error).__name__, str(error)))\n        sys.stdout.flush()\n        logger.exception(\"An exception was encountered:\\n\")\n    else:\n        output(\"{0}: {1}\\n\".format(type(error).__name__, str(error)), logging.ERROR, force=True)\ndef output(out_str: AnyStr, level=logging.INFO, force: bool = False):\n    \"\"\"Print status to console unless quiet flag is set.\"\"\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "output",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def output(out_str: AnyStr, level=logging.INFO, force: bool = False):\n    \"\"\"Print status to console unless quiet flag is set.\"\"\"\n    global _CMDL_OPTS\n    if _CMDL_OPTS.log:\n        logger.log(level, out_str.strip(\"\\n\"))\n    if not _CMDL_OPTS.quiet or force:\n        sys.stdout.write(out_str)\n        sys.stdout.flush()\ndef format_value(value: int, custom_type: str = \"B\", use_bits: bool = False):\n    \"\"\"Attach suffix (e.g. 10 T) to number of bytes.\"\"\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "format_value",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def format_value(value: int, custom_type: str = \"B\", use_bits: bool = False):\n    \"\"\"Attach suffix (e.g. 10 T) to number of bytes.\"\"\"\n    base = KILOBIT if use_bits else KILOBYTE\n    try:\n        exponent = int(math.log(value, base))\n        suffix = \"\\0KMGTPE\"[exponent]\n        suffix = suffix.lower() if use_bits else suffix\n        if exponent == 0:\n            return \"{0}{1}\".format(value, suffix)\n        converted = float(value / base ** exponent)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "calculate_speed",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def calculate_speed(start, now, prog_bytes):\n    \"\"\"Calculate speed based on difference between start and current block call.\"\"\"\n    dif = now - start\n    if prog_bytes == 0 or dif < EPSILON:\n        return \"N/A B\"\n    return format_value(prog_bytes / dif)\ndef replace_extension(filename: AnyStr, new_extension: AnyStr):\n    \"\"\"Replace the extension in a file path.\"\"\"\n    base_path, _ = os.path.splitext(filename)\n    return \"{0}.{1}\".format(base_path, new_extension)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "replace_extension",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def replace_extension(filename: AnyStr, new_extension: AnyStr):\n    \"\"\"Replace the extension in a file path.\"\"\"\n    base_path, _ = os.path.splitext(filename)\n    return \"{0}.{1}\".format(base_path, new_extension)\ndef sanitize_for_path(value: AnyStr, replace: AnyStr = ' '):\n    \"\"\"Remove potentially illegal characters and path traversal sequences.\"\"\"\n    # Illegal characters\n    sanitized = re.sub(r'[<>\\\"\\?\\\\/\\*:|]', replace, value).strip()\n    # Specially handle `.` and `..` to prevent path traversal\n    path_sanitized = re.sub(r'^\\.{1,2}$', \"_\", sanitized)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "sanitize_for_path",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def sanitize_for_path(value: AnyStr, replace: AnyStr = ' '):\n    \"\"\"Remove potentially illegal characters and path traversal sequences.\"\"\"\n    # Illegal characters\n    sanitized = re.sub(r'[<>\\\"\\?\\\\/\\*:|]', replace, value).strip()\n    # Specially handle `.` and `..` to prevent path traversal\n    path_sanitized = re.sub(r'^\\.{1,2}$', \"_\", sanitized)\n    return path_sanitized\ndef create_filename(template_params: dict, is_comic: bool = False):\n    \"\"\"Create filename from document parameters.\"\"\"\n    filename_template = _CMDL_OPTS.output_path",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "create_filename",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def create_filename(template_params: dict, is_comic: bool = False):\n    \"\"\"Create filename from document parameters.\"\"\"\n    filename_template = _CMDL_OPTS.output_path\n    if filename_template:\n        template_dict = dict(template_params)\n        template_dict = dict((k, sanitize_for_path(str(v))) for k, v in template_dict.items() if v)\n        template_dict = collections.defaultdict(lambda: \"__NONE__\", template_dict)\n        filename = filename_template.format_map(template_dict).strip()\n        filename = os.path.expanduser(filename)\n        if is_comic:",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "read_file",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def read_file(session: requests.Session, file: AnyStr):\n    \"\"\"Read file and process each line as a URL.\"\"\"\n    with open(file) as file:\n        content = file.readlines()\n    total_lines = len(content)\n    for index, line in enumerate(content):\n        try:\n            output(\"{0}/{1}\\n\".format(index + 1, total_lines), logging.INFO)\n            url_mo = VALID_URL_RE.match(line)\n            if url_mo is None:",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_media_from_manifest",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def get_media_from_manifest(manifest_text: AnyStr, media_type: AnyStr) -> AnyStr:\n    \"\"\"Return the first seen media match for a given type from a .m3u8 manifest.\"\"\"\n    media_type = media_type.capitalize()\n    match = M3U8_MEDIA_RE.search(manifest_text)\n    if not match:\n        raise FormatNotAvailableException(\"Could not retrieve media playlist from manifest\")\n    media_url = match[2]\n    return media_url\ndef get_stream_from_manifest(manifest_text: AnyStr) -> AnyStr:\n    \"\"\"Return the highest quality stream from a .m3u8 manifest.\"\"\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_stream_from_manifest",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def get_stream_from_manifest(manifest_text: AnyStr) -> AnyStr:\n    \"\"\"Return the highest quality stream from a .m3u8 manifest.\"\"\"\n    best_bandwidth, best_stream = -1, None\n    matches = M3U8_STREAM_RE.findall(manifest_text)\n    if not matches:\n        raise FormatNotAvailableException(\"Could not retrieve stream playlist from manifest\")\n    else:\n        for match in matches:\n            stream_bandwidth = int(match[0])\n            if stream_bandwidth > best_bandwidth:",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "find_extension",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def find_extension(mimetype: AnyStr) -> AnyStr:\n    \"\"\"Determine the file extension from the mimetype.\"\"\"\n    return MIMETYPES.get(mimetype) or mimetypes.guess_extension(mimetype, strict=True)\ndef generic_dl_request(session: requests.Session, uri: AnyStr, filename: AnyStr, binary: bool=False):\n    \"\"\"Generic request to download and write to file.\"\"\"\n    request = session.get(uri)\n    request.raise_for_status()\n    request_body = request.content if binary else request.text\n    mode = \"wb\" if binary else \"w\"\n    with open(filename, mode) as file:",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "generic_dl_request",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def generic_dl_request(session: requests.Session, uri: AnyStr, filename: AnyStr, binary: bool=False):\n    \"\"\"Generic request to download and write to file.\"\"\"\n    request = session.get(uri)\n    request.raise_for_status()\n    request_body = request.content if binary else request.text\n    mode = \"wb\" if binary else \"w\"\n    with open(filename, mode) as file:\n        file.write(request_body)\n    return request_body\ndef rewrite_file(filename: AnyStr, old_str: AnyStr, new_str: AnyStr):",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "rewrite_file",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def rewrite_file(filename: AnyStr, old_str: AnyStr, new_str: AnyStr):\n    \"\"\"Replace a string in a text file.\"\"\"\n    with open(filename, \"r+\", encoding=\"utf-8\") as file:\n        raw = file.read()\n        new = raw.replace(old_str, new_str)\n        file.seek(0)\n        file.write(new)\n        file.truncate()\n## Nama methods\ndef generate_stream(session: requests.Session, master_url: AnyStr) -> AnyStr:",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "generate_stream",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def generate_stream(session: requests.Session, master_url: AnyStr) -> AnyStr:\n    \"\"\"Output the highest quality stream URL for a live Niconama broadcast.\"\"\"\n    output(\"Retrieving master playlist...\\n\", logging.INFO)\n    m3u8_request = session.get(master_url)\n    m3u8_request.raise_for_status()\n    output(\"Retrieved master playlist.\\n\", logging.INFO)\n    playlist_slug = get_stream_from_manifest(m3u8_request.text)\n    stream_url = master_url.rsplit(\"/\", maxsplit=1)[0] + \"/\" + playlist_slug\n    return stream_url\nasync def download_stream_clips(session: requests.Session, stream_url: AnyStr):",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "reserve_timeshift",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def reserve_timeshift(session: requests.Session, nama_id: AnyStr) -> AnyStr:\n    \"\"\"Attempt to reserve a timeshift and generate a WebSocket URL.\"\"\"\n    timeshift_data = {\"vid\": nama_id.lstrip(\"lv\")}\n    timeshift_use_request = session.post(TIMESHIFT_USE_URL, headers=NAMA_ORIGIN_HEADER, data=timeshift_data)\n    if timeshift_use_request.status_code == 403:\n        timeshift_data[\"overwrite\"] = \"0\"\n        timeshift_reservation_request = session.post(TIMESHIFT_RESERVE_URL, headers=NAMA_ORIGIN_HEADER,\n                                                     data=timeshift_data)\n        timeshift_reservation_request.raise_for_status()\n    nama_request = session.get(NAMA_URL.format(nama_id))",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_nama",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_nama(session: requests.Session, nama_id: AnyStr):\n    \"\"\"Generate a stream URL for a live Niconama broadcast.\"\"\"\n    nama_request = session.get(NAMA_URL.format(nama_id))\n    nama_request.raise_for_status()\n    nama_document = BeautifulSoup(nama_request.text, \"html.parser\")\n    if nama_document.find(id=\"embedded-data\"):\n        params = json.loads(nama_document.find(id=\"embedded-data\")[\"data-props\"])\n        rejection_errors = params[\"userProgramWatch\"][\"rejectedReasons\"]\n        if rejection_errors:\n            raise ParameterExtractionException(f\"Stream not available to user with the following errors given: {rejection_errors}\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "decrypt_seiga_drm",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def decrypt_seiga_drm(enc_bytes, key):\n    \"\"\"Decrypt the light DRM applied to certain Seiga images.\"\"\"\n    n = []\n    a = 8\n    for i in range(a):\n        start = 2 * i\n        value = int(key[start:start + 2], 16)\n        n.append(value)\n    dec_bytes = bytearray(enc_bytes)\n    for i in range(len(enc_bytes)):",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "determine_seiga_file_type",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def determine_seiga_file_type(dec_bytes):\n    \"\"\"Determine the image file type from a bytes array using magic numbers.\"\"\"\n    if 255 == dec_bytes[0] and 216 == dec_bytes[1] and 255 == dec_bytes[len(dec_bytes) - 2] and 217 == dec_bytes[len(dec_bytes) - 1]:\n        return \"jpg\"\n    elif 137 == dec_bytes[0] and 80 == dec_bytes[1] and 78 == dec_bytes[2] and 71 == dec_bytes[3]:\n        return \"png\"\n    elif 71 == dec_bytes[0] and 73 == dec_bytes[1] and 70 == dec_bytes[2] and 6 == dec_bytes[3]:\n        return \"gif\"\n    else:\n        raise FormatNotSupportedException(\"Could not determine image file type\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "collect_seiga_image_parameters",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def collect_seiga_image_parameters(session: requests.Session, document: BeautifulSoup, template_params: dict) -> dict:\n    \"\"\"Extract template parameters from a Seiga image page.\"\"\"\n    template_params[\"id\"] = document.select_one(\"#clip_group_list\")[\"data-target_id\"]\n    template_params[\"title\"] = document.select_one(\"h1.title\").text\n    template_params[\"description\"] = document.select_one(\"p.discription\").text\n    template_params[\"published\"] = document.select_one(\"span.created\").text\n    template_params[\"uploader\"] = document.select_one(\"li.user_name strong\").text\n    template_params[\"uploader_id\"] = int(document.select_one(\"li.user_link a\")[\"href\"].replace(\"/user/illust/\", \"\"))\n    template_params[\"view_count\"] = int(document.select_one(\"li.view span.count_value\").text)\n    template_params[\"comment_count\"] = int(document.select_one(\"li.comment span.count_value\").text)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "collect_seiga_manga_parameters",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def collect_seiga_manga_parameters(session, document, template_params):\n    \"\"\"Extract template parameters from a Seiga manga chapter page.\"\"\"\n    bare_chapter_id = document.select_one(\"#full_watch_head_bar\")[\"data-theme-id\"]\n    template_params[\"manga_id\"] = int(document.select_one(\"#full_watch_head_bar\")[\"data-content-id\"])\n    template_params[\"manga_title\"] = document.select_one(\"div.manga_title a\").text\n    template_params[\"id\"] = \"mg\" + bare_chapter_id\n    template_params[\"page_count\"] = int(document.select_one(\"#full_watch_head_bar\")[\"data-page-count\"])\n    template_params[\"title\"] = document.select_one(\"span.episode_title\").text\n    template_params[\"published\"] = document.select_one(\"span.created\").text\n    template_params[\"description\"] = document.select_one(\"div.description .full\").text",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "download_manga_chapter",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def download_manga_chapter(session, chapter_id):\n    \"\"\"Download the requested chapter for a Seiga manga.\"\"\"\n    chapter_request = session.get(SEIGA_CHAPTER_URL.format(chapter_id))\n    chapter_request.raise_for_status()\n    chapter_document = BeautifulSoup(chapter_request.text, \"html.parser\")\n    template_params = {}\n    template_params = collect_seiga_manga_parameters(session, chapter_document, template_params)\n    chapter_directory = create_filename(template_params, is_comic=True)\n    if not _CMDL_OPTS.skip_media:\n        output(\"Downloading {0} to \\\"{1}\\\"...\\n\".format(chapter_id, chapter_directory), logging.INFO)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "download_manga",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def download_manga(session, manga_id):\n    \"\"\"Download all chapters for a requested Seiga manga.\"\"\"\n    output(\"Downloading comic {0}...\\n\".format(manga_id), logging.INFO)\n    manga_request = session.get(SEIGA_MANGA_URL.format(manga_id))\n    manga_request.raise_for_status()\n    manga_document = BeautifulSoup(manga_request.text, \"html.parser\")\n    chapters = manga_document.select(\"div.episode .title a\")\n    for index, chapter in enumerate(chapters):\n        chapter_id = chapter[\"href\"].lstrip(\"/watch/\").split(\"?\")[0]\n        output(\"{0}/{1}\\n\".format(index + 1, len(chapters)), logging.INFO)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "download_image",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def download_image(session, image_id):\n    \"\"\"Download an individual Seiga image.\"\"\"\n    seiga_image_request = session.get(SEIGA_IMAGE_URL.format(image_id))\n    seiga_image_request.raise_for_status()\n    seiga_image_document = BeautifulSoup(seiga_image_request.text, \"html.parser\")\n    template_params = {}\n    template_params = collect_seiga_image_parameters(session, seiga_image_document, template_params)\n    filename = create_filename(template_params)\n    if not _CMDL_OPTS.skip_media:\n        output(\"Downloading {0} to \\\"{1}\\\"...\\n\".format(image_id, filename), logging.INFO)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_seiga_user",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_seiga_user(session, user_id):\n    \"\"\"Request images associated with a Seiga user.\"\"\"\n    output(\"Downloading images from Seiga user {0}...\\n\".format(user_id), logging.INFO)\n    page_counter = 1\n    illust_ids = []\n    # Dumb loop, process pages until we reach a page with no images\n    while True:\n        user_illust_request = session.get(SEIGA_USER_ILLUST_URL.format(user_id, page_counter))\n        user_illust_request.raise_for_status()\n        user_illust_document = BeautifulSoup(user_illust_request.text, \"html.parser\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_seiga_user_manga",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_seiga_user_manga(session, user_id):\n    \"\"\"Request manga associated with a Seiga user.\"\"\"\n    output(\"Downloading manga from Seiga user {0}...\\n\".format(user_id), logging.INFO)\n    page_counter = 1\n    manga_ids = []\n    # Dumb loop, process pages until we reach a page with no images\n    while True:\n        user_manga_request = session.get(SEIGA_USER_MANGA_URL.format(user_id, page_counter))\n        user_manga_request.raise_for_status()\n        user_manga_document = BeautifulSoup(user_manga_request.text, \"html.parser\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "download_channel_article",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def download_channel_article(session: requests.Session, article_id: AnyStr):\n    \"\"\"Download a blog article.\"\"\"\n    article_request = session.get(CHANNEL_ARTICLE_URL.format(article_id))\n    article_request.raise_for_status()\n    article_document = BeautifulSoup(article_request.text, \"html.parser\")\n    template_params = {\n        \"ext\": \"txt\",\n        \"id\": article_id,\n        \"blog_title\": article_document.select_one(\".blomaga_name\").text,\n        \"uploader\": article_document.select_one(\".profileArea span.name\").text",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_channel",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_channel(session: requests.Session, channel_slug: AnyStr):\n    \"\"\"Request videos associated with a channel.\"\"\"\n    output(\"Requesting videos from channel {0}...\\n\".format(channel_slug), logging.INFO)\n    page_counter = 1\n    video_ids = []\n    # Dumb loop, process pages until we reach a page with no videos\n    while True:\n        channel_videos_request = session.get(CHANNEL_VIDEOS_URL.format(channel_slug, page_counter))\n        channel_videos_request.raise_for_status()\n        channel_videos_document = BeautifulSoup(channel_videos_request.text, \"html.parser\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_channel_blog",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_channel_blog(session: requests.Session, channel_slug: AnyStr):\n    \"\"\"Request articles associated with a channel blog.\"\"\"\n    blog_request = session.get(CHANNEL_BLOMAGA_URL.format(channel_slug, 1))\n    blog_request.raise_for_status()\n    blog_document = BeautifulSoup(blog_request.text, \"html.parser\")\n    total_pages = int(blog_document.select_one(\"span.page_all\").text)\n    for page in range(1, total_pages + 1):\n        output(\"Page {0}/{1}\\n\".format(page, total_pages), logging.INFO)\n        blog_request = session.get(CHANNEL_BLOMAGA_URL.format(channel_slug, page))\n        blog_request.raise_for_status()",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_channel_lives",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_channel_lives(session: requests.Session, channel_id: AnyStr):\n    \"\"\"Request lives associated with a channel.\"\"\"\n    output(\"Downloading channel lives is not currently supported.\\n\", logging.WARNING)\n## Video methods\ndef request_video(session: requests.Session, video_id: AnyStr):\n    \"\"\"Request the video page and initiate download of the video URL.\"\"\"\n    # Retrieve video info to check for availability\n    # Preserved as a sanity check, previously used to check video type\n    thumb_info_request = session.get(THUMB_INFO_API.format(video_id))\n    thumb_info_request.raise_for_status()",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_video",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_video(session: requests.Session, video_id: AnyStr):\n    \"\"\"Request the video page and initiate download of the video URL.\"\"\"\n    # Retrieve video info to check for availability\n    # Preserved as a sanity check, previously used to check video type\n    thumb_info_request = session.get(THUMB_INFO_API.format(video_id))\n    thumb_info_request.raise_for_status()\n    video_info = xml.dom.minidom.parseString(thumb_info_request.text)\n    if video_info.firstChild.getAttribute(\"status\") != \"ok\":\n        video_error_code = video_info.getElementsByTagName(\"error\")[0].getElementsByTagName(\"code\")[0].firstChild.nodeValue\n        if video_error_code == \"DELETED\":",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_user",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_user(session: requests.Session, user_id: AnyStr):\n    \"\"\"Request videos associated with a user.\"\"\"\n    is_authed_user = True if user_id == \"me\" else False\n    if not is_authed_user:\n        output(\"Requesting videos from user {0}...\\n\".format(user_id), logging.INFO)\n    else:\n        output(\"Requesting videos from logged in user...\\n\", logging.INFO)\n    video_ids = []\n    session.options(USER_VIDEOS_API.format(user_id, USER_VIDEOS_API_N, 1), headers=API_HEADERS) # OPTIONS\n    videos_request = session.get(USER_VIDEOS_API.format(user_id, USER_VIDEOS_API_N, 1), headers=API_HEADERS)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_mylist",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_mylist(session: requests.Session, mylist_id: AnyStr, is_authed_user: bool = False):\n    \"\"\"Request videos associated with a mylist.\"\"\"\n    output(\"Requesting mylist {0}...\\n\".format(mylist_id), logging.INFO)\n    active_mylist_api = MYLIST_ME_API if is_authed_user else MYLIST_API\n    session.options(active_mylist_api.format(mylist_id), headers=API_HEADERS) # OPTIONS\n    mylist_request = session.get(active_mylist_api.format(mylist_id), headers=API_HEADERS)\n    mylist_request.raise_for_status()\n    mylist_json = json.loads(mylist_request.text)\n    items = mylist_json[\"data\"][\"mylist\"][\"items\"]\n    if _CMDL_OPTS.playlist_start:",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_user_mylists",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_user_mylists(session: requests.Session, user_id: AnyStr):\n    \"\"\"Request mylists associated with a user.\"\"\"\n    is_authed_user = True if user_id == \"me\" else False\n    if not is_authed_user:\n        output(\"Requesting mylists from user {0}...\\n\".format(user_id), logging.INFO)\n    else:\n        output(\"Requesting mylists from logged in user...\\n\", logging.INFO)\n    mylists_request = session.get(USER_MYLISTS_API.format(user_id), headers=API_HEADERS)\n    mylists_request.raise_for_status()\n    user_mylists_json = json.loads(mylists_request.text)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_series",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_series(session: requests.Session, series_id: AnyStr):\n    \"Request videos associated with a series.\"\n    output(\"Requesting series {0}...\\n\".format(series_id), logging.INFO)\n    session.options(SERIES_API.format(series_id), headers=API_HEADERS) # OPTIONS\n    series_request = session.get(SERIES_API.format(series_id), headers=API_HEADERS)\n    series_request.raise_for_status()\n    mylist_json = json.loads(series_request.text)\n    items = mylist_json[\"data\"][\"items\"]\n    if _CMDL_OPTS.playlist_start:\n        start_index = _CMDL_OPTS.playlist_start",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_user_series",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_user_series(session: requests.Session, user_id: AnyStr):\n    \"\"\"Request series associated with a user.\"\"\"\n    output(\"Requesting series from user {0}...\\n\".format(user_id), logging.INFO)\n    series_request = session.get(USER_SERIES_API.format(user_id), headers=API_HEADERS)\n    series_request.raise_for_status()\n    user_series_json = json.loads(series_request.text)\n    user_series = user_series_json[\"data\"][\"items\"]\n    for index, item in enumerate(user_series):\n        try:\n            output(\"{0}/{1}\\n\".format(index + 1, len(user_series)), logging.INFO)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_user_following",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def request_user_following(session: requests.Session, user_id: AnyStr):\n    \"\"\"Request following users associated with a user and output as a list of URLs.\"\"\"\n    is_authed_user = True if user_id == \"me\" else False\n    if not is_authed_user:\n        output(\"Requesting following users from user {0}...\\n\".format(user_id), logging.INFO)\n    else:\n        output(\"Requesting following users from logged in user...\\n\", logging.INFO)\n    following_request = session.get(USER_FOLLOWING_API.format(user_id), headers=API_HEADERS)\n    following_request.raise_for_status()\n    following_json = json.loads(following_request.text)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "show_multithread_progress",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def show_multithread_progress(video_len):\n    \"\"\"Track overall download progress across threads.\"\"\"\n    global _PROGRESS, _START_TIME\n    finished = False\n    while not finished:\n        if _PROGRESS >= video_len:\n            finished = True\n        done = int(25 * _PROGRESS / video_len)\n        percent = int(100 * _PROGRESS / video_len)\n        speed_str = calculate_speed(_START_TIME, time.time(), _PROGRESS)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "update_multithread_progress",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def update_multithread_progress(bytes_len):\n    \"\"\"Acquire lock on global download progress and update.\"\"\"\n    lock = threading.Lock()\n    lock.acquire()\n    try:\n        global _PROGRESS\n        _PROGRESS += bytes_len\n    finally:\n        lock.release()\ndef download_video_part(session: requests.Session, start, end, filename: AnyStr, url: AnyStr):",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "download_video_part",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def download_video_part(session: requests.Session, start, end, filename: AnyStr, url: AnyStr):\n    \"\"\"Download a video part using specified start and end byte boundaries.\"\"\"\n    resume_header = {\"Range\": \"bytes={0}-{1}\".format(start, end - 1)}\n    dl_stream = session.get(url, headers=resume_header, stream=True)\n    dl_stream.raise_for_status()\n    stream_iterator = dl_stream.iter_content(BLOCK_SIZE)\n    # part_length = end - start\n    current_pos = start\n    with open(filename, \"r+b\") as file:\n        file.seek(current_pos)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "perform_native_hls_dl",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def perform_native_hls_dl(session: requests.Session, filename: AnyStr, duration: float, m3u8_streams: List, threads: int = 1):\n    \"\"\"Download video and audio streams using native HLS downloader and merge using ffmpeg if necessary.\"\"\"\n    output_dir = os.path.dirname(filename)\n    with Progress() as progress:\n        tasks = []\n        for stream, name in m3u8_streams:\n            random_path_string = ''.join(random.choices(string.ascii_letters + string.digits, k=TEMP_PATH_LEN))\n            stream_filename = replace_extension(os.path.join(output_dir, random_path_string), \"ts\")\n            thread = threading.Thread(target=download_hls, args=(stream, stream_filename, name, session, progress, threads))\n            thread.start()",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "download_video_media",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def download_video_media(session: requests.Session, filename: AnyStr, template_params: dict):\n    \"\"\"Download video from response URL and display progress.\"\"\"\n    output(\"Downloading {0} to \\\"{1}\\\"...\\n\".format(template_params[\"id\"], filename), logging.INFO)\n    # If extension was rewritten, presume the download is complete\n    if os.path.exists(filename):\n        output(\"Video exists and appears to have been completed.\\n\", logging.INFO)\n        return False\n    complete_filename = filename\n    filename = replace_extension(filename, f\"part.{template_params['ext']}\")\n    # Dwango Media Service (DMS)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "perform_heartbeat",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def perform_heartbeat(session: requests.Session, heartbeat_url: AnyStr, api_request_el: xml.dom.minidom.Node):\n    \"\"\"Perform a response heartbeat to keep the video download connection alive.\"\"\"\n    heartbeat_response = session.post(heartbeat_url, data=api_request_el.toxml())\n    heartbeat_response.raise_for_status()\n    heartbeat_response_el = xml.dom.minidom.parseString(heartbeat_response.text).getElementsByTagName(\"session\")[0]\n    heartbeat_timer = threading.Timer(DMC_HEARTBEAT_INTERVAL_S, perform_heartbeat, (session, heartbeat_url, heartbeat_response_el)\n    )\n    heartbeat_timer.daemon = True\n    heartbeat_timer.start()\ndef list_qualities(sources_type: str, sources: list, is_dms: bool):",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "list_qualities",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def list_qualities(sources_type: str, sources: list, is_dms: bool):\n    \"\"\"Pretty print the list of available qualities from a provided sources list.\"\"\"\n    output(f\"{sources_type.capitalize()}:\\n\")\n    output(f\"{'ID':<24} | {'Available':<10} | {'Info':<46}\\n\", logging.INFO, force=True)\n    for source in sources:\n        source_id = source[\"id\"]\n        is_available = source[\"isAvailable\"]\n        bit_rate = source[\"bitRate\"] if is_dms else source[\"metadata\"][\"bitrate\"]\n        if sources_type == \"video\":\n            width = source[\"width\"] if is_dms else source[\"metadata\"][\"resolution\"][\"width\"]",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "select_quality",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def select_quality(template_params: dict, template_key: AnyStr, sources: list, quality=\"\") -> List[AnyStr]:\n    \"\"\"Select the specified quality from a sources list on DMC and DMS videos.\"\"\"\n    if quality and _CMDL_OPTS.force_high_quality:\n        output(\"-f/--force-high-quality was set. Ignoring specified quality...\\n\", logging.WARNING)\n    # Assumes qualities are in descending order\n    highest_quality = sources[0]\n    lowest_quality = sources[-1]\n    hq_available = highest_quality[\"isAvailable\"]\n    lq_available = lowest_quality[\"isAvailable\"]\n    # quality = \"highest\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "perform_api_request",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def perform_api_request(session: requests.Session, document: BeautifulSoup) -> dict:\n    \"\"\"Collect parameters from video document and build API request for video URL.\"\"\"\n    template_params = {}\n    # .mp4 videos (HTML5)\n    # As of 2021, all videos are served this way\n    if document.find(\"meta\", {\"name\": \"server-response\"}):\n        params = json.loads(document.find(\"meta\", {\"name\": \"server-response\"})[\"content\"])[\"data\"][\"response\"]\n        if params[\"video\"][\"isDeleted\"]:\n            raise FormatNotAvailableException(\"Video was deleted\")\n        template_params = collect_video_parameters(session, template_params, params)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "collect_video_parameters",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def collect_video_parameters(session: requests.Session, template_params: dict, params: dict) -> dict:\n    \"\"\"Collect video parameters to make them available for an output filename template.\"\"\"\n    if params.get(\"video\"):\n        template_params[\"id\"] = params[\"video\"][\"id\"]\n        template_params[\"title\"] = params[\"video\"][\"title\"]\n        template_params[\"uploader\"] = params[\"owner\"][\"nickname\"].rstrip(\" さん\") if params.get(\"owner\") else None\n        template_params[\"uploader_id\"] = int(params[\"owner\"][\"id\"]) if params.get(\"owner\") else None\n        template_params[\"description\"] = params[\"video\"][\"description\"]\n        template_params[\"thumbnail_url\"] = (  # Use highest quality thumbnail available\n                params[\"video\"][\"thumbnail\"][\"ogp\"]",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "dump_metadata",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def dump_metadata(filename: AnyStr, template_params: dict):\n    \"\"\"Dump the collected video metadata to a file.\"\"\"\n    output(\"Downloading metadata for {0}...\\n\".format(template_params[\"id\"]), logging.INFO)\n    filename = replace_extension(filename, \"json\")\n    with open(filename, \"w\", encoding=\"utf-8\") as file:\n        json.dump(template_params, file, indent=4, ensure_ascii=False, sort_keys=True)\n    output(\"Finished downloading metadata for {0}.\\n\".format(template_params[\"id\"]), logging.INFO)\ndef download_thumbnail(session: requests.Session, filename: AnyStr, template_params: dict, set_thumb_extension: bool = False):\n    \"\"\"Download the media thumbnail.\"\"\"\n    output(\"Downloading thumbnail for {0}...\\n\".format(template_params[\"id\"]), logging.INFO)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "download_thumbnail",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def download_thumbnail(session: requests.Session, filename: AnyStr, template_params: dict, set_thumb_extension: bool = False):\n    \"\"\"Download the media thumbnail.\"\"\"\n    output(\"Downloading thumbnail for {0}...\\n\".format(template_params[\"id\"]), logging.INFO)\n    # TODO: Probably should check for mimetype\n    if set_thumb_extension:\n        filename = replace_extension(filename, \"thumb.jpg\")\n    else:\n        filename = replace_extension(filename, \"jpg\")\n    thumb_request = session.get(template_params[\"thumbnail_url\"])\n    thumb_request.raise_for_status()",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "download_video_comments",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def download_video_comments(\n    session: requests.Session,\n    filename: str,\n    template_params: dict,\n):\n    \"\"\"Download the video comments.\"\"\"\n    output(\"Downloading comments for {0}...\\n\".format(template_params[\"id\"]), logging.INFO)\n    filename = replace_extension(filename, \"comments.json\")\n    if os.path.exists(filename):\n        output(f\"Comments file \\\"{filename}\\\" exists. Skipping...\\n\", logging.INFO)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "fetch_comments_thread",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def fetch_comments_thread(\n    session: requests.Session,\n    video_id: str,\n    api_server: str,\n    thread_key: str,\n    thread: dict,\n    language: str,\n    progress: Progress,\n    comments_data: dict,\n    comments_from: int,",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "refresh_thread_key",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def refresh_thread_key(session: requests.Session, video_id: str) -> str:\n    \"\"\"Refresh the thread key for the comments API\"\"\"\n    url = THREAD_REFRESH_API.format(video_id)\n    headers = {\n        **API_HEADERS,\n        \"Content-Type\": \"application/json\"\n    }\n    response = session.get(url, headers=headers)\n    response.raise_for_status()\n    return response.json()[\"data\"][\"threadKey\"]",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "add_metadata_to_container",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def add_metadata_to_container(filename: AnyStr, template_params: dict):\n    \"\"\"Add metadata to any MP4 container.\"\"\"\n    if template_params[\"ext\"] in [\"mp4\", \"m4a\", \"m4v\"]:\n        output(\"Adding metadata to {}...\\n\".format(filename), logging.INFO)\n        container_file = MP4(filename)\n        if not container_file.tags:\n            container_file.add_tags()\n        if template_params[\"title\"]:\n            container_file[\"\\251nam\"] = str(template_params[\"title\"])  # Title\n        if template_params[\"uploader\"]:",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "login",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def login(username: str, password: str, session_cookie: str) -> requests.Session:\n    \"\"\"Login to Nico and create a session.\"\"\"\n    session = requests.session()\n    retry = Retry(\n        total=RETRY_ATTEMPTS,\n        read=RETRY_ATTEMPTS,\n        connect=RETRY_ATTEMPTS,\n        backoff_factor=BACKOFF_FACTOR,\n        status_forcelist=(500, 502, 503, 504),\n    )",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "process_url_mo",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def process_url_mo(session, url_mo: Match):\n    \"\"\"Dispatches URL to the appropriate function.\"\"\"\n    url_id = url_mo.group(5)\n    if url_id == \"my\":\n        if _CMDL_OPTS.no_login:\n                raise AuthenticationException(\"Requesting a /my URL is not possible when -g/--no-login is specified. Please login or provide a session cookie\")\n        url_id = \"me\" # Rewrite for use with the API\n    if url_mo.group(8):\n        output(\"Additional URL parameters will be ignored.\\n\", logging.WARNING)\n    if url_mo.group(3) == \"mylist\":",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def main():\n    \"\"\"Main entry\"\"\"\n    try:\n        configure_logger()\n        account_username = _CMDL_OPTS.username\n        account_password = _CMDL_OPTS.password\n        session_cookie = _CMDL_OPTS.session_cookie\n        if _CMDL_OPTS.netrc:\n            if _CMDL_OPTS.username or _CMDL_OPTS.password or _CMDL_OPTS.session_cookie:\n                output(\"Ignoring input credentials in favor of .netrc.\\n\", logging.WARNING)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "cli",
+        "kind": 2,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "def cli():\n    \"\"\"CLI entry\"\"\"\n    global _CMDL_OPTS\n    try:\n        _CMDL_OPTS = cmdl_parser.parse_args()\n        main()\n    except KeyboardInterrupt:\n        output(\"Keyboard interrupt received. Exiting...\\n\", logging.INFO)\n        sys.exit(1)\nif __name__ == \"__main__\":",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "__version__",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "__version__ = \"1.20\"\n__author__ = \"Alex Aplin\"\n__copyright__ = \"Copyright 2026 Alex Aplin\"\n__license__ = \"MIT\"\nMODULE_NAME = \"nndownload\"\nHOST = \"nicovideo.jp\"\nMY_URL = \"https://www.nicovideo.jp/my\"\n# LOGIN_URL = \"https://account.nicovideo.jp/api/v1/login?site=niconico\"\nLOGIN_URL = \"https://account.nicovideo.jp/login/redirector?show_button_twitter=1&site=niconico&show_button_facebook=1&sec=header_pc&next_url=/\"\nVIDEO_URL = \"https://nicovideo.jp/watch/{0}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "__author__",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "__author__ = \"Alex Aplin\"\n__copyright__ = \"Copyright 2026 Alex Aplin\"\n__license__ = \"MIT\"\nMODULE_NAME = \"nndownload\"\nHOST = \"nicovideo.jp\"\nMY_URL = \"https://www.nicovideo.jp/my\"\n# LOGIN_URL = \"https://account.nicovideo.jp/api/v1/login?site=niconico\"\nLOGIN_URL = \"https://account.nicovideo.jp/login/redirector?show_button_twitter=1&site=niconico&show_button_facebook=1&sec=header_pc&next_url=/\"\nVIDEO_URL = \"https://nicovideo.jp/watch/{0}\"\nUSER_URL = \"https://nicovideo.jp/user/{0}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "__copyright__",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "__copyright__ = \"Copyright 2026 Alex Aplin\"\n__license__ = \"MIT\"\nMODULE_NAME = \"nndownload\"\nHOST = \"nicovideo.jp\"\nMY_URL = \"https://www.nicovideo.jp/my\"\n# LOGIN_URL = \"https://account.nicovideo.jp/api/v1/login?site=niconico\"\nLOGIN_URL = \"https://account.nicovideo.jp/login/redirector?show_button_twitter=1&site=niconico&show_button_facebook=1&sec=header_pc&next_url=/\"\nVIDEO_URL = \"https://nicovideo.jp/watch/{0}\"\nUSER_URL = \"https://nicovideo.jp/user/{0}\"\nNAMA_URL = \"https://live.nicovideo.jp/watch/{0}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "__license__",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "__license__ = \"MIT\"\nMODULE_NAME = \"nndownload\"\nHOST = \"nicovideo.jp\"\nMY_URL = \"https://www.nicovideo.jp/my\"\n# LOGIN_URL = \"https://account.nicovideo.jp/api/v1/login?site=niconico\"\nLOGIN_URL = \"https://account.nicovideo.jp/login/redirector?show_button_twitter=1&site=niconico&show_button_facebook=1&sec=header_pc&next_url=/\"\nVIDEO_URL = \"https://nicovideo.jp/watch/{0}\"\nUSER_URL = \"https://nicovideo.jp/user/{0}\"\nNAMA_URL = \"https://live.nicovideo.jp/watch/{0}\"\nCHANNEL_VIDEOS_URL = \"https://ch.nicovideo.jp/{0}/video?page={1}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "MODULE_NAME",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "MODULE_NAME = \"nndownload\"\nHOST = \"nicovideo.jp\"\nMY_URL = \"https://www.nicovideo.jp/my\"\n# LOGIN_URL = \"https://account.nicovideo.jp/api/v1/login?site=niconico\"\nLOGIN_URL = \"https://account.nicovideo.jp/login/redirector?show_button_twitter=1&site=niconico&show_button_facebook=1&sec=header_pc&next_url=/\"\nVIDEO_URL = \"https://nicovideo.jp/watch/{0}\"\nUSER_URL = \"https://nicovideo.jp/user/{0}\"\nNAMA_URL = \"https://live.nicovideo.jp/watch/{0}\"\nCHANNEL_VIDEOS_URL = \"https://ch.nicovideo.jp/{0}/video?page={1}\"\nCHANNEL_LIVES_URL = \"https://ch.nicovideo.jp/{0}/live?page={1}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "HOST",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "HOST = \"nicovideo.jp\"\nMY_URL = \"https://www.nicovideo.jp/my\"\n# LOGIN_URL = \"https://account.nicovideo.jp/api/v1/login?site=niconico\"\nLOGIN_URL = \"https://account.nicovideo.jp/login/redirector?show_button_twitter=1&site=niconico&show_button_facebook=1&sec=header_pc&next_url=/\"\nVIDEO_URL = \"https://nicovideo.jp/watch/{0}\"\nUSER_URL = \"https://nicovideo.jp/user/{0}\"\nNAMA_URL = \"https://live.nicovideo.jp/watch/{0}\"\nCHANNEL_VIDEOS_URL = \"https://ch.nicovideo.jp/{0}/video?page={1}\"\nCHANNEL_LIVES_URL = \"https://ch.nicovideo.jp/{0}/live?page={1}\"\nCHANNEL_BLOMAGA_URL = \"https://ch.nicovideo.jp/{0}/blomaga?page={1}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "MY_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "MY_URL = \"https://www.nicovideo.jp/my\"\n# LOGIN_URL = \"https://account.nicovideo.jp/api/v1/login?site=niconico\"\nLOGIN_URL = \"https://account.nicovideo.jp/login/redirector?show_button_twitter=1&site=niconico&show_button_facebook=1&sec=header_pc&next_url=/\"\nVIDEO_URL = \"https://nicovideo.jp/watch/{0}\"\nUSER_URL = \"https://nicovideo.jp/user/{0}\"\nNAMA_URL = \"https://live.nicovideo.jp/watch/{0}\"\nCHANNEL_VIDEOS_URL = \"https://ch.nicovideo.jp/{0}/video?page={1}\"\nCHANNEL_LIVES_URL = \"https://ch.nicovideo.jp/{0}/live?page={1}\"\nCHANNEL_BLOMAGA_URL = \"https://ch.nicovideo.jp/{0}/blomaga?page={1}\"\nCHANNEL_ARTICLE_URL = \"https://ch.nicovideo.jp/article/{0}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "LOGIN_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "LOGIN_URL = \"https://account.nicovideo.jp/login/redirector?show_button_twitter=1&site=niconico&show_button_facebook=1&sec=header_pc&next_url=/\"\nVIDEO_URL = \"https://nicovideo.jp/watch/{0}\"\nUSER_URL = \"https://nicovideo.jp/user/{0}\"\nNAMA_URL = \"https://live.nicovideo.jp/watch/{0}\"\nCHANNEL_VIDEOS_URL = \"https://ch.nicovideo.jp/{0}/video?page={1}\"\nCHANNEL_LIVES_URL = \"https://ch.nicovideo.jp/{0}/live?page={1}\"\nCHANNEL_BLOMAGA_URL = \"https://ch.nicovideo.jp/{0}/blomaga?page={1}\"\nCHANNEL_ARTICLE_URL = \"https://ch.nicovideo.jp/article/{0}\"\nSEIGA_USER_ILLUST_URL = \"https://seiga.nicovideo.jp/user/illust/{0}?page={1}\"\nSEIGA_USER_MANGA_URL = \"https://seiga.nicovideo.jp/manga/list?user_id={0}&page={1}\"  # Not all manga are not listed with /user/manga/{0}",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "VIDEO_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "VIDEO_URL = \"https://nicovideo.jp/watch/{0}\"\nUSER_URL = \"https://nicovideo.jp/user/{0}\"\nNAMA_URL = \"https://live.nicovideo.jp/watch/{0}\"\nCHANNEL_VIDEOS_URL = \"https://ch.nicovideo.jp/{0}/video?page={1}\"\nCHANNEL_LIVES_URL = \"https://ch.nicovideo.jp/{0}/live?page={1}\"\nCHANNEL_BLOMAGA_URL = \"https://ch.nicovideo.jp/{0}/blomaga?page={1}\"\nCHANNEL_ARTICLE_URL = \"https://ch.nicovideo.jp/article/{0}\"\nSEIGA_USER_ILLUST_URL = \"https://seiga.nicovideo.jp/user/illust/{0}?page={1}\"\nSEIGA_USER_MANGA_URL = \"https://seiga.nicovideo.jp/manga/list?user_id={0}&page={1}\"  # Not all manga are not listed with /user/manga/{0}\nSEIGA_IMAGE_URL = \"https://seiga.nicovideo.jp/seiga/{0}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "USER_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "USER_URL = \"https://nicovideo.jp/user/{0}\"\nNAMA_URL = \"https://live.nicovideo.jp/watch/{0}\"\nCHANNEL_VIDEOS_URL = \"https://ch.nicovideo.jp/{0}/video?page={1}\"\nCHANNEL_LIVES_URL = \"https://ch.nicovideo.jp/{0}/live?page={1}\"\nCHANNEL_BLOMAGA_URL = \"https://ch.nicovideo.jp/{0}/blomaga?page={1}\"\nCHANNEL_ARTICLE_URL = \"https://ch.nicovideo.jp/article/{0}\"\nSEIGA_USER_ILLUST_URL = \"https://seiga.nicovideo.jp/user/illust/{0}?page={1}\"\nSEIGA_USER_MANGA_URL = \"https://seiga.nicovideo.jp/manga/list?user_id={0}&page={1}\"  # Not all manga are not listed with /user/manga/{0}\nSEIGA_IMAGE_URL = \"https://seiga.nicovideo.jp/seiga/{0}\"\nSEIGA_IMAGE_THUMBNAIL_URL = \"https://lohas.nicoseiga.jp//thumb/{0}qz\" # \"cz\" can be specified for a consistent 176x176 thumb",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "NAMA_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "NAMA_URL = \"https://live.nicovideo.jp/watch/{0}\"\nCHANNEL_VIDEOS_URL = \"https://ch.nicovideo.jp/{0}/video?page={1}\"\nCHANNEL_LIVES_URL = \"https://ch.nicovideo.jp/{0}/live?page={1}\"\nCHANNEL_BLOMAGA_URL = \"https://ch.nicovideo.jp/{0}/blomaga?page={1}\"\nCHANNEL_ARTICLE_URL = \"https://ch.nicovideo.jp/article/{0}\"\nSEIGA_USER_ILLUST_URL = \"https://seiga.nicovideo.jp/user/illust/{0}?page={1}\"\nSEIGA_USER_MANGA_URL = \"https://seiga.nicovideo.jp/manga/list?user_id={0}&page={1}\"  # Not all manga are not listed with /user/manga/{0}\nSEIGA_IMAGE_URL = \"https://seiga.nicovideo.jp/seiga/{0}\"\nSEIGA_IMAGE_THUMBNAIL_URL = \"https://lohas.nicoseiga.jp//thumb/{0}qz\" # \"cz\" can be specified for a consistent 176x176 thumb\nSEIGA_MANGA_URL = \"https://seiga.nicovideo.jp/comic/{0}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "CHANNEL_VIDEOS_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "CHANNEL_VIDEOS_URL = \"https://ch.nicovideo.jp/{0}/video?page={1}\"\nCHANNEL_LIVES_URL = \"https://ch.nicovideo.jp/{0}/live?page={1}\"\nCHANNEL_BLOMAGA_URL = \"https://ch.nicovideo.jp/{0}/blomaga?page={1}\"\nCHANNEL_ARTICLE_URL = \"https://ch.nicovideo.jp/article/{0}\"\nSEIGA_USER_ILLUST_URL = \"https://seiga.nicovideo.jp/user/illust/{0}?page={1}\"\nSEIGA_USER_MANGA_URL = \"https://seiga.nicovideo.jp/manga/list?user_id={0}&page={1}\"  # Not all manga are not listed with /user/manga/{0}\nSEIGA_IMAGE_URL = \"https://seiga.nicovideo.jp/seiga/{0}\"\nSEIGA_IMAGE_THUMBNAIL_URL = \"https://lohas.nicoseiga.jp//thumb/{0}qz\" # \"cz\" can be specified for a consistent 176x176 thumb\nSEIGA_MANGA_URL = \"https://seiga.nicovideo.jp/comic/{0}\"\nSEIGA_MANGA_THUMBNAIL_URL = \"https://deliver.cdn.nicomanga.jp/thumb/mg_thumb/{0}q\" # Not sure where this ID originates, so instead we pull \"og:image\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "CHANNEL_LIVES_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "CHANNEL_LIVES_URL = \"https://ch.nicovideo.jp/{0}/live?page={1}\"\nCHANNEL_BLOMAGA_URL = \"https://ch.nicovideo.jp/{0}/blomaga?page={1}\"\nCHANNEL_ARTICLE_URL = \"https://ch.nicovideo.jp/article/{0}\"\nSEIGA_USER_ILLUST_URL = \"https://seiga.nicovideo.jp/user/illust/{0}?page={1}\"\nSEIGA_USER_MANGA_URL = \"https://seiga.nicovideo.jp/manga/list?user_id={0}&page={1}\"  # Not all manga are not listed with /user/manga/{0}\nSEIGA_IMAGE_URL = \"https://seiga.nicovideo.jp/seiga/{0}\"\nSEIGA_IMAGE_THUMBNAIL_URL = \"https://lohas.nicoseiga.jp//thumb/{0}qz\" # \"cz\" can be specified for a consistent 176x176 thumb\nSEIGA_MANGA_URL = \"https://seiga.nicovideo.jp/comic/{0}\"\nSEIGA_MANGA_THUMBNAIL_URL = \"https://deliver.cdn.nicomanga.jp/thumb/mg_thumb/{0}q\" # Not sure where this ID originates, so instead we pull \"og:image\"\nSEIGA_CHAPTER_URL = \"https://seiga.nicovideo.jp/watch/{0}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "CHANNEL_BLOMAGA_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "CHANNEL_BLOMAGA_URL = \"https://ch.nicovideo.jp/{0}/blomaga?page={1}\"\nCHANNEL_ARTICLE_URL = \"https://ch.nicovideo.jp/article/{0}\"\nSEIGA_USER_ILLUST_URL = \"https://seiga.nicovideo.jp/user/illust/{0}?page={1}\"\nSEIGA_USER_MANGA_URL = \"https://seiga.nicovideo.jp/manga/list?user_id={0}&page={1}\"  # Not all manga are not listed with /user/manga/{0}\nSEIGA_IMAGE_URL = \"https://seiga.nicovideo.jp/seiga/{0}\"\nSEIGA_IMAGE_THUMBNAIL_URL = \"https://lohas.nicoseiga.jp//thumb/{0}qz\" # \"cz\" can be specified for a consistent 176x176 thumb\nSEIGA_MANGA_URL = \"https://seiga.nicovideo.jp/comic/{0}\"\nSEIGA_MANGA_THUMBNAIL_URL = \"https://deliver.cdn.nicomanga.jp/thumb/mg_thumb/{0}q\" # Not sure where this ID originates, so instead we pull \"og:image\"\nSEIGA_CHAPTER_URL = \"https://seiga.nicovideo.jp/watch/{0}\"\nSEIGA_SOURCE_URL = \"https://seiga.nicovideo.jp/image/source/{0}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "CHANNEL_ARTICLE_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "CHANNEL_ARTICLE_URL = \"https://ch.nicovideo.jp/article/{0}\"\nSEIGA_USER_ILLUST_URL = \"https://seiga.nicovideo.jp/user/illust/{0}?page={1}\"\nSEIGA_USER_MANGA_URL = \"https://seiga.nicovideo.jp/manga/list?user_id={0}&page={1}\"  # Not all manga are not listed with /user/manga/{0}\nSEIGA_IMAGE_URL = \"https://seiga.nicovideo.jp/seiga/{0}\"\nSEIGA_IMAGE_THUMBNAIL_URL = \"https://lohas.nicoseiga.jp//thumb/{0}qz\" # \"cz\" can be specified for a consistent 176x176 thumb\nSEIGA_MANGA_URL = \"https://seiga.nicovideo.jp/comic/{0}\"\nSEIGA_MANGA_THUMBNAIL_URL = \"https://deliver.cdn.nicomanga.jp/thumb/mg_thumb/{0}q\" # Not sure where this ID originates, so instead we pull \"og:image\"\nSEIGA_CHAPTER_URL = \"https://seiga.nicovideo.jp/watch/{0}\"\nSEIGA_SOURCE_URL = \"https://seiga.nicovideo.jp/image/source/{0}\"\nSEIGA_CDN_URL = \"https://lohas.nicoseiga.jp/\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_USER_ILLUST_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_USER_ILLUST_URL = \"https://seiga.nicovideo.jp/user/illust/{0}?page={1}\"\nSEIGA_USER_MANGA_URL = \"https://seiga.nicovideo.jp/manga/list?user_id={0}&page={1}\"  # Not all manga are not listed with /user/manga/{0}\nSEIGA_IMAGE_URL = \"https://seiga.nicovideo.jp/seiga/{0}\"\nSEIGA_IMAGE_THUMBNAIL_URL = \"https://lohas.nicoseiga.jp//thumb/{0}qz\" # \"cz\" can be specified for a consistent 176x176 thumb\nSEIGA_MANGA_URL = \"https://seiga.nicovideo.jp/comic/{0}\"\nSEIGA_MANGA_THUMBNAIL_URL = \"https://deliver.cdn.nicomanga.jp/thumb/mg_thumb/{0}q\" # Not sure where this ID originates, so instead we pull \"og:image\"\nSEIGA_CHAPTER_URL = \"https://seiga.nicovideo.jp/watch/{0}\"\nSEIGA_SOURCE_URL = \"https://seiga.nicovideo.jp/image/source/{0}\"\nSEIGA_CDN_URL = \"https://lohas.nicoseiga.jp/\"\nCOMMENTS_THREAD_URL = \"{0}/v1/threads\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_USER_MANGA_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_USER_MANGA_URL = \"https://seiga.nicovideo.jp/manga/list?user_id={0}&page={1}\"  # Not all manga are not listed with /user/manga/{0}\nSEIGA_IMAGE_URL = \"https://seiga.nicovideo.jp/seiga/{0}\"\nSEIGA_IMAGE_THUMBNAIL_URL = \"https://lohas.nicoseiga.jp//thumb/{0}qz\" # \"cz\" can be specified for a consistent 176x176 thumb\nSEIGA_MANGA_URL = \"https://seiga.nicovideo.jp/comic/{0}\"\nSEIGA_MANGA_THUMBNAIL_URL = \"https://deliver.cdn.nicomanga.jp/thumb/mg_thumb/{0}q\" # Not sure where this ID originates, so instead we pull \"og:image\"\nSEIGA_CHAPTER_URL = \"https://seiga.nicovideo.jp/watch/{0}\"\nSEIGA_SOURCE_URL = \"https://seiga.nicovideo.jp/image/source/{0}\"\nSEIGA_CDN_URL = \"https://lohas.nicoseiga.jp/\"\nCOMMENTS_THREAD_URL = \"{0}/v1/threads\"\nTIMESHIFT_USE_URL = \"https://live.nicovideo.jp/api/timeshift.ticket.use\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_IMAGE_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_IMAGE_URL = \"https://seiga.nicovideo.jp/seiga/{0}\"\nSEIGA_IMAGE_THUMBNAIL_URL = \"https://lohas.nicoseiga.jp//thumb/{0}qz\" # \"cz\" can be specified for a consistent 176x176 thumb\nSEIGA_MANGA_URL = \"https://seiga.nicovideo.jp/comic/{0}\"\nSEIGA_MANGA_THUMBNAIL_URL = \"https://deliver.cdn.nicomanga.jp/thumb/mg_thumb/{0}q\" # Not sure where this ID originates, so instead we pull \"og:image\"\nSEIGA_CHAPTER_URL = \"https://seiga.nicovideo.jp/watch/{0}\"\nSEIGA_SOURCE_URL = \"https://seiga.nicovideo.jp/image/source/{0}\"\nSEIGA_CDN_URL = \"https://lohas.nicoseiga.jp/\"\nCOMMENTS_THREAD_URL = \"{0}/v1/threads\"\nTIMESHIFT_USE_URL = \"https://live.nicovideo.jp/api/timeshift.ticket.use\"\nTIMESHIFT_RESERVE_URL = \"https://live.nicovideo.jp/api/timeshift.reservations\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_IMAGE_THUMBNAIL_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_IMAGE_THUMBNAIL_URL = \"https://lohas.nicoseiga.jp//thumb/{0}qz\" # \"cz\" can be specified for a consistent 176x176 thumb\nSEIGA_MANGA_URL = \"https://seiga.nicovideo.jp/comic/{0}\"\nSEIGA_MANGA_THUMBNAIL_URL = \"https://deliver.cdn.nicomanga.jp/thumb/mg_thumb/{0}q\" # Not sure where this ID originates, so instead we pull \"og:image\"\nSEIGA_CHAPTER_URL = \"https://seiga.nicovideo.jp/watch/{0}\"\nSEIGA_SOURCE_URL = \"https://seiga.nicovideo.jp/image/source/{0}\"\nSEIGA_CDN_URL = \"https://lohas.nicoseiga.jp/\"\nCOMMENTS_THREAD_URL = \"{0}/v1/threads\"\nTIMESHIFT_USE_URL = \"https://live.nicovideo.jp/api/timeshift.ticket.use\"\nTIMESHIFT_RESERVE_URL = \"https://live.nicovideo.jp/api/timeshift.reservations\"\nCONTENT_TYPE = r\"(watch|shorts|mylist|user\\/illust|user\\/manga|user|comic|seiga|gate|article|channel|manga|illust|series)\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_MANGA_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_MANGA_URL = \"https://seiga.nicovideo.jp/comic/{0}\"\nSEIGA_MANGA_THUMBNAIL_URL = \"https://deliver.cdn.nicomanga.jp/thumb/mg_thumb/{0}q\" # Not sure where this ID originates, so instead we pull \"og:image\"\nSEIGA_CHAPTER_URL = \"https://seiga.nicovideo.jp/watch/{0}\"\nSEIGA_SOURCE_URL = \"https://seiga.nicovideo.jp/image/source/{0}\"\nSEIGA_CDN_URL = \"https://lohas.nicoseiga.jp/\"\nCOMMENTS_THREAD_URL = \"{0}/v1/threads\"\nTIMESHIFT_USE_URL = \"https://live.nicovideo.jp/api/timeshift.ticket.use\"\nTIMESHIFT_RESERVE_URL = \"https://live.nicovideo.jp/api/timeshift.reservations\"\nCONTENT_TYPE = r\"(watch|shorts|mylist|user\\/illust|user\\/manga|user|comic|seiga|gate|article|channel|manga|illust|series)\"\nUSER_CONTENT_TYPE = r\"(video|mylist|live|blomaga|list|series|follow)\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_MANGA_THUMBNAIL_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_MANGA_THUMBNAIL_URL = \"https://deliver.cdn.nicomanga.jp/thumb/mg_thumb/{0}q\" # Not sure where this ID originates, so instead we pull \"og:image\"\nSEIGA_CHAPTER_URL = \"https://seiga.nicovideo.jp/watch/{0}\"\nSEIGA_SOURCE_URL = \"https://seiga.nicovideo.jp/image/source/{0}\"\nSEIGA_CDN_URL = \"https://lohas.nicoseiga.jp/\"\nCOMMENTS_THREAD_URL = \"{0}/v1/threads\"\nTIMESHIFT_USE_URL = \"https://live.nicovideo.jp/api/timeshift.ticket.use\"\nTIMESHIFT_RESERVE_URL = \"https://live.nicovideo.jp/api/timeshift.reservations\"\nCONTENT_TYPE = r\"(watch|shorts|mylist|user\\/illust|user\\/manga|user|comic|seiga|gate|article|channel|manga|illust|series)\"\nUSER_CONTENT_TYPE = r\"(video|mylist|live|blomaga|list|series|follow)\"\nVALID_URL_RE = re.compile(r\"https?://(?:(?:(?:(ch|sp|www|seiga|manga)\\.)|(?:(live[0-9]?|cas)\\.))?\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_CHAPTER_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_CHAPTER_URL = \"https://seiga.nicovideo.jp/watch/{0}\"\nSEIGA_SOURCE_URL = \"https://seiga.nicovideo.jp/image/source/{0}\"\nSEIGA_CDN_URL = \"https://lohas.nicoseiga.jp/\"\nCOMMENTS_THREAD_URL = \"{0}/v1/threads\"\nTIMESHIFT_USE_URL = \"https://live.nicovideo.jp/api/timeshift.ticket.use\"\nTIMESHIFT_RESERVE_URL = \"https://live.nicovideo.jp/api/timeshift.reservations\"\nCONTENT_TYPE = r\"(watch|shorts|mylist|user\\/illust|user\\/manga|user|comic|seiga|gate|article|channel|manga|illust|series)\"\nUSER_CONTENT_TYPE = r\"(video|mylist|live|blomaga|list|series|follow)\"\nVALID_URL_RE = re.compile(r\"https?://(?:(?:(?:(ch|sp|www|seiga|manga)\\.)|(?:(live[0-9]?|cas)\\.))?\"\n                          rf\"(?:(?:nicovideo\\.jp/{CONTENT_TYPE}?)(?(3)/|))|(nico\\.ms)/)\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_SOURCE_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_SOURCE_URL = \"https://seiga.nicovideo.jp/image/source/{0}\"\nSEIGA_CDN_URL = \"https://lohas.nicoseiga.jp/\"\nCOMMENTS_THREAD_URL = \"{0}/v1/threads\"\nTIMESHIFT_USE_URL = \"https://live.nicovideo.jp/api/timeshift.ticket.use\"\nTIMESHIFT_RESERVE_URL = \"https://live.nicovideo.jp/api/timeshift.reservations\"\nCONTENT_TYPE = r\"(watch|shorts|mylist|user\\/illust|user\\/manga|user|comic|seiga|gate|article|channel|manga|illust|series)\"\nUSER_CONTENT_TYPE = r\"(video|mylist|live|blomaga|list|series|follow)\"\nVALID_URL_RE = re.compile(r\"https?://(?:(?:(?:(ch|sp|www|seiga|manga)\\.)|(?:(live[0-9]?|cas)\\.))?\"\n                          rf\"(?:(?:nicovideo\\.jp/{CONTENT_TYPE}?)(?(3)/|))|(nico\\.ms)/)\"\n                          rf\"((?:(?:[a-z]{2})?\\d+)|[a-zA-Z0-9-]+?)/?(?:/{USER_CONTENT_TYPE})?\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_CDN_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_CDN_URL = \"https://lohas.nicoseiga.jp/\"\nCOMMENTS_THREAD_URL = \"{0}/v1/threads\"\nTIMESHIFT_USE_URL = \"https://live.nicovideo.jp/api/timeshift.ticket.use\"\nTIMESHIFT_RESERVE_URL = \"https://live.nicovideo.jp/api/timeshift.reservations\"\nCONTENT_TYPE = r\"(watch|shorts|mylist|user\\/illust|user\\/manga|user|comic|seiga|gate|article|channel|manga|illust|series)\"\nUSER_CONTENT_TYPE = r\"(video|mylist|live|blomaga|list|series|follow)\"\nVALID_URL_RE = re.compile(r\"https?://(?:(?:(?:(ch|sp|www|seiga|manga)\\.)|(?:(live[0-9]?|cas)\\.))?\"\n                          rf\"(?:(?:nicovideo\\.jp/{CONTENT_TYPE}?)(?(3)/|))|(nico\\.ms)/)\"\n                          rf\"((?:(?:[a-z]{2})?\\d+)|[a-zA-Z0-9-]+?)/?(?:/{USER_CONTENT_TYPE})?\"\n                          r\"(?(6)/((?:[a-z]{2})?\\d+))?(?:\\?(?:user_id=(.*)|.*)?)?$\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "COMMENTS_THREAD_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "COMMENTS_THREAD_URL = \"{0}/v1/threads\"\nTIMESHIFT_USE_URL = \"https://live.nicovideo.jp/api/timeshift.ticket.use\"\nTIMESHIFT_RESERVE_URL = \"https://live.nicovideo.jp/api/timeshift.reservations\"\nCONTENT_TYPE = r\"(watch|shorts|mylist|user\\/illust|user\\/manga|user|comic|seiga|gate|article|channel|manga|illust|series)\"\nUSER_CONTENT_TYPE = r\"(video|mylist|live|blomaga|list|series|follow)\"\nVALID_URL_RE = re.compile(r\"https?://(?:(?:(?:(ch|sp|www|seiga|manga)\\.)|(?:(live[0-9]?|cas)\\.))?\"\n                          rf\"(?:(?:nicovideo\\.jp/{CONTENT_TYPE}?)(?(3)/|))|(nico\\.ms)/)\"\n                          rf\"((?:(?:[a-z]{2})?\\d+)|[a-zA-Z0-9-]+?)/?(?:/{USER_CONTENT_TYPE})?\"\n                          r\"(?(6)/((?:[a-z]{2})?\\d+))?(?:\\?(?:user_id=(.*)|.*)?)?$\")\nM3U8_STREAM_RE = re.compile(r\"(?:(?:#EXT-X-STREAM-INF)|#EXT-X-I-FRAME-STREAM-INF):.*(?:BANDWIDTH=(\\d+)).*\\n(.*)\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "TIMESHIFT_USE_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "TIMESHIFT_USE_URL = \"https://live.nicovideo.jp/api/timeshift.ticket.use\"\nTIMESHIFT_RESERVE_URL = \"https://live.nicovideo.jp/api/timeshift.reservations\"\nCONTENT_TYPE = r\"(watch|shorts|mylist|user\\/illust|user\\/manga|user|comic|seiga|gate|article|channel|manga|illust|series)\"\nUSER_CONTENT_TYPE = r\"(video|mylist|live|blomaga|list|series|follow)\"\nVALID_URL_RE = re.compile(r\"https?://(?:(?:(?:(ch|sp|www|seiga|manga)\\.)|(?:(live[0-9]?|cas)\\.))?\"\n                          rf\"(?:(?:nicovideo\\.jp/{CONTENT_TYPE}?)(?(3)/|))|(nico\\.ms)/)\"\n                          rf\"((?:(?:[a-z]{2})?\\d+)|[a-zA-Z0-9-]+?)/?(?:/{USER_CONTENT_TYPE})?\"\n                          r\"(?(6)/((?:[a-z]{2})?\\d+))?(?:\\?(?:user_id=(.*)|.*)?)?$\")\nM3U8_STREAM_RE = re.compile(r\"(?:(?:#EXT-X-STREAM-INF)|#EXT-X-I-FRAME-STREAM-INF):.*(?:BANDWIDTH=(\\d+)).*\\n(.*)\")\nM3U8_MEDIA_RE = re.compile(r\"(?:#EXT-X-MEDIA:TYPE=)(?:(\\w+))(?:.*),URI=\\\"(.*)\\\"\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "TIMESHIFT_RESERVE_URL",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "TIMESHIFT_RESERVE_URL = \"https://live.nicovideo.jp/api/timeshift.reservations\"\nCONTENT_TYPE = r\"(watch|shorts|mylist|user\\/illust|user\\/manga|user|comic|seiga|gate|article|channel|manga|illust|series)\"\nUSER_CONTENT_TYPE = r\"(video|mylist|live|blomaga|list|series|follow)\"\nVALID_URL_RE = re.compile(r\"https?://(?:(?:(?:(ch|sp|www|seiga|manga)\\.)|(?:(live[0-9]?|cas)\\.))?\"\n                          rf\"(?:(?:nicovideo\\.jp/{CONTENT_TYPE}?)(?(3)/|))|(nico\\.ms)/)\"\n                          rf\"((?:(?:[a-z]{2})?\\d+)|[a-zA-Z0-9-]+?)/?(?:/{USER_CONTENT_TYPE})?\"\n                          r\"(?(6)/((?:[a-z]{2})?\\d+))?(?:\\?(?:user_id=(.*)|.*)?)?$\")\nM3U8_STREAM_RE = re.compile(r\"(?:(?:#EXT-X-STREAM-INF)|#EXT-X-I-FRAME-STREAM-INF):.*(?:BANDWIDTH=(\\d+)).*\\n(.*)\")\nM3U8_MEDIA_RE = re.compile(r\"(?:#EXT-X-MEDIA:TYPE=)(?:(\\w+))(?:.*),URI=\\\"(.*)\\\"\")\nSEIGA_DRM_KEY_RE = re.compile(r\"/image/([a-z0-9]+)\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "CONTENT_TYPE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "CONTENT_TYPE = r\"(watch|shorts|mylist|user\\/illust|user\\/manga|user|comic|seiga|gate|article|channel|manga|illust|series)\"\nUSER_CONTENT_TYPE = r\"(video|mylist|live|blomaga|list|series|follow)\"\nVALID_URL_RE = re.compile(r\"https?://(?:(?:(?:(ch|sp|www|seiga|manga)\\.)|(?:(live[0-9]?|cas)\\.))?\"\n                          rf\"(?:(?:nicovideo\\.jp/{CONTENT_TYPE}?)(?(3)/|))|(nico\\.ms)/)\"\n                          rf\"((?:(?:[a-z]{2})?\\d+)|[a-zA-Z0-9-]+?)/?(?:/{USER_CONTENT_TYPE})?\"\n                          r\"(?(6)/((?:[a-z]{2})?\\d+))?(?:\\?(?:user_id=(.*)|.*)?)?$\")\nM3U8_STREAM_RE = re.compile(r\"(?:(?:#EXT-X-STREAM-INF)|#EXT-X-I-FRAME-STREAM-INF):.*(?:BANDWIDTH=(\\d+)).*\\n(.*)\")\nM3U8_MEDIA_RE = re.compile(r\"(?:#EXT-X-MEDIA:TYPE=)(?:(\\w+))(?:.*),URI=\\\"(.*)\\\"\")\nSEIGA_DRM_KEY_RE = re.compile(r\"/image/([a-z0-9]+)\")\nSEIGA_USER_ID_RE = re.compile(r\"user_id=(\\d+)\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "USER_CONTENT_TYPE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "USER_CONTENT_TYPE = r\"(video|mylist|live|blomaga|list|series|follow)\"\nVALID_URL_RE = re.compile(r\"https?://(?:(?:(?:(ch|sp|www|seiga|manga)\\.)|(?:(live[0-9]?|cas)\\.))?\"\n                          rf\"(?:(?:nicovideo\\.jp/{CONTENT_TYPE}?)(?(3)/|))|(nico\\.ms)/)\"\n                          rf\"((?:(?:[a-z]{2})?\\d+)|[a-zA-Z0-9-]+?)/?(?:/{USER_CONTENT_TYPE})?\"\n                          r\"(?(6)/((?:[a-z]{2})?\\d+))?(?:\\?(?:user_id=(.*)|.*)?)?$\")\nM3U8_STREAM_RE = re.compile(r\"(?:(?:#EXT-X-STREAM-INF)|#EXT-X-I-FRAME-STREAM-INF):.*(?:BANDWIDTH=(\\d+)).*\\n(.*)\")\nM3U8_MEDIA_RE = re.compile(r\"(?:#EXT-X-MEDIA:TYPE=)(?:(\\w+))(?:.*),URI=\\\"(.*)\\\"\")\nSEIGA_DRM_KEY_RE = re.compile(r\"/image/([a-z0-9]+)\")\nSEIGA_USER_ID_RE = re.compile(r\"user_id=(\\d+)\")\nSEIGA_MANGA_ID_RE = re.compile(r\"/comic/(\\d+)\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "VALID_URL_RE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "VALID_URL_RE = re.compile(r\"https?://(?:(?:(?:(ch|sp|www|seiga|manga)\\.)|(?:(live[0-9]?|cas)\\.))?\"\n                          rf\"(?:(?:nicovideo\\.jp/{CONTENT_TYPE}?)(?(3)/|))|(nico\\.ms)/)\"\n                          rf\"((?:(?:[a-z]{2})?\\d+)|[a-zA-Z0-9-]+?)/?(?:/{USER_CONTENT_TYPE})?\"\n                          r\"(?(6)/((?:[a-z]{2})?\\d+))?(?:\\?(?:user_id=(.*)|.*)?)?$\")\nM3U8_STREAM_RE = re.compile(r\"(?:(?:#EXT-X-STREAM-INF)|#EXT-X-I-FRAME-STREAM-INF):.*(?:BANDWIDTH=(\\d+)).*\\n(.*)\")\nM3U8_MEDIA_RE = re.compile(r\"(?:#EXT-X-MEDIA:TYPE=)(?:(\\w+))(?:.*),URI=\\\"(.*)\\\"\")\nSEIGA_DRM_KEY_RE = re.compile(r\"/image/([a-z0-9]+)\")\nSEIGA_USER_ID_RE = re.compile(r\"user_id=(\\d+)\")\nSEIGA_MANGA_ID_RE = re.compile(r\"/comic/(\\d+)\")\nTHUMB_INFO_API = \"http://ext.nicovideo.jp/api/getthumbinfo/{0}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "M3U8_STREAM_RE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "M3U8_STREAM_RE = re.compile(r\"(?:(?:#EXT-X-STREAM-INF)|#EXT-X-I-FRAME-STREAM-INF):.*(?:BANDWIDTH=(\\d+)).*\\n(.*)\")\nM3U8_MEDIA_RE = re.compile(r\"(?:#EXT-X-MEDIA:TYPE=)(?:(\\w+))(?:.*),URI=\\\"(.*)\\\"\")\nSEIGA_DRM_KEY_RE = re.compile(r\"/image/([a-z0-9]+)\")\nSEIGA_USER_ID_RE = re.compile(r\"user_id=(\\d+)\")\nSEIGA_MANGA_ID_RE = re.compile(r\"/comic/(\\d+)\")\nTHUMB_INFO_API = \"http://ext.nicovideo.jp/api/getthumbinfo/{0}\"\nTHREAD_REFRESH_API = \"https://nvapi.nicovideo.jp/v1/comment/keys/thread?videoId={0}\"\nMYLIST_API = \"https://nvapi.nicovideo.jp/v2/mylists/{0}?pageSize=500\"  # 500 video limit for premium mylists\nMYLIST_ME_API = \"https://nvapi.nicovideo.jp/v1/users/me/mylists/{0}?pageSize=500\" # Still on /v1\nSERIES_API = \"https://nvapi.nicovideo.jp/v2/series/{0}?&pageSize=500\"  # Same as mylists",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "M3U8_MEDIA_RE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "M3U8_MEDIA_RE = re.compile(r\"(?:#EXT-X-MEDIA:TYPE=)(?:(\\w+))(?:.*),URI=\\\"(.*)\\\"\")\nSEIGA_DRM_KEY_RE = re.compile(r\"/image/([a-z0-9]+)\")\nSEIGA_USER_ID_RE = re.compile(r\"user_id=(\\d+)\")\nSEIGA_MANGA_ID_RE = re.compile(r\"/comic/(\\d+)\")\nTHUMB_INFO_API = \"http://ext.nicovideo.jp/api/getthumbinfo/{0}\"\nTHREAD_REFRESH_API = \"https://nvapi.nicovideo.jp/v1/comment/keys/thread?videoId={0}\"\nMYLIST_API = \"https://nvapi.nicovideo.jp/v2/mylists/{0}?pageSize=500\"  # 500 video limit for premium mylists\nMYLIST_ME_API = \"https://nvapi.nicovideo.jp/v1/users/me/mylists/{0}?pageSize=500\" # Still on /v1\nSERIES_API = \"https://nvapi.nicovideo.jp/v2/series/{0}?&pageSize=500\"  # Same as mylists\nVIDEO_DMS_WATCH_API = \"https://nvapi.nicovideo.jp/v1/watch/{0}/access-rights/hls?actionTrackId={1}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_DRM_KEY_RE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_DRM_KEY_RE = re.compile(r\"/image/([a-z0-9]+)\")\nSEIGA_USER_ID_RE = re.compile(r\"user_id=(\\d+)\")\nSEIGA_MANGA_ID_RE = re.compile(r\"/comic/(\\d+)\")\nTHUMB_INFO_API = \"http://ext.nicovideo.jp/api/getthumbinfo/{0}\"\nTHREAD_REFRESH_API = \"https://nvapi.nicovideo.jp/v1/comment/keys/thread?videoId={0}\"\nMYLIST_API = \"https://nvapi.nicovideo.jp/v2/mylists/{0}?pageSize=500\"  # 500 video limit for premium mylists\nMYLIST_ME_API = \"https://nvapi.nicovideo.jp/v1/users/me/mylists/{0}?pageSize=500\" # Still on /v1\nSERIES_API = \"https://nvapi.nicovideo.jp/v2/series/{0}?&pageSize=500\"  # Same as mylists\nVIDEO_DMS_WATCH_API = \"https://nvapi.nicovideo.jp/v1/watch/{0}/access-rights/hls?actionTrackId={1}\"\nUSER_VIDEOS_API = \"https://nvapi.nicovideo.jp/v3/users/{0}/videos?sortKey=registeredAt&sortOrder=desc&pageSize={1}&page={2}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_USER_ID_RE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_USER_ID_RE = re.compile(r\"user_id=(\\d+)\")\nSEIGA_MANGA_ID_RE = re.compile(r\"/comic/(\\d+)\")\nTHUMB_INFO_API = \"http://ext.nicovideo.jp/api/getthumbinfo/{0}\"\nTHREAD_REFRESH_API = \"https://nvapi.nicovideo.jp/v1/comment/keys/thread?videoId={0}\"\nMYLIST_API = \"https://nvapi.nicovideo.jp/v2/mylists/{0}?pageSize=500\"  # 500 video limit for premium mylists\nMYLIST_ME_API = \"https://nvapi.nicovideo.jp/v1/users/me/mylists/{0}?pageSize=500\" # Still on /v1\nSERIES_API = \"https://nvapi.nicovideo.jp/v2/series/{0}?&pageSize=500\"  # Same as mylists\nVIDEO_DMS_WATCH_API = \"https://nvapi.nicovideo.jp/v1/watch/{0}/access-rights/hls?actionTrackId={1}\"\nUSER_VIDEOS_API = \"https://nvapi.nicovideo.jp/v3/users/{0}/videos?sortKey=registeredAt&sortOrder=desc&pageSize={1}&page={2}\"\nUSER_MYLISTS_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/mylists\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_MANGA_ID_RE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_MANGA_ID_RE = re.compile(r\"/comic/(\\d+)\")\nTHUMB_INFO_API = \"http://ext.nicovideo.jp/api/getthumbinfo/{0}\"\nTHREAD_REFRESH_API = \"https://nvapi.nicovideo.jp/v1/comment/keys/thread?videoId={0}\"\nMYLIST_API = \"https://nvapi.nicovideo.jp/v2/mylists/{0}?pageSize=500\"  # 500 video limit for premium mylists\nMYLIST_ME_API = \"https://nvapi.nicovideo.jp/v1/users/me/mylists/{0}?pageSize=500\" # Still on /v1\nSERIES_API = \"https://nvapi.nicovideo.jp/v2/series/{0}?&pageSize=500\"  # Same as mylists\nVIDEO_DMS_WATCH_API = \"https://nvapi.nicovideo.jp/v1/watch/{0}/access-rights/hls?actionTrackId={1}\"\nUSER_VIDEOS_API = \"https://nvapi.nicovideo.jp/v3/users/{0}/videos?sortKey=registeredAt&sortOrder=desc&pageSize={1}&page={2}\"\nUSER_MYLISTS_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/mylists\"\nUSER_SERIES_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/series\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "THUMB_INFO_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "THUMB_INFO_API = \"http://ext.nicovideo.jp/api/getthumbinfo/{0}\"\nTHREAD_REFRESH_API = \"https://nvapi.nicovideo.jp/v1/comment/keys/thread?videoId={0}\"\nMYLIST_API = \"https://nvapi.nicovideo.jp/v2/mylists/{0}?pageSize=500\"  # 500 video limit for premium mylists\nMYLIST_ME_API = \"https://nvapi.nicovideo.jp/v1/users/me/mylists/{0}?pageSize=500\" # Still on /v1\nSERIES_API = \"https://nvapi.nicovideo.jp/v2/series/{0}?&pageSize=500\"  # Same as mylists\nVIDEO_DMS_WATCH_API = \"https://nvapi.nicovideo.jp/v1/watch/{0}/access-rights/hls?actionTrackId={1}\"\nUSER_VIDEOS_API = \"https://nvapi.nicovideo.jp/v3/users/{0}/videos?sortKey=registeredAt&sortOrder=desc&pageSize={1}&page={2}\"\nUSER_MYLISTS_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/mylists\"\nUSER_SERIES_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/series\"\nUSER_FOLLOWING_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/following/users?pageSize=800\" # 800 following limit for premium users",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "THREAD_REFRESH_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "THREAD_REFRESH_API = \"https://nvapi.nicovideo.jp/v1/comment/keys/thread?videoId={0}\"\nMYLIST_API = \"https://nvapi.nicovideo.jp/v2/mylists/{0}?pageSize=500\"  # 500 video limit for premium mylists\nMYLIST_ME_API = \"https://nvapi.nicovideo.jp/v1/users/me/mylists/{0}?pageSize=500\" # Still on /v1\nSERIES_API = \"https://nvapi.nicovideo.jp/v2/series/{0}?&pageSize=500\"  # Same as mylists\nVIDEO_DMS_WATCH_API = \"https://nvapi.nicovideo.jp/v1/watch/{0}/access-rights/hls?actionTrackId={1}\"\nUSER_VIDEOS_API = \"https://nvapi.nicovideo.jp/v3/users/{0}/videos?sortKey=registeredAt&sortOrder=desc&pageSize={1}&page={2}\"\nUSER_MYLISTS_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/mylists\"\nUSER_SERIES_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/series\"\nUSER_FOLLOWING_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/following/users?pageSize=800\" # 800 following limit for premium users\nSEIGA_MANGA_TAGS_API = \"https://seiga.nicovideo.jp/ajax/manga/tag/list?id={0}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "MYLIST_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "MYLIST_API = \"https://nvapi.nicovideo.jp/v2/mylists/{0}?pageSize=500\"  # 500 video limit for premium mylists\nMYLIST_ME_API = \"https://nvapi.nicovideo.jp/v1/users/me/mylists/{0}?pageSize=500\" # Still on /v1\nSERIES_API = \"https://nvapi.nicovideo.jp/v2/series/{0}?&pageSize=500\"  # Same as mylists\nVIDEO_DMS_WATCH_API = \"https://nvapi.nicovideo.jp/v1/watch/{0}/access-rights/hls?actionTrackId={1}\"\nUSER_VIDEOS_API = \"https://nvapi.nicovideo.jp/v3/users/{0}/videos?sortKey=registeredAt&sortOrder=desc&pageSize={1}&page={2}\"\nUSER_MYLISTS_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/mylists\"\nUSER_SERIES_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/series\"\nUSER_FOLLOWING_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/following/users?pageSize=800\" # 800 following limit for premium users\nSEIGA_MANGA_TAGS_API = \"https://seiga.nicovideo.jp/ajax/manga/tag/list?id={0}\"\nUSER_HISTORY_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch/history?page={0}&pageSize={1}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "MYLIST_ME_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "MYLIST_ME_API = \"https://nvapi.nicovideo.jp/v1/users/me/mylists/{0}?pageSize=500\" # Still on /v1\nSERIES_API = \"https://nvapi.nicovideo.jp/v2/series/{0}?&pageSize=500\"  # Same as mylists\nVIDEO_DMS_WATCH_API = \"https://nvapi.nicovideo.jp/v1/watch/{0}/access-rights/hls?actionTrackId={1}\"\nUSER_VIDEOS_API = \"https://nvapi.nicovideo.jp/v3/users/{0}/videos?sortKey=registeredAt&sortOrder=desc&pageSize={1}&page={2}\"\nUSER_MYLISTS_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/mylists\"\nUSER_SERIES_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/series\"\nUSER_FOLLOWING_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/following/users?pageSize=800\" # 800 following limit for premium users\nSEIGA_MANGA_TAGS_API = \"https://seiga.nicovideo.jp/ajax/manga/tag/list?id={0}\"\nUSER_HISTORY_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch/history?page={0}&pageSize={1}\"\nUSER_LIKES_API = \"nvapi.nicovideo.jp/v1/users/me/watch/likes?page={0}&pageSize={1}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SERIES_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SERIES_API = \"https://nvapi.nicovideo.jp/v2/series/{0}?&pageSize=500\"  # Same as mylists\nVIDEO_DMS_WATCH_API = \"https://nvapi.nicovideo.jp/v1/watch/{0}/access-rights/hls?actionTrackId={1}\"\nUSER_VIDEOS_API = \"https://nvapi.nicovideo.jp/v3/users/{0}/videos?sortKey=registeredAt&sortOrder=desc&pageSize={1}&page={2}\"\nUSER_MYLISTS_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/mylists\"\nUSER_SERIES_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/series\"\nUSER_FOLLOWING_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/following/users?pageSize=800\" # 800 following limit for premium users\nSEIGA_MANGA_TAGS_API = \"https://seiga.nicovideo.jp/ajax/manga/tag/list?id={0}\"\nUSER_HISTORY_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch/history?page={0}&pageSize={1}\"\nUSER_LIKES_API = \"nvapi.nicovideo.jp/v1/users/me/watch/likes?page={0}&pageSize={1}\"\nUSER_WATCHLATER_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize={0}&page={1}\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "VIDEO_DMS_WATCH_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "VIDEO_DMS_WATCH_API = \"https://nvapi.nicovideo.jp/v1/watch/{0}/access-rights/hls?actionTrackId={1}\"\nUSER_VIDEOS_API = \"https://nvapi.nicovideo.jp/v3/users/{0}/videos?sortKey=registeredAt&sortOrder=desc&pageSize={1}&page={2}\"\nUSER_MYLISTS_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/mylists\"\nUSER_SERIES_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/series\"\nUSER_FOLLOWING_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/following/users?pageSize=800\" # 800 following limit for premium users\nSEIGA_MANGA_TAGS_API = \"https://seiga.nicovideo.jp/ajax/manga/tag/list?id={0}\"\nUSER_HISTORY_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch/history?page={0}&pageSize={1}\"\nUSER_LIKES_API = \"nvapi.nicovideo.jp/v1/users/me/watch/likes?page={0}&pageSize={1}\"\nUSER_WATCHLATER_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize={0}&page={1}\"\nREGION_LOCK_ERRORS = {  \"お住まいの地域・国からは視聴することができません。\",",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "USER_VIDEOS_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "USER_VIDEOS_API = \"https://nvapi.nicovideo.jp/v3/users/{0}/videos?sortKey=registeredAt&sortOrder=desc&pageSize={1}&page={2}\"\nUSER_MYLISTS_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/mylists\"\nUSER_SERIES_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/series\"\nUSER_FOLLOWING_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/following/users?pageSize=800\" # 800 following limit for premium users\nSEIGA_MANGA_TAGS_API = \"https://seiga.nicovideo.jp/ajax/manga/tag/list?id={0}\"\nUSER_HISTORY_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch/history?page={0}&pageSize={1}\"\nUSER_LIKES_API = \"nvapi.nicovideo.jp/v1/users/me/watch/likes?page={0}&pageSize={1}\"\nUSER_WATCHLATER_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize={0}&page={1}\"\nREGION_LOCK_ERRORS = {  \"お住まいの地域・国からは視聴することができません。\",\n                        \"この動画は投稿( アップロード )された地域と同じ地域からのみ視聴できます。\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "USER_MYLISTS_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "USER_MYLISTS_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/mylists\"\nUSER_SERIES_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/series\"\nUSER_FOLLOWING_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/following/users?pageSize=800\" # 800 following limit for premium users\nSEIGA_MANGA_TAGS_API = \"https://seiga.nicovideo.jp/ajax/manga/tag/list?id={0}\"\nUSER_HISTORY_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch/history?page={0}&pageSize={1}\"\nUSER_LIKES_API = \"nvapi.nicovideo.jp/v1/users/me/watch/likes?page={0}&pageSize={1}\"\nUSER_WATCHLATER_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize={0}&page={1}\"\nREGION_LOCK_ERRORS = {  \"お住まいの地域・国からは視聴することができません。\",\n                        \"この動画は投稿( アップロード )された地域と同じ地域からのみ視聴できます。\"\n                     }",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "USER_SERIES_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "USER_SERIES_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/series\"\nUSER_FOLLOWING_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/following/users?pageSize=800\" # 800 following limit for premium users\nSEIGA_MANGA_TAGS_API = \"https://seiga.nicovideo.jp/ajax/manga/tag/list?id={0}\"\nUSER_HISTORY_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch/history?page={0}&pageSize={1}\"\nUSER_LIKES_API = \"nvapi.nicovideo.jp/v1/users/me/watch/likes?page={0}&pageSize={1}\"\nUSER_WATCHLATER_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize={0}&page={1}\"\nREGION_LOCK_ERRORS = {  \"お住まいの地域・国からは視聴することができません。\",\n                        \"この動画は投稿( アップロード )された地域と同じ地域からのみ視聴できます。\"\n                     }\nUSER_VIDEOS_API_N = 100",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "USER_FOLLOWING_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "USER_FOLLOWING_API = \"https://nvapi.nicovideo.jp/v1/users/{0}/following/users?pageSize=800\" # 800 following limit for premium users\nSEIGA_MANGA_TAGS_API = \"https://seiga.nicovideo.jp/ajax/manga/tag/list?id={0}\"\nUSER_HISTORY_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch/history?page={0}&pageSize={1}\"\nUSER_LIKES_API = \"nvapi.nicovideo.jp/v1/users/me/watch/likes?page={0}&pageSize={1}\"\nUSER_WATCHLATER_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize={0}&page={1}\"\nREGION_LOCK_ERRORS = {  \"お住まいの地域・国からは視聴することができません。\",\n                        \"この動画は投稿( アップロード )された地域と同じ地域からのみ視聴できます。\"\n                     }\nUSER_VIDEOS_API_N = 100\nNAMA_HEARTBEAT_INTERVAL_S = 30",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "SEIGA_MANGA_TAGS_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "SEIGA_MANGA_TAGS_API = \"https://seiga.nicovideo.jp/ajax/manga/tag/list?id={0}\"\nUSER_HISTORY_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch/history?page={0}&pageSize={1}\"\nUSER_LIKES_API = \"nvapi.nicovideo.jp/v1/users/me/watch/likes?page={0}&pageSize={1}\"\nUSER_WATCHLATER_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize={0}&page={1}\"\nREGION_LOCK_ERRORS = {  \"お住まいの地域・国からは視聴することができません。\",\n                        \"この動画は投稿( アップロード )された地域と同じ地域からのみ視聴できます。\"\n                     }\nUSER_VIDEOS_API_N = 100\nNAMA_HEARTBEAT_INTERVAL_S = 30\nNAMA_PLAYLIST_INTERVAL_S = 5",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "USER_HISTORY_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "USER_HISTORY_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch/history?page={0}&pageSize={1}\"\nUSER_LIKES_API = \"nvapi.nicovideo.jp/v1/users/me/watch/likes?page={0}&pageSize={1}\"\nUSER_WATCHLATER_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize={0}&page={1}\"\nREGION_LOCK_ERRORS = {  \"お住まいの地域・国からは視聴することができません。\",\n                        \"この動画は投稿( アップロード )された地域と同じ地域からのみ視聴できます。\"\n                     }\nUSER_VIDEOS_API_N = 100\nNAMA_HEARTBEAT_INTERVAL_S = 30\nNAMA_PLAYLIST_INTERVAL_S = 5\nDMC_HEARTBEAT_INTERVAL_S = 15",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "USER_LIKES_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "USER_LIKES_API = \"nvapi.nicovideo.jp/v1/users/me/watch/likes?page={0}&pageSize={1}\"\nUSER_WATCHLATER_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize={0}&page={1}\"\nREGION_LOCK_ERRORS = {  \"お住まいの地域・国からは視聴することができません。\",\n                        \"この動画は投稿( アップロード )された地域と同じ地域からのみ視聴できます。\"\n                     }\nUSER_VIDEOS_API_N = 100\nNAMA_HEARTBEAT_INTERVAL_S = 30\nNAMA_PLAYLIST_INTERVAL_S = 5\nDMC_HEARTBEAT_INTERVAL_S = 15\nCOMMENTS_THREAD_COOLDOWN_S = 60",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "USER_WATCHLATER_API",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "USER_WATCHLATER_API = \"https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize={0}&page={1}\"\nREGION_LOCK_ERRORS = {  \"お住まいの地域・国からは視聴することができません。\",\n                        \"この動画は投稿( アップロード )された地域と同じ地域からのみ視聴できます。\"\n                     }\nUSER_VIDEOS_API_N = 100\nNAMA_HEARTBEAT_INTERVAL_S = 30\nNAMA_PLAYLIST_INTERVAL_S = 5\nDMC_HEARTBEAT_INTERVAL_S = 15\nCOMMENTS_THREAD_COOLDOWN_S = 60\nCOMMENTS_THREAD_INTERVAL_S = 1",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "REGION_LOCK_ERRORS",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "REGION_LOCK_ERRORS = {  \"お住まいの地域・国からは視聴することができません。\",\n                        \"この動画は投稿( アップロード )された地域と同じ地域からのみ視聴できます。\"\n                     }\nUSER_VIDEOS_API_N = 100\nNAMA_HEARTBEAT_INTERVAL_S = 30\nNAMA_PLAYLIST_INTERVAL_S = 5\nDMC_HEARTBEAT_INTERVAL_S = 15\nCOMMENTS_THREAD_COOLDOWN_S = 60\nCOMMENTS_THREAD_INTERVAL_S = 1\nCOMMENTS_LIMIT_DEFAULT_N = 1000",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "USER_VIDEOS_API_N",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "USER_VIDEOS_API_N = 100\nNAMA_HEARTBEAT_INTERVAL_S = 30\nNAMA_PLAYLIST_INTERVAL_S = 5\nDMC_HEARTBEAT_INTERVAL_S = 15\nCOMMENTS_THREAD_COOLDOWN_S = 60\nCOMMENTS_THREAD_INTERVAL_S = 1\nCOMMENTS_LIMIT_DEFAULT_N = 1000\nKILOBYTE = 1024\nKILOBIT = 1000\nBLOCK_SIZE = 1024",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "NAMA_HEARTBEAT_INTERVAL_S",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "NAMA_HEARTBEAT_INTERVAL_S = 30\nNAMA_PLAYLIST_INTERVAL_S = 5\nDMC_HEARTBEAT_INTERVAL_S = 15\nCOMMENTS_THREAD_COOLDOWN_S = 60\nCOMMENTS_THREAD_INTERVAL_S = 1\nCOMMENTS_LIMIT_DEFAULT_N = 1000\nKILOBYTE = 1024\nKILOBIT = 1000\nBLOCK_SIZE = 1024\nEPSILON = 0.0001",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "NAMA_PLAYLIST_INTERVAL_S",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "NAMA_PLAYLIST_INTERVAL_S = 5\nDMC_HEARTBEAT_INTERVAL_S = 15\nCOMMENTS_THREAD_COOLDOWN_S = 60\nCOMMENTS_THREAD_INTERVAL_S = 1\nCOMMENTS_LIMIT_DEFAULT_N = 1000\nKILOBYTE = 1024\nKILOBIT = 1000\nBLOCK_SIZE = 1024\nEPSILON = 0.0001\nRETRY_ATTEMPTS = 5",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "DMC_HEARTBEAT_INTERVAL_S",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "DMC_HEARTBEAT_INTERVAL_S = 15\nCOMMENTS_THREAD_COOLDOWN_S = 60\nCOMMENTS_THREAD_INTERVAL_S = 1\nCOMMENTS_LIMIT_DEFAULT_N = 1000\nKILOBYTE = 1024\nKILOBIT = 1000\nBLOCK_SIZE = 1024\nEPSILON = 0.0001\nRETRY_ATTEMPTS = 5\nBACKOFF_FACTOR = 2  # retry_timeout_s = BACKOFF_FACTOR * (2 ** ({RETRY_ATTEMPTS} - 1))",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "COMMENTS_THREAD_COOLDOWN_S",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "COMMENTS_THREAD_COOLDOWN_S = 60\nCOMMENTS_THREAD_INTERVAL_S = 1\nCOMMENTS_LIMIT_DEFAULT_N = 1000\nKILOBYTE = 1024\nKILOBIT = 1000\nBLOCK_SIZE = 1024\nEPSILON = 0.0001\nRETRY_ATTEMPTS = 5\nBACKOFF_FACTOR = 2  # retry_timeout_s = BACKOFF_FACTOR * (2 ** ({RETRY_ATTEMPTS} - 1))\nTEMP_PATH_LEN = 16",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "COMMENTS_THREAD_INTERVAL_S",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "COMMENTS_THREAD_INTERVAL_S = 1\nCOMMENTS_LIMIT_DEFAULT_N = 1000\nKILOBYTE = 1024\nKILOBIT = 1000\nBLOCK_SIZE = 1024\nEPSILON = 0.0001\nRETRY_ATTEMPTS = 5\nBACKOFF_FACTOR = 2  # retry_timeout_s = BACKOFF_FACTOR * (2 ** ({RETRY_ATTEMPTS} - 1))\nTEMP_PATH_LEN = 16\nCOMMENTS_DATA_JSON = {",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "COMMENTS_LIMIT_DEFAULT_N",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "COMMENTS_LIMIT_DEFAULT_N = 1000\nKILOBYTE = 1024\nKILOBIT = 1000\nBLOCK_SIZE = 1024\nEPSILON = 0.0001\nRETRY_ATTEMPTS = 5\nBACKOFF_FACTOR = 2  # retry_timeout_s = BACKOFF_FACTOR * (2 ** ({RETRY_ATTEMPTS} - 1))\nTEMP_PATH_LEN = 16\nCOMMENTS_DATA_JSON = {\n    \"globalComments\": {",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "KILOBYTE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "KILOBYTE = 1024\nKILOBIT = 1000\nBLOCK_SIZE = 1024\nEPSILON = 0.0001\nRETRY_ATTEMPTS = 5\nBACKOFF_FACTOR = 2  # retry_timeout_s = BACKOFF_FACTOR * (2 ** ({RETRY_ATTEMPTS} - 1))\nTEMP_PATH_LEN = 16\nCOMMENTS_DATA_JSON = {\n    \"globalComments\": {\n        \"retrievedCount\": None,",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "KILOBIT",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "KILOBIT = 1000\nBLOCK_SIZE = 1024\nEPSILON = 0.0001\nRETRY_ATTEMPTS = 5\nBACKOFF_FACTOR = 2  # retry_timeout_s = BACKOFF_FACTOR * (2 ** ({RETRY_ATTEMPTS} - 1))\nTEMP_PATH_LEN = 16\nCOMMENTS_DATA_JSON = {\n    \"globalComments\": {\n        \"retrievedCount\": None,\n        \"commentCount\": None",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "BLOCK_SIZE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "BLOCK_SIZE = 1024\nEPSILON = 0.0001\nRETRY_ATTEMPTS = 5\nBACKOFF_FACTOR = 2  # retry_timeout_s = BACKOFF_FACTOR * (2 ** ({RETRY_ATTEMPTS} - 1))\nTEMP_PATH_LEN = 16\nCOMMENTS_DATA_JSON = {\n    \"globalComments\": {\n        \"retrievedCount\": None,\n        \"commentCount\": None\n    },",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "EPSILON",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "EPSILON = 0.0001\nRETRY_ATTEMPTS = 5\nBACKOFF_FACTOR = 2  # retry_timeout_s = BACKOFF_FACTOR * (2 ** ({RETRY_ATTEMPTS} - 1))\nTEMP_PATH_LEN = 16\nCOMMENTS_DATA_JSON = {\n    \"globalComments\": {\n        \"retrievedCount\": None,\n        \"commentCount\": None\n    },\n    \"threads\": [],",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "RETRY_ATTEMPTS",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "RETRY_ATTEMPTS = 5\nBACKOFF_FACTOR = 2  # retry_timeout_s = BACKOFF_FACTOR * (2 ** ({RETRY_ATTEMPTS} - 1))\nTEMP_PATH_LEN = 16\nCOMMENTS_DATA_JSON = {\n    \"globalComments\": {\n        \"retrievedCount\": None,\n        \"commentCount\": None\n    },\n    \"threads\": [],\n}",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "BACKOFF_FACTOR",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "BACKOFF_FACTOR = 2  # retry_timeout_s = BACKOFF_FACTOR * (2 ** ({RETRY_ATTEMPTS} - 1))\nTEMP_PATH_LEN = 16\nCOMMENTS_DATA_JSON = {\n    \"globalComments\": {\n        \"retrievedCount\": None,\n        \"commentCount\": None\n    },\n    \"threads\": [],\n}\nMIMETYPES = {",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "TEMP_PATH_LEN",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "TEMP_PATH_LEN = 16\nCOMMENTS_DATA_JSON = {\n    \"globalComments\": {\n        \"retrievedCount\": None,\n        \"commentCount\": None\n    },\n    \"threads\": [],\n}\nMIMETYPES = {\n    \"image/gif\": \"gif\",",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "COMMENTS_DATA_JSON",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "COMMENTS_DATA_JSON = {\n    \"globalComments\": {\n        \"retrievedCount\": None,\n        \"commentCount\": None\n    },\n    \"threads\": [],\n}\nMIMETYPES = {\n    \"image/gif\": \"gif\",\n    \"image/jpeg\": \"jpg\",",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "MIMETYPES",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "MIMETYPES = {\n    \"image/gif\": \"gif\",\n    \"image/jpeg\": \"jpg\",\n    \"image/png\": \"png\"\n}\nHTML5_COOKIE = {\n    \"watch_flash\": \"0\"\n}\nFLASH_COOKIE = {\n    \"watch_flash\": \"1\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "HTML5_COOKIE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "HTML5_COOKIE = {\n    \"watch_flash\": \"0\"\n}\nFLASH_COOKIE = {\n    \"watch_flash\": \"1\"\n}\nEN_COOKIE = {\n    \"lang\": \"en-us\"\n}\nTW_COOKIE = {",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "FLASH_COOKIE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "FLASH_COOKIE = {\n    \"watch_flash\": \"1\"\n}\nEN_COOKIE = {\n    \"lang\": \"en-us\"\n}\nTW_COOKIE = {\n    \"lang\": \"zh-tw\"\n}\nAPI_HEADERS = {",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "EN_COOKIE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "EN_COOKIE = {\n    \"lang\": \"en-us\"\n}\nTW_COOKIE = {\n    \"lang\": \"zh-tw\"\n}\nAPI_HEADERS = {\n    \"X-Frontend-Id\": \"6\",\n    \"X-Frontend-Version\": \"0\",\n    \"X-Niconico-Language\": \"ja-jp\"  # Does not impact parameter extraction",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "TW_COOKIE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "TW_COOKIE = {\n    \"lang\": \"zh-tw\"\n}\nAPI_HEADERS = {\n    \"X-Frontend-Id\": \"6\",\n    \"X-Frontend-Version\": \"0\",\n    \"X-Niconico-Language\": \"ja-jp\"  # Does not impact parameter extraction\n}\nNAMA_ORIGIN_HEADER = {\"Origin\": \"https://live2.nicovideo.jp\"}\nNAMA_PERMIT_FRAME = json.loads(\"\"\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "API_HEADERS",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "API_HEADERS = {\n    \"X-Frontend-Id\": \"6\",\n    \"X-Frontend-Version\": \"0\",\n    \"X-Niconico-Language\": \"ja-jp\"  # Does not impact parameter extraction\n}\nNAMA_ORIGIN_HEADER = {\"Origin\": \"https://live2.nicovideo.jp\"}\nNAMA_PERMIT_FRAME = json.loads(\"\"\"\n{\n    \"type\": \"startWatching\",\n    \"data\": {",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "NAMA_ORIGIN_HEADER",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "NAMA_ORIGIN_HEADER = {\"Origin\": \"https://live2.nicovideo.jp\"}\nNAMA_PERMIT_FRAME = json.loads(\"\"\"\n{\n    \"type\": \"startWatching\",\n    \"data\": {\n        \"stream\": {\n            \"quality\": \"super_high\",\n            \"protocol\": \"hls\",\n            \"latency\": \"low\",\n            \"chasePlay\": false",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "NAMA_PERMIT_FRAME",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "NAMA_PERMIT_FRAME = json.loads(\"\"\"\n{\n    \"type\": \"startWatching\",\n    \"data\": {\n        \"stream\": {\n            \"quality\": \"super_high\",\n            \"protocol\": \"hls\",\n            \"latency\": \"low\",\n            \"chasePlay\": false\n        },",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "NAMA_QUALITY_FRAME",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "NAMA_QUALITY_FRAME = json.loads(\"\"\"\n{\n    \"type\": \"changeStream\",\n    \"data\": {\n        \"quality\": \"{0}\",\n        \"protocol\": \"hls\",\n        \"latency\": \"low\",\n        \"chasePlay\": false\n    }\n}",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "NAMA_WATCHING_FRAME",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "NAMA_WATCHING_FRAME = json.loads(\"\"\"{\"type\": \"keepSeat\"}\"\"\")\nPONG_FRAME = json.loads(\"\"\"{\"type\":\"pong\"}\"\"\")\nMIN_DATE = datetime(2007, 3, 3).replace(tzinfo=timezone.utc) # Constant taken from comment-zouryou (likely coincides with the γ launch on 2007-03-06): https://github.com/tanbatu/comment-zouryou\nMAX_DATE = datetime.now(timezone.utc)\nlogger = logging.getLogger(__name__)\ndef parse_datetime_to_timestamp(value) -> int:\n    \"\"\"\n    Parse either ISO 8601 datetime or Unix timestamp, returning Unix timestamp.\n    Validates date is between 2007-03-03 and today.\n    For ISO dates without time, defaults to 23:59:59 of that day.",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "PONG_FRAME",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "PONG_FRAME = json.loads(\"\"\"{\"type\":\"pong\"}\"\"\")\nMIN_DATE = datetime(2007, 3, 3).replace(tzinfo=timezone.utc) # Constant taken from comment-zouryou (likely coincides with the γ launch on 2007-03-06): https://github.com/tanbatu/comment-zouryou\nMAX_DATE = datetime.now(timezone.utc)\nlogger = logging.getLogger(__name__)\ndef parse_datetime_to_timestamp(value) -> int:\n    \"\"\"\n    Parse either ISO 8601 datetime or Unix timestamp, returning Unix timestamp.\n    Validates date is between 2007-03-03 and today.\n    For ISO dates without time, defaults to 23:59:59 of that day.\n    \"\"\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "MIN_DATE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "MIN_DATE = datetime(2007, 3, 3).replace(tzinfo=timezone.utc) # Constant taken from comment-zouryou (likely coincides with the γ launch on 2007-03-06): https://github.com/tanbatu/comment-zouryou\nMAX_DATE = datetime.now(timezone.utc)\nlogger = logging.getLogger(__name__)\ndef parse_datetime_to_timestamp(value) -> int:\n    \"\"\"\n    Parse either ISO 8601 datetime or Unix timestamp, returning Unix timestamp.\n    Validates date is between 2007-03-03 and today.\n    For ISO dates without time, defaults to 23:59:59 of that day.\n    \"\"\"\n    try:",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "MAX_DATE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "MAX_DATE = datetime.now(timezone.utc)\nlogger = logging.getLogger(__name__)\ndef parse_datetime_to_timestamp(value) -> int:\n    \"\"\"\n    Parse either ISO 8601 datetime or Unix timestamp, returning Unix timestamp.\n    Validates date is between 2007-03-03 and today.\n    For ISO dates without time, defaults to 23:59:59 of that day.\n    \"\"\"\n    try:\n        # First try to parse as Unix timestamp",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "logger = logging.getLogger(__name__)\ndef parse_datetime_to_timestamp(value) -> int:\n    \"\"\"\n    Parse either ISO 8601 datetime or Unix timestamp, returning Unix timestamp.\n    Validates date is between 2007-03-03 and today.\n    For ISO dates without time, defaults to 23:59:59 of that day.\n    \"\"\"\n    try:\n        # First try to parse as Unix timestamp\n        timestamp = float(value)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "CMDL_USAGE",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "CMDL_USAGE = \"%(prog)s [options] input\"\nCMDL_VERSION = __version__\ncmdl_parser = argparse.ArgumentParser(usage=CMDL_USAGE, conflict_handler=\"resolve\", formatter_class=argparse.RawTextHelpFormatter)\ncmdl_parser.set_defaults(comments_from_raw=None)\ncmdl_parser.add_argument(\"-u\", \"--username\", dest=\"username\", metavar=\"EMAIL/TEL\",\n                         help=\"account email address or telephone number\")\ncmdl_parser.add_argument(\"-p\", \"--password\", dest=\"password\", metavar=\"PASSWORD\", help=\"account password\")\ncmdl_parser.add_argument(\"--session-cookie\", dest=\"session_cookie\", metavar=\"COOKIE\", help=\"user_session cookie value (string or filepath)\")\ncmdl_parser.add_argument(\"-n\", \"--netrc\", action=\"store_true\", dest=\"netrc\", help=\"use .netrc authentication\")\ncmdl_parser.add_argument(\"-q\", \"--quiet\", action=\"store_true\", dest=\"quiet\", help=\"suppress output to console\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "CMDL_VERSION",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "CMDL_VERSION = __version__\ncmdl_parser = argparse.ArgumentParser(usage=CMDL_USAGE, conflict_handler=\"resolve\", formatter_class=argparse.RawTextHelpFormatter)\ncmdl_parser.set_defaults(comments_from_raw=None)\ncmdl_parser.add_argument(\"-u\", \"--username\", dest=\"username\", metavar=\"EMAIL/TEL\",\n                         help=\"account email address or telephone number\")\ncmdl_parser.add_argument(\"-p\", \"--password\", dest=\"password\", metavar=\"PASSWORD\", help=\"account password\")\ncmdl_parser.add_argument(\"--session-cookie\", dest=\"session_cookie\", metavar=\"COOKIE\", help=\"user_session cookie value (string or filepath)\")\ncmdl_parser.add_argument(\"-n\", \"--netrc\", action=\"store_true\", dest=\"netrc\", help=\"use .netrc authentication\")\ncmdl_parser.add_argument(\"-q\", \"--quiet\", action=\"store_true\", dest=\"quiet\", help=\"suppress output to console\")\ncmdl_parser.add_argument(\"-l\", \"--log\", nargs=\"?\", const=f\"[{MODULE_NAME}] {time.strftime('%Y-%m-%d')}.log\", dest=\"log\", metavar=\"PATH\", help=\"log output to file\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "cmdl_parser",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "cmdl_parser = argparse.ArgumentParser(usage=CMDL_USAGE, conflict_handler=\"resolve\", formatter_class=argparse.RawTextHelpFormatter)\ncmdl_parser.set_defaults(comments_from_raw=None)\ncmdl_parser.add_argument(\"-u\", \"--username\", dest=\"username\", metavar=\"EMAIL/TEL\",\n                         help=\"account email address or telephone number\")\ncmdl_parser.add_argument(\"-p\", \"--password\", dest=\"password\", metavar=\"PASSWORD\", help=\"account password\")\ncmdl_parser.add_argument(\"--session-cookie\", dest=\"session_cookie\", metavar=\"COOKIE\", help=\"user_session cookie value (string or filepath)\")\ncmdl_parser.add_argument(\"-n\", \"--netrc\", action=\"store_true\", dest=\"netrc\", help=\"use .netrc authentication\")\ncmdl_parser.add_argument(\"-q\", \"--quiet\", action=\"store_true\", dest=\"quiet\", help=\"suppress output to console\")\ncmdl_parser.add_argument(\"-l\", \"--log\", nargs=\"?\", const=f\"[{MODULE_NAME}] {time.strftime('%Y-%m-%d')}.log\", dest=\"log\", metavar=\"PATH\", help=\"log output to file\")\ncmdl_parser.add_argument(\"-v\", \"--version\", action=\"version\", version=CMDL_VERSION)",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "dl_group",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "dl_group = cmdl_parser.add_argument_group(\"download options\")\ndl_group.add_argument(\"-y\", \"--proxy\", dest=\"proxy\", metavar=\"PROXY\", help=\"HTTP or SOCKS proxy\")\ndl_group.add_argument(\"-o\", \"--output-path\", dest=\"output_path\", metavar=\"TEMPLATE\",\n                      help=\"custom output path (see template options)\")\ndl_group.add_argument(\"-r\", \"--threads\", dest=\"threads\", metavar=\"N\", type=int,\n                      help=\"download videos using a specified number of threads\")\ndl_group.add_argument(\"-g\", \"--no-login\", action=\"store_true\", dest=\"no_login\",\n                      help=\"create a download session without logging in\")\ndl_group.add_argument(\"-f\", \"--force-high-quality\", action=\"store_true\", dest=\"force_high_quality\",\n                      help=\"only download if the high quality video source is available\")",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "_START_TIME",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "_START_TIME = _PROGRESS = 0\n_CMDL_OPTS = None\nclass AuthenticationException(Exception):\n    \"\"\"Raised when logging in to Niconico failed.\"\"\"\nclass ArgumentException(Exception):\n    \"\"\"Raised when reading the argument failed.\"\"\"\nclass FormatNotSupportedException(Exception):\n    \"\"\"Raised when the response format is not supported.\"\"\"\nclass FormatNotAvailableException(Exception):\n    \"\"\"Raised when the requested format is not available.\"\"\"",
+        "detail": "server.main",
+        "documentation": {}
+    },
+    {
+        "label": "_CMDL_OPTS",
+        "kind": 5,
+        "importPath": "server.main",
+        "description": "server.main",
+        "peekOfCode": "_CMDL_OPTS = None\nclass AuthenticationException(Exception):\n    \"\"\"Raised when logging in to Niconico failed.\"\"\"\nclass ArgumentException(Exception):\n    \"\"\"Raised when reading the argument failed.\"\"\"\nclass FormatNotSupportedException(Exception):\n    \"\"\"Raised when the response format is not supported.\"\"\"\nclass FormatNotAvailableException(Exception):\n    \"\"\"Raised when the requested format is not available.\"\"\"\nclass ParameterExtractionException(Exception):",
+        "detail": "server.main",
+        "documentation": {}
+    }
+]

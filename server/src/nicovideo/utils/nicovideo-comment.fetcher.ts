@@ -89,7 +89,7 @@ export class NicovideCommentFetcher {
         const requestBody = {
           params: {
             language: language,
-            targets: threads,  // ✅ 複数スレッドを一度に送信
+            targets: threads,  // 複数スレッドを一度に送信
           },
           threadKey: threadKey,
           additionals: {
