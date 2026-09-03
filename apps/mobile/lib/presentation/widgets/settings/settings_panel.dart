@@ -20,7 +20,7 @@ class _SettingsPanelState extends ConsumerState<SettingsPanel>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -41,7 +41,7 @@ class _SettingsPanelState extends ConsumerState<SettingsPanel>
         : ColorConstants.lightControllerBg;
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Container(
         color: bgColor,
         child: Column(
@@ -55,6 +55,7 @@ class _SettingsPanelState extends ConsumerState<SettingsPanel>
               tabs: [
                 Tab(text: localizations.playbackSpeed),
                 Tab(text: localizations.danmakuSettings),
+                const Tab(text: 'コメント'),
               ],
             ),
             Expanded(
@@ -63,6 +64,7 @@ class _SettingsPanelState extends ConsumerState<SettingsPanel>
                 children: [
                   _buildPlaybackTab(context, localizations),
                   _buildDanmakuTab(context, localizations),
+                  _buildCommentTab(context, localizations),
                 ],
               ),
             ),
@@ -119,6 +121,83 @@ class _SettingsPanelState extends ConsumerState<SettingsPanel>
   ) {
     return SingleChildScrollView(
       child: const DanmakuSettingsPanel(),
+    );
+  }
+
+  /// コメント設定タブ
+  Widget _buildCommentTab(
+    BuildContext context,
+    AppLocalizations localizations,
+  ) {
+    final fontSize = ref.watch(danmakuFontSizeProvider);
+    final speedRate = ref.watch(danmakuSpeedRateProvider);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('フォントサイズ'),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('$fontSize px'),
+              Expanded(
+                child: Slider(
+                  value: fontSize.toDouble(),
+                  min: 12,
+                  max: 48,
+                  divisions: 9,
+                  onChanged: (value) {
+                    ref
+                        .read(danmakuFontSizeProvider.notifier)
+                        .state = value.toInt();
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('コメント速度'),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('${speedRate.toStringAsFixed(2)}x'),
+              Expanded(
+                child: Slider(
+                  value: speedRate,
+                  min: 0.25,
+                  max: 2.0,
+                  divisions: 7,
+                  onChanged: (value) {
+                    ref
+                        .read(danmakuSpeedRateProvider.notifier)
+                        .state = value;
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('表示設定'),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('コメント表示'),
+              Switch(
+                value: ref.watch(danmakuVisibilityProvider),
+                onChanged: (value) {
+                  ref.read(danmakuVisibilityProvider.notifier).state = value;
+                },
+                activeColor: ColorConstants.lightPrimary,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

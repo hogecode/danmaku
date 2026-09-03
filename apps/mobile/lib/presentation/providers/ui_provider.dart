@@ -17,6 +17,11 @@ final danmakuVisibilityProvider = StateProvider<bool>((ref) {
   return true;
 });
 
+/// ダンマクフォントサイズプロバイダー（12 ~ 48）
+final danmakuFontSizeProvider = StateProvider<int>((ref) {
+  return 25;
+});
+
 /// ダークモードプロバイダー
 final darkModeProvider = StateProvider<bool>((ref) {
   return false;
