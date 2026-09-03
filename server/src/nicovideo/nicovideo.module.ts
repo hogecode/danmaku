@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { NicovideoController } from './nicovideo.controller';
 import { NicovideoVideoService, NicovideoCommentService } from './services';
 import { NicovideoApiClient } from './utils/nicovideo-api.client';
-import { NicovideCommentFetcher } from './utils/nicovideo-comment.fetcher';
-import { NicovideVideoDownloader } from './utils/nicovideo-video.downloader';
+import { NicovideoCommentFetcher } from './utils/nicovideo-comment.fetcher';
+import { NicovideoVideoDownloader } from './utils/nicovideo-video.downloader';
 
 /**
  * ニコ動 ダウンロードModule
@@ -13,8 +13,8 @@ import { NicovideVideoDownloader } from './utils/nicovideo-video.downloader';
   controllers: [NicovideoController],
   providers: [
     NicovideoApiClient,
-    NicovideCommentFetcher,
-    NicovideVideoDownloader,
+    NicovideoCommentFetcher,
+    NicovideoVideoDownloader,
     NicovideoVideoService,
     NicovideoCommentService,
   ],

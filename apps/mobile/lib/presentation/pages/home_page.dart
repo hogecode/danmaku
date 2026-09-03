@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile/presentation/providers/auth_provider.dart';
 import 'package:mobile/presentation/providers/ui_provider.dart';
-import 'package:mobile/presentation/pages/drive_page.dart';
+import 'package:mobile/presentation/providers/router_provider.dart';
 import 'package:mobile/presentation/pages/widgets/menu_button.dart';
 
 /// ホーム画面
-class HomePage extends ConsumerWidget {
-  const HomePage({Key? key}) : super(key: key);
+class HomePage
+    extends ConsumerWidget {
+  final String? searchQuery;
+
+  const HomePage({
+    Key? key,
+    this.searchQuery,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -137,11 +144,7 @@ class HomePage extends ConsumerWidget {
           subtitle: 'ビデオを再生',
           isDarkMode: isDarkMode,
           onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const DrivePage(),
-              ),
-            );
+            context.go(Routes.drive);
           },
         ),
         const SizedBox(height: 12),

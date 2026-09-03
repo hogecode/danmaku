@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile/presentation/pages/home_page.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mobile/presentation/providers/app_provider.dart';
 import 'package:mobile/presentation/providers/auth_provider.dart';
 import 'package:mobile/presentation/providers/ui_provider.dart';
+import 'package:mobile/presentation/providers/router_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -26,13 +28,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         isAuthenticatedProvider,
         (p, n) {
       if (n && !loading) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                const HomePage(),
-          ),
-        );
+        context.go(Routes.home);
       }
     });
 
@@ -75,11 +71,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           .all(12),
                   color: Colors.red
                       .withOpacity(0.2),
-                  child: Text(
-                    _error!,
-                    style:
-                        const TextStyle(
-                      color: Colors.red,
+                  constraints:
+                      const BoxConstraints(
+                    maxHeight: 120,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      _error!,
+                      style:
+                          const TextStyle(
+                        color:
+                            Colors.red,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ),
@@ -200,7 +204,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     } catch (e) {
       setState(() {
         _error =
-            'ログイン失敗: $e';
+            'ログイン失敗:\n\n$e\n\n'
+            'サーバーが起動しているか確認してください: '
+            '${ref.read(appProvider).apiBaseUrl}';
       });
     }
   }

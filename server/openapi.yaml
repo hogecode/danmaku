@@ -125,35 +125,6 @@ paths:
           description: ''
       tags:
         - Player
-  /api/nicovideo/download/video:
-    post:
-      operationId: NicovideoController_downloadVideo
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DownloadVideoRequestDto'
-      responses:
-        '201':
-          description: ''
-      tags:
-        - Nicovideo
-  /api/nicovideo/status/{taskId}:
-    get:
-      operationId: NicovideoController_getDownloadStatus
-      parameters:
-        - name: taskId
-          required: true
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-      tags:
-        - Nicovideo
   /api/nicovideo/download/comments:
     post:
       operationId: NicovideoController_downloadComments
@@ -178,9 +149,6 @@ tags: []
 servers: []
 components:
   schemas:
-    DownloadVideoRequestDto:
-      type: object
-      properties: {}
     DownloadCommentRequestDto:
       type: object
       properties: {}

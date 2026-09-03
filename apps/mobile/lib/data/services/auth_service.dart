@@ -74,46 +74,124 @@ class AuthService {
   /// ログイン開始
   /// POST /api/auth/login
   Future<LoginResponseModel> login() async {
+    // テストモード：モックデータを返す
+    if (AppConstants.useMockData) {
+      _logger.i(
+          'Using mock login data for testing');
+      await Future.delayed(
+        const Duration(
+            milliseconds: 500),
+      );
+      return LoginResponseModel(
+        authorizeUrl:
+            'https://accounts.google.com/o/oauth2/v2/auth?client_id=test&redirect_uri=http://localhost:3000/callback&response_type=code&scope=openid',
+        state:
+            'test_state_123456789',
+        expiresIn: 3600,
+      );
+    }
+
     try {
-      final response = await _dio.post<Map<String, dynamic>>(
+      _logger.i(
+        'Logging in to ${AppConstants.apiBaseUrl}/api/auth/login',
+      );
+
+      final response = await _dio
+          .post<Map<String, dynamic>>(
         '/api/auth/login',
       );
 
       if (response.data == null) {
-        throw AuthException('No data received');
+        throw AuthException(
+            'No data received');
       }
 
-      return LoginResponseModel.fromJson(response.data!);
+      return LoginResponseModel
+          .fromJson(response.data!);
     } on DioException catch (e) {
+      _logger.e(
+        'DioException during login',
+        error: e,
+        stackTrace: StackTrace
+            .current,
+      );
       throw AuthException(
-        'Network error: ${e.message}',
+        _formatDioError(e),
         e.response?.statusCode,
       );
     } catch (e) {
-      throw AuthException('Failed to login: $e');
+      _logger.e(
+        'Unexpected error during login',
+        error: e,
+        stackTrace: StackTrace
+            .current,
+      );
+      throw AuthException(
+          'Failed to login: $e');
     }
   }
 
   /// ユーザー情報取得
   /// GET /api/auth/me
   Future<UserModel> getUserInfo() async {
+    // テストモード：モックデータを返す
+    if (AppConstants.useMockData) {
+      _logger.i(
+          'Using mock user data for testing');
+      await Future.delayed(
+        const Duration(
+            milliseconds: 500),
+      );
+      return UserModel(
+        id: 'test_user_id_123',
+        email: 'test@example.com',
+        name: 'Test User',
+        pictureUrl:
+            'https://lh3.googleusercontent.com/a/default-user',
+        oauthProvider: 'google',
+        lastLogin: DateTime.now(),
+        createdAt:
+            DateTime.now().subtract(
+          const Duration(days: 30),
+        ),
+      );
+    }
+
     try {
-      final response =
-          await _dio.get<Map<String, dynamic>>(
+      _logger.i(
+        'Fetching user info from ${AppConstants.apiBaseUrl}/api/auth/me',
+      );
+
+      final response = await _dio
+          .get<Map<String, dynamic>>(
         '/api/auth/me',
       );
 
       if (response.data == null) {
-        throw AuthException('No data received');
+        throw AuthException(
+            'No data received');
       }
 
-      return UserModel.fromJson(response.data!);
+      return UserModel
+          .fromJson(response.data!);
     } on DioException catch (e) {
+      _logger.e(
+        'DioException while fetching user info',
+        error: e,
+        stackTrace: StackTrace
+            .current,
+      );
       throw AuthException(
-        'Network error: ${e.message}',
+        _formatDioError(e),
         e.response?.statusCode,
       );
     } catch (e) {
+      _logger.e(
+        'Unexpected error while fetching user info',
+        error: e,
+        stackTrace: StackTrace
+            .current,
+      );
       throw AuthException(
           'Failed to get user info: $e');
     }
@@ -123,18 +201,59 @@ class AuthService {
   /// POST /api/auth/logout
   Future<void> logout() async {
     try {
+      _logger.i(
+        'Logging out from ${AppConstants.apiBaseUrl}/api/auth/logout',
+      );
+
       await _dio.post(
         '/api/auth/logout',
       );
-      _logger.i('Logged out successfully');
+      _logger.i(
+          'Logged out successfully');
     } on DioException catch (e) {
+      _logger.e(
+        'DioException during logout',
+        error: e,
+        stackTrace: StackTrace
+            .current,
+      );
       throw AuthException(
-        'Network error: ${e.message}',
+        _formatDioError(e),
         e.response?.statusCode,
       );
     } catch (e) {
+      _logger.e(
+        'Unexpected error during logout',
+        error: e,
+        stackTrace: StackTrace
+            .current,
+      );
       throw AuthException(
           'Failed to logout: $e');
+    }
+  }
+
+  /// Dio エラーをフォーマット
+  String _formatDioError(DioException e) {
+    switch (e.type) {
+      case DioExceptionType
+            .connectionTimeout:
+        return 'Connection timeout. Check your network.';
+      case DioExceptionType
+            .sendTimeout:
+        return 'Send timeout. Request took too long.';
+      case DioExceptionType
+            .receiveTimeout:
+        return 'Receive timeout. Server is slow.';
+      case DioExceptionType
+            .badResponse:
+        return 'Bad response (${e.response?.statusCode}): ${e.response?.statusMessage}';
+      case DioExceptionType.cancel:
+        return 'Request cancelled.';
+      case DioExceptionType.unknown:
+        return 'Network error: ${e.message}';
+      default:
+        return 'Unknown error: ${e.message}';
     }
   }
 

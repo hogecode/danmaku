@@ -10,20 +10,21 @@ import 'package:mobile/presentation/providers/app_provider.dart';
 import 'package:mobile/presentation/providers/ui_provider.dart';
 import 'package:mobile/domain/entities/player_entity.dart';
 
-class PlayerPage extends ConsumerStatefulWidget {
+class PlayerPage
+    extends ConsumerStatefulWidget {
   final String videoId;
-  final String videoUrl;
-  final String videoTitle;
+  final String? fileName;
 
   const PlayerPage({
     Key? key,
     required this.videoId,
-    required this.videoUrl,
-    required this.videoTitle,
+    this.fileName,
   }) : super(key: key);
 
   @override
-  ConsumerState<PlayerPage> createState() => _PlayerPageState();
+  ConsumerState<PlayerPage>
+      createState() =>
+          _PlayerPageState();
 }
 
 
@@ -86,15 +87,21 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
     );
   }
 
-/// ビデオビューを構篁E
+/// ビデオビューを構築
   Widget _buildVideoView() {
     return VideoView(
       key: _videoViewKey,
-      videoUrl: widget.videoUrl,
-      onReady: () => debugPrint('Video ready'),
+      videoUrl:
+          'http://100.72.160.115:8000/api/v1/files/6/mono02.mp4',
+      onReady: () =>
+          debugPrint('Video ready'),
       onError: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ビデオの再生に失敗しました')),
+        ScaffoldMessenger.of(
+                context)
+            .showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'ビデオの再生に失敗しました')),
         );
       },
     );

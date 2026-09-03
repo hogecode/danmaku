@@ -10,7 +10,7 @@ import { nicovideo_auth_tokens } from '../../database/nicovideo.schema';
 import { eq, and } from 'drizzle-orm';
 import Redis from 'ioredis';
 import { NicovideoApiClient as NicovideoApiClient } from '../utils/nicovideo-api.client';
-import { NicovideConstants } from '../constants/nicovideo.constants';
+import { NicovideoConstants } from '../constants/nicovideo.constants';
 
 /**
  * ニコ動認証サービス

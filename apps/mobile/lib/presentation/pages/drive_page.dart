@@ -1,18 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile/presentation/providers/ui_provider.dart';
+import 'package:mobile/presentation/providers/router_provider.dart';
 import 'package:mobile/presentation/providers/navigation_provider.dart';
-import 'package:mobile/presentation/pages/player_page.dart';
 
-class DrivePage extends ConsumerStatefulWidget {
-  const DrivePage({Key? key}) : super(key: key);
+class DrivePage
+    extends ConsumerStatefulWidget {
+  const DrivePage({Key? key})
+      : super(key: key);
 
   @override
-  ConsumerState<DrivePage> createState() => _DrivePageState();
+  ConsumerState<DrivePage>
+      createState() =>
+          _DrivePageState();
 }
 
-class _DrivePageState extends ConsumerState<DrivePage> {
-  final _sc = TextEditingController();
+class _DrivePageState
+    extends ConsumerState<DrivePage> {
+  late TextEditingController _sc;
+
+  @override
+  void initState() {
+    super.initState();
+    _sc = TextEditingController();
+  }
 
   @override
   void dispose() {
@@ -22,8 +34,10 @@ class _DrivePageState extends ConsumerState<DrivePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = ref.watch(darkModeProvider);
-    final folderName = ref.watch(currentFolderNameProvider);
+    final isDarkMode =
+        ref.watch(darkModeProvider);
+    final folderName = ref.watch(
+        currentFolderNameProvider);
 
     return Scaffold(
       backgroundColor: isDarkMode
@@ -32,8 +46,11 @@ class _DrivePageState extends ConsumerState<DrivePage> {
       appBar: AppBar(
         title: const Text('Google Drive'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          icon:
+              const Icon(Icons
+                  .arrow_back),
+          onPressed: () =>
+              context.pop(),
         ),
       ),
       body: Column(
@@ -75,18 +92,14 @@ class _DrivePageState extends ConsumerState<DrivePage> {
           Expanded(
             child: ListView(
               children: [
-                _buildItem('Big Buck Bunny', 'video', '256 MB', false,
+                _buildItem(
+                    'Big Buck Bunny',
+                    'video',
+                    '256 MB',
+                    false,
                     isDarkMode, () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PlayerPage(
-                        videoId: 'test1',
-                        videoUrl:
-                            'http://100.72.160.115:8000/api/v1/files/6/mono02.mp4',
-                        videoTitle: 'Big Buck Bunny',
-                      ),
-                    ),
+                  context.go(
+                    '${Routes.player.replaceFirst(':videoId', 'test1')}?fileName=Big%20Buck%20Bunny',
                   );
                 }),
                 _buildItem(

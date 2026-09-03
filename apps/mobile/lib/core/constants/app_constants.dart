@@ -10,7 +10,8 @@ class AppConstants {
   static const Duration apiSendTimeout = Duration(seconds: 10);
   
   // テストモード（APIサーバーなしでテストする）
-  static const bool useMockData = true;
+  // ※ ネットワークエラーが発生する場合はtrueに設定
+  static const bool useMockData = false;
 
   // Danmaku Configuration
   static const int maxDanmakuCount = 1000;
