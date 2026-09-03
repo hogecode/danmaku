@@ -1,7 +1,11 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as https from 'https';
+import { createWriteStream } from 'fs';
 import { NicovideoApiClient } from '../utils/nicovideo-api.client';
-import { NicovideConstants } from '../constants/nicovideo.constants';
-import { NicovideVideoMetadata } from '../types/nicovideo.types';
+import { NicovideoConstants } from '../constants/nicovideo.constants';
+import { NicovideoVideoMetadata } from '../types/nicovideo.types';
 import * as cheerio from 'cheerio';
 
 /**
@@ -9,8 +13,8 @@ import * as cheerio from 'cheerio';
  * セッション不要 - ログインなしでも公開動画情報取得可能
  */
 @Injectable()
-export class NicovideVideoService {
-  private readonly logger = new Logger(NicovideVideoService.name);
+export class NicovideoVideoService {
+  private readonly logger = new Logger(NicovideoVideoService.name);
 
   constructor(
     private readonly apiClient: NicovideoApiClient,
@@ -25,11 +29,11 @@ export class NicovideVideoService {
    */
   async getVideoMetadata(
     videoId: string,
-  ): Promise<NicovideVideoMetadata> {
+  ): Promise<NicovideoVideoMetadata> {
     try {
       this.logger.log(`動画情報取得: ${videoId}`);
 
-      const videoUrl = NicovideConstants.VIDEO_WATCH_URL.replace('{0}', videoId);
+      const videoUrl = NicovideoConstants.VIDEO_WATCH_URL.replace('{0}', videoId);
       this.logger.log(`ビデオURL: ${videoUrl}`);
       
       // main.py と同じ cookies を設定（watch_flash=0 で HTML5 プレイヤー）
@@ -66,7 +70,7 @@ export class NicovideVideoService {
       
       this.logger.debug(`API threads data: ${JSON.stringify(commentInfo.threads).substring(0, 300)}`);
       
-      const metadata: NicovideVideoMetadata = {
+      const metadata: NicovideoVideoMetadata = {
         id: videoId,
         title: video.title || '',
         description: video.description || '',
@@ -99,4 +103,5 @@ export class NicovideVideoService {
       throw error;
     }
   }
+
 }

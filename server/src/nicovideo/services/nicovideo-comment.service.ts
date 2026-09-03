@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { NicovideCommentFetcher } from '../utils/nicovideo-comment.fetcher';
+import { NicovideoCommentFetcher } from '../utils/nicovideo-comment.fetcher';
 import { CommentsData } from '../types/nicovideo.types';
 
 /**
@@ -7,11 +7,11 @@ import { CommentsData } from '../types/nicovideo.types';
  * セッション不要 - thread_keyが取得できれば可能
  */
 @Injectable()
-export class NicovideCommentService {
-  private readonly logger = new Logger(NicovideCommentService.name);
+export class NicovideoCommentService {
+  private readonly logger = new Logger(NicovideoCommentService.name);
 
   constructor(
-    private readonly commentFetcher: NicovideCommentFetcher,
+    private readonly commentFetcher: NicovideoCommentFetcher,
   ) {}
 
   /**

@@ -10,8 +10,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Response, Express } from 'express';
-import { NicovideVideoService } from './services/nicovideo-video.service';
-import { NicovideCommentService } from './services/nicovideo-comment.service';
+import { NicovideoVideoService } from './services/nicovideo-video.service';
+import { NicovideoCommentService } from './services/nicovideo-comment.service';
 import {
   DownloadVideoRequestDto,
   DownloadCommentRequestDto,
@@ -27,55 +27,9 @@ export class NicovideoController {
   private readonly logger = new Logger(NicovideoController.name);
 
   constructor(
-    private readonly videoService: NicovideVideoService,
-    private readonly commentService: NicovideCommentService,
+    private readonly videoService: NicovideoVideoService,
+    private readonly commentService: NicovideoCommentService,
   ) {}
-
-
-
-  /**
-   * POST /api/nicovideo/download/video
-   * セッション不要 - Nicovideo APIはログインなしでも公開動画情報取得可能
-   */
-  @Post('download/video')
-  async downloadVideo(
-    @Body() downloadDto: DownloadVideoRequestDto,
-    @Res() res: Response,
-  ): Promise<void> {
-    const taskId = uuidv4();
-
-    try {
-      if (!downloadDto.videoId) {
-        throw new BadRequestException('videoId必須');
-      }
-      this.logger.log(`動画DL開始: ${downloadDto.videoId} (${taskId})`);
-
-      const metadata = await this.videoService.getVideoMetadata(
-        downloadDto.videoId,
-      );
-
-      res.json({
-        taskId,
-        videoId: downloadDto.videoId,
-        status: 'completed',
-        message: '動画情報取得完了',
-        metadata: {
-          title: metadata.title,
-          duration: metadata.duration,
-          uploader: metadata.uploader,
-        },
-        createdAt: Date.now(),
-      });
-    } catch (error) {
-      this.logger.error(`動画DLエラー (${taskId}):`, error);
-      res.status(400).json({
-        taskId,
-        status: 'failed',
-        message: `エラー: ${(error as Error).message}`,
-        createdAt: Date.now(),
-      });
-    }
-  }
 
   /**
    * POST /api/nicovideo/download/comments
@@ -98,11 +52,11 @@ export class NicovideoController {
       }
       const videoId = downloadDto.videoId;
 
-      this.logger.log(`コメント取得開始: ${videoId}`);
+      this.logger.debug(`コメント取得開始: ${videoId}`);
 
       // ステップ1: ビデオメタデータ取得（thread_key も同時に取得）
       const metadata = await this.videoService.getVideoMetadata(videoId);
-      console.log(`取得したメタデータ:`, metadata);
+      //console.log(`取得したメタデータ:`, metadata);
 
       // ステップ2: thread_key の確認
       if (!metadata.threadKey) {

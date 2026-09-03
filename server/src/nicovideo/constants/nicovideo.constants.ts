@@ -3,7 +3,7 @@
  * 参考: https://nicovideo.jp
  */
 
-export class NicovideConstants {
+export class NicovideoConstants {
   // API URLs
   // ニコ動公式 API ログインエンドポイント (https://account.nicovideo.jp に統一)
   static readonly LOGIN_URL = 'https://account.nicovideo.jp/api/v1/login';

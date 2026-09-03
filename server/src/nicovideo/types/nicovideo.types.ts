@@ -5,7 +5,7 @@
 /**
  * コメント情報
  */
-export interface NicovideComment {
+export interface NicovideoComment {
   id?: string;
   no?: number;
   vpos: number; // ビデオポジション（ミリ秒）
@@ -22,10 +22,10 @@ export interface NicovideComment {
 /**
  * コメントスレッド
  */
-export interface NicovideCommentThread {
+export interface NicovideoCommentThread {
   id: number | string;
   fork: string;
-  comments: NicovideComment[];
+  comments: NicovideoComment[];
   commentCount?: number;
   retrievedCount: number;
 }
@@ -38,14 +38,14 @@ export interface CommentsData {
     retrievedCount: number;
     commentCount: number;
   };
-  threads: NicovideCommentThread[];
+  threads: NicovideoCommentThread[];
 }
 
 /**
  * 動画メタデータ
  * コメント取得に必要なthread_key等のパラメータを含む
  */
-export interface NicovideVideoMetadata {
+export interface NicovideoVideoMetadata {
   id: string;
   title: string;
   description: string;
@@ -77,173 +77,9 @@ export interface NicovideVideoMetadata {
 }
 
 /**
- * DMS (Dwango Media Service) ストリーム情報
- */
-export interface DMSStreamInfo {
-  video_uri?: string;
-  audio_uri?: string;
-  quality?: string;
-}
-
-/**
- * DMC (Dwango Media Cluster) セッション情報
- */
-export interface DMCSessionInfo {
-  url: string;
-  recipeId: string;
-  contentId: string;
-  protocol: string;
-  priority: string;
-  heartbeatLifetime: number;
-  token: string;
-  signature: string;
-  authType: string;
-  serviceUserId: string;
-  playerId: string;
-}
-
-/**
- * ダウンロードタスク情報
- */
-export interface DownloadTaskInfo {
-  taskId: string;
-  videoId: string;
-  status: 'pending' | 'downloading' | 'completed' | 'failed';
-  progress?: number; // 0-100
-  downloadedSize?: number; // bytes
-  totalSize?: number; // bytes
-  downloadUrl?: string;
-  error?: string;
-  createdAt: number; // Unix timestamp
-  updatedAt: number; // Unix timestamp
-}
-
-/**
- * ビデオ情報レスポンス
- */
-export interface NicovideVideoResponse {
-  isDeleted: boolean;
-  isPremium: boolean;
-  isAdmission: boolean;
-  isPpv: boolean;
-  dmsAvailable: boolean;
-  dmcAvailable: boolean;
-  video?: {
-    id: string;
-    title: string;
-    description: string;
-    duration: number;
-    registeredAt: string;
-    count: {
-      view: number;
-      comment: number;
-      mylist: number;
-      like: number;
-    };
-    thumbnail: {
-      url: string;
-      middleUrl: string;
-      largeUrl: string;
-      playerUrl?: string;
-      ogp?: string;
-    };
-  };
-  comment?: {
-    nvComment: {
-      server: string;
-      threadKey: string;
-      params: {
-        targets: Array<{
-          id: string;
-          fork: string;
-        }>;
-        language: string;
-      };
-    };
-    threads: Array<{
-      id: string | number;
-      fork: string;
-    }>;
-  };
-  media?: {
-    domand?: {
-      videos: Array<{
-        id: string;
-        isAvailable: boolean;
-        bitRate: number;
-        width: number;
-        height: number;
-        label: string;
-      }>;
-      audios: Array<{
-        id: string;
-        isAvailable: boolean;
-        bitRate: number;
-        samplingRate: number;
-      }>;
-      accessRightKey: string;
-    };
-    delivery?: {
-      movie: {
-        session: {
-          urls: Array<{ url: string }>;
-          recipeId: string;
-          contentId: string;
-          protocols: string[];
-          priority: string;
-          heartbeatLifetime: number;
-          token: string;
-          signature: string;
-          authTypes: {
-            http: string;
-          };
-          serviceUserId: string;
-          playerId: string;
-        };
-        videos: Array<{
-          id: string;
-          isAvailable: boolean;
-          bitRate: number;
-          width: number;
-          height: number;
-          label: string;
-          metadata: {
-            bitrate: number;
-            resolution: {
-              width: number;
-              height: number;
-            };
-            label: string;
-          };
-        }>;
-        audios: Array<{
-          id: string;
-          isAvailable: boolean;
-          bitRate: number;
-          samplingRate: number;
-          metadata: {
-            bitrate: number;
-            samplingRate: number;
-          };
-        }>;
-      };
-    };
-  };
-  owner?: {
-    id: number;
-    nickname: string;
-  };
-  tag?: {
-    items: Array<{
-      name: string;
-    }>;
-  };
-}
-
-/**
  * ログイン要求
  */
-export interface NicovideLoginRequest {
+export interface NicovideoLoginRequest {
   email: string;
   password: string;
 }
@@ -251,7 +87,7 @@ export interface NicovideLoginRequest {
 /**
  * 認証トークン情報
  */
-export interface NicovideAuthToken {
+export interface NicovideoAuthToken {
   sessionCookie: string;
   createdAt: number;
   updatedAt: number;

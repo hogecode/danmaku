@@ -50,28 +50,32 @@ Response:
 
 ```
 POST /api/nicovideo/download/video
-Authorization: Bearer <token>
 Content-Type: application/json
 
 {
   "videoId": "sm12345678",
-  "quality": "high",
-  "downloadComments": true
+  "quality": "auto"
 }
 
-Response:
+Response (即座に返却):
 {
   "taskId": "uuid-string",
   "videoId": "sm12345678",
-  "status": "completed",
-  "message": "動画情報取得完了",
+  "status": "pending",
+  "message": "ダウンロード開始しました。taskId で進捗確認が可能です",
   "metadata": {
     "title": "動画タイトル",
     "duration": 300,
-    "uploader": "投稿者名"
+    "uploader": "投稿者名",
+    "commentCount": 5000
   },
   "createdAt": 1234567890
 }
+
+Note:
+- ダウンロード処理はバックグラウンドで非同期実行
+- ファイルは downloads/{videoId}/{videoId} - {title}.mp4 に保存
+- quality: "high" | "low" | "auto" (デフォルト: "auto")
 ```
 
 ### コメントダウンロード
@@ -191,14 +195,24 @@ await authService.logout(userId);
 ```
 
 #### NicovideVideoService
-動画メタデータとダウンロード URL 取得
+動画メタデータとダウンロード処理
 
 ```typescript
 // メタデータ取得
-const metadata = await videoService.getVideoMetadata(userId, videoId);
+const metadata = await videoService.getVideoMetadata(videoId);
 
-// DL URL 取得
-const { url, format } = await videoService.getVideoDownloadUrl(userId, videoId, 'high');
+// ダウンロード開始（バックグラウンド非同期実行）
+await videoService.downloadVideoMedia(taskId, videoId, metadata, 'auto');
+
+// メソッド一覧:
+// - getVideoMetadata(videoId) → NicovideVideoMetadata
+//   - ログインなしで公開動画情報取得可能
+// - downloadVideoMedia(taskId, videoId, metadata, quality)
+//   - 動画ファイルをダウンロードしてローカルに保存
+// - extractDMSUrl() / extractDMCUrl()
+//   - DMS/DMC ストリーム URL の抽出
+// - downloadFile(url, filepath, taskId)
+//   - HTTP(S) ダウンロードとファイル保存
 ```
 
 #### NicovideCommentFetcher
@@ -274,15 +288,40 @@ curl -X POST http://localhost:3001/api/nicovideo/download/comments \
   -d '{"videoId":"sm12345678"}'
 ```
 
+## 実装内容（2026-09-02 更新）
+
+✅ **実装済み機能:**
+
+1. **動画メディアのダウンロード**
+   - DMS (Dwango Media Service) ストリーム対応
+   - DMC (Dwango Media Cluster) セッション対応
+   - リダイレクト自動処理
+   - 進捗ログ出力
+
+2. **バックグラウンド処理**
+   - 非同期実行（Promise ベース）
+   - タスク ID でトラッキング可能
+   - エラーハンドリング実装
+
+3. **ローカルストレージ**
+   - `downloads/{videoId}/{title}.mp4` に保存
+   - `.part` ファイルでの一時保存
+   - ファイル名サニタイズ（パストトラバーサル対策）
+
+4. **品質選択**
+   - `quality` パラメータ: "high" | "low" | "auto"
+   - DMS/DMC から利用可能な品質を自動選択
+
 ## 注意事項
 
-⚠️ **本実装は簡略版です。以下の機能は未実装:**
+⚠️ **未実装/今後改善予定:**
 
-1. **動画 DL のストリーム返却**: 現在は URL 取得のみ
-2. **DMC ストリーム処理**: DMC の heartbeat 実装が不完全
-3. **ファイル削除**: 一時ファイルの自動削除
-4. **進捗通知**: WebSocket でのリアルタイム進捗送信
-5. **複数フォーマット対応**: MP4 のみ対応
+1. **Redis キャッシング**: タスク状態の永続化（現在はメモリのみ）
+2. **DMC Heartbeat**: DMC セッション保持（現在は簡略版）
+3. **マルチスレッドダウンロード**: 単一接続のみ対応
+4. **進捗通知**: WebSocket/Server-Sent Events での通知
+5. **レジューム**: 中断後の再開（現在は新規ダウンロード）
+6. **複数フォーマット**: MP4 のみ対応（M4A/M4V/TS は未実装）
 
 ## 参考資料
 

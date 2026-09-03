@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NicovideoController } from './nicovideo.controller';
-import { NicovideVideoService, NicovideCommentService } from './services';
+import { NicovideoVideoService, NicovideoCommentService } from './services';
 import { NicovideoApiClient } from './utils/nicovideo-api.client';
 import { NicovideCommentFetcher } from './utils/nicovideo-comment.fetcher';
 import { NicovideVideoDownloader } from './utils/nicovideo-video.downloader';
@@ -15,12 +15,12 @@ import { NicovideVideoDownloader } from './utils/nicovideo-video.downloader';
     NicovideoApiClient,
     NicovideCommentFetcher,
     NicovideVideoDownloader,
-    NicovideVideoService,
-    NicovideCommentService,
+    NicovideoVideoService,
+    NicovideoCommentService,
   ],
   exports: [
-    NicovideVideoService,
-    NicovideCommentService,
+    NicovideoVideoService,
+    NicovideoCommentService,
   ],
 })
 export class NicovideoModule {}

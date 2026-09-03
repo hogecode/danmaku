@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { NicovideoApiClient } from './nicovideo-api.client';
-import { NicovideConstants } from '../constants/nicovideo.constants';
+import { NicovideoConstants } from '../constants/nicovideo.constants';
 import {
-  NicovideComment,
-  NicovideCommentThread,
+  NicovideoComment,
+  NicovideoCommentThread,
   CommentsData,
 } from '../types/nicovideo.types';
 import { parseStringPromise } from 'xml2js';
@@ -12,8 +12,8 @@ import { parseStringPromise } from 'xml2js';
  * ニコ動 コメント取得ユーティリティ
  */
 @Injectable()
-export class NicovideCommentFetcher {
-  private readonly logger = new Logger(NicovideCommentFetcher.name);
+export class NicovideoCommentFetcher {
+  private readonly logger = new Logger(NicovideoCommentFetcher.name);
 
   constructor(private readonly apiClient: NicovideoApiClient) {}
 
@@ -39,7 +39,7 @@ export class NicovideCommentFetcher {
     };
 
     const fromTime = commentsFrom || Math.floor(Date.now() / 1000);
-    const limit = commentsLimit || NicovideConstants.COMMENTS_LIMIT_DEFAULT_N;
+    const limit = commentsLimit || NicovideoConstants.COMMENTS_LIMIT_DEFAULT_N;
 
     try {
       // 複数スレッドを一度に取得（APIは複数スレッドのtargetsをサポート）
@@ -74,8 +74,8 @@ export class NicovideCommentFetcher {
     language: string,
     commentsFrom: number,
     commentsLimit: number,
-  ): Promise<NicovideCommentThread[]> {
-    const threadsData: NicovideCommentThread[] = [];
+  ): Promise<NicovideoCommentThread[]> {
+    const threadsData: NicovideoCommentThread[] = [];
 
     let hasMore = true;
     let totalRetrievedCount = 0;
@@ -83,7 +83,7 @@ export class NicovideCommentFetcher {
     // API呼び出しループ（複数スレッドを一度に取得）
     while (hasMore && totalRetrievedCount < commentsLimit) {
       try {
-        const apiUrl = NicovideConstants.COMMENTS_THREAD_URL.replace('{0}', commentServer) + '?pc=1';
+        const apiUrl = NicovideoConstants.COMMENTS_THREAD_URL.replace('{0}', commentServer) + '?pc=1';
         
         // リクエストボディ：複数スレッドをtargetsで指定
         const requestBody = {
@@ -118,7 +118,7 @@ export class NicovideCommentFetcher {
           this.logger.error(`コメント API エラー: ${response.meta.errorCode}`);
 
           if (response.meta.errorCode === 'TOO_MANY_REQUESTS') {
-            await this.sleep(NicovideConstants.COMMENTS_THREAD_COOLDOWN_S * 1000);
+            await this.sleep(NicovideoConstants.COMMENTS_THREAD_COOLDOWN_S * 1000);
             continue;
           }
 
@@ -146,7 +146,7 @@ export class NicovideCommentFetcher {
           const thread = threads.find((t) => t.fork === thread_response.fork);
           if (!thread) continue;
 
-          const threadData: NicovideCommentThread = {
+          const threadData: NicovideoCommentThread = {
             id: thread_response.id,
             fork: thread_response.fork,
             comments: [],
@@ -163,7 +163,7 @@ export class NicovideCommentFetcher {
             }
 
             // ✅ vposMs を使用（レスポンスフォーマットに合わせる）
-            const normalizedComment: NicovideComment = {
+            const normalizedComment: NicovideoComment = {
               id: comment.id,
               no: comment.no,
               vpos: comment.vposMs || 0,  // vposMs (milliseconds)
@@ -190,7 +190,7 @@ export class NicovideCommentFetcher {
         if (hasMore && threadResponses.length > 0) {
           const lastCommentInLastThread = threadResponses[threadResponses.length - 1].comments?.[0];
           if (lastCommentInLastThread) {
-            await this.sleep(NicovideConstants.COMMENTS_THREAD_INTERVAL_S * 1000);
+            await this.sleep(NicovideoConstants.COMMENTS_THREAD_INTERVAL_S * 1000);
             commentsFrom = Math.floor(
               new Date(lastCommentInLastThread.postedAt).getTime() / 1000,
             );
@@ -212,10 +212,10 @@ export class NicovideCommentFetcher {
   /**
    * XML コメント解析
    */
-  async parseCommentsXml(xmlString: string): Promise<NicovideComment[]> {
+  async parseCommentsXml(xmlString: string): Promise<NicovideoComment[]> {
     try {
       const result = await parseStringPromise(xmlString);
-      const comments: NicovideComment[] = [];
+      const comments: NicovideoComment[] = [];
 
       if (result.packet?.chat) {
         const chats = Array.isArray(result.packet.chat)
@@ -223,7 +223,7 @@ export class NicovideCommentFetcher {
           : [result.packet.chat];
 
         for (const chat of chats) {
-          const comment: NicovideComment = {
+          const comment: NicovideoComment = {
             vpos: parseInt(chat.$.vpos || '0'),
             date: parseInt(chat.$.date || '0'),
             mail: chat.$.mail,

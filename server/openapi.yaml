@@ -140,6 +140,20 @@ paths:
           description: ''
       tags:
         - Nicovideo
+  /api/nicovideo/status/{taskId}:
+    get:
+      operationId: NicovideoController_getDownloadStatus
+      parameters:
+        - name: taskId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      tags:
+        - Nicovideo
   /api/nicovideo/download/comments:
     post:
       operationId: NicovideoController_downloadComments

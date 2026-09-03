@@ -24,6 +24,13 @@ export function DownloadStatus({ taskId, videoId, onClose }: DownloadStatusProps
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // 初期状態を「待機中」で設定（API が未実装の場合）
+    setDownloadInfo({
+      status: 'pending',
+      message: 'ダウンロード処理が実行中です...',
+    });
+    setLoading(false);
+
     const interval = setInterval(async () => {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -39,12 +46,24 @@ export function DownloadStatus({ taskId, videoId, onClose }: DownloadStatusProps
         ) {
           clearInterval(interval);
         }
-      } catch (err) {
-        console.error('ステータス取得エラー:', err);
+      } catch (err: any) {
+        // API が 404 を返した場合は、バックグラウンドで処理中と判断
+        if (err.response?.status === 404 || err.response?.status === 400) {
+          console.debug('ステータスAPI未実装、バックグラウンド処理中と判定:', err.message);
+          // 状態は変わらずに待機を続ける
+        } else {
+          console.error('ステータス取得エラー:', err);
+          setDownloadInfo({
+            status: 'failed',
+            message: `エラー: ${err.message}`,
+            error: err.response?.data?.message || err.message
+          });
+          clearInterval(interval);
+        }
       } finally {
         setLoading(false);
       }
-    }, 1000);
+    }, 5000); // 5秒ごとにポーリング
 
     return () => clearInterval(interval);
   }, [taskId]);

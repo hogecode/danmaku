@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
-import { NicovideConstants as NicovideoConstants } from '../constants/nicovideo.constants';
+import { NicovideoConstants as NicovideoConstants } from '../constants/nicovideo.constants';
 
 /**
  * ニコ動 API クライアント
