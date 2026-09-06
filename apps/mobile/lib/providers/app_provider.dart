@@ -10,6 +10,7 @@ final languageProvider =
   return LanguageNotifier(storageService);
 });
 
+
 /// 言語状態管理クラス
 class LanguageNotifier extends StateNotifier<Locale> {
   final StorageService _storageService;

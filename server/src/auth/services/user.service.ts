@@ -31,7 +31,7 @@ export class UserService {
     return {
       id: String(user.id),
       email: user.email,
-      name: user.name,
+      name: user.name || undefined,
       picture_url: user.picture_url,
       oauth_provider: 'google',
       last_login: user.last_login,

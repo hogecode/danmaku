@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:mobile/pages/auth/login_page.dart';
 import 'package:mobile/pages/auth/auth_callback_page.dart';
 import 'package:mobile/pages/home_page_go.dart';
 import 'package:mobile/pages/drive_page.dart';
 import 'package:mobile/pages/player_page.dart';
 import 'package:mobile/providers/auth_provider.dart';
+
+final _logger = Logger();
 
 /// ============================================================================
 /// ルート定義
@@ -35,14 +38,43 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isLoginPage = state.uri.toString().startsWith(Routes.login);
       final isCallbackPage =
           state.uri.toString().startsWith(Routes.authCallback);
+      final isDeepLink = state.uri.scheme == 'danmaku';
+      final uri = state.uri.toString();
+
+      _logger.i('[Router] redirect check - uri: $uri');
+      _logger.i('[Router] scheme: ${state.uri.scheme}, isDeepLink: $isDeepLink');
+      _logger.i('[Router] isLoginPage: $isLoginPage, isCallbackPage: $isCallbackPage, isAuth: $isAuth');
+
+      // Deep Link (danmaku://...) の場合、アプリ内パスに変換
+      if (isDeepLink) {
+        _logger.i('[Router] 🔗 Deep Link detected: $uri');
+        
+        // danmaku://auth/callback?... → /auth/callback?...
+        if (uri.contains('auth/callback')) {
+          final queryString = uri.contains('?') 
+              ? uri.substring(uri.indexOf('?')) 
+              : '';
+          final appPath = '/auth/callback$queryString';
+          _logger.i('[Router] Converting deep link to app path: $appPath');
+          return appPath;
+        }
+      }
+
+      // コールバックページは常に許可
+      if (isCallbackPage) {
+        _logger.i('[Router] Callback page, allowing to proceed');
+        return null;
+      }
 
       // 認証されていない、ログイン/コールバックページ以外はログイン画面へ
-      if (!isAuth && !isLoginPage && !isCallbackPage) {
+      if (!isAuth && !isLoginPage) {
+        _logger.i('[Router] Redirecting to login (not authenticated)');
         return Routes.login;
       }
 
       // 認証済みでログイン画面はホームへ
       if (isAuth && isLoginPage) {
+        _logger.i('[Router] Redirecting to home (already authenticated)');
         return Routes.home;
       }
 
@@ -56,40 +88,27 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoginPage(),
       ),
 
-      // OAuth コールバック（Deep Link）
-      GoRoute(
-        path: Routes.authCallback,
-        name: 'authCallback',
-        builder: (context, state) {
-          final code = state.uri.queryParameters['code'];
-          final stateParam = state.uri.queryParameters['state'];
-
-          if (code == null || stateParam == null) {
-            return const Scaffold(
-              body: Center(child: Text('Invalid callback parameters')),
-            );
-          }
-
-          return AuthCallbackPage(code: code, state: stateParam);
-        },
-      ),
-
-      // ディープリンク用ルート（danmaku://auth/callback）
+      // ディープリンク用ルート（danmaku://auth/callback?user=...&token=...）
       GoRoute(
         path: '/auth/callback',
         name: 'deepLinkCallback',
         builder: (context, state) {
-          final code = state.uri.queryParameters['code'];
-          final stateParam = state.uri.queryParameters['state'];
+          _logger.i('[Router] ==================== Deep link受信 ====================');
+          _logger.i('[Router] ${state.uri}');
           final user = state.uri.queryParameters['user'];
+          final token = state.uri.queryParameters['token'];
 
-          if (code == null || stateParam == null) {
+          _logger.i('[Router] user=${user != null ? "provided" : "missing"}, token=${token != null ? "provided" : "missing"}');
+
+          if (user == null || token == null) {
+            _logger.e('[Router] ⛔ user または token が指定されていません');
             return const Scaffold(
-              body: Center(child: Text('Invalid deep link parameters')),
+              body: Center(child: Text('認証パラメータが無効です')),
             );
           }
 
-          return AuthCallbackPage(code: code, state: stateParam, user: user);
+          _logger.i('[Router] 🔐 AuthCallbackPage を作成');
+          return AuthCallbackPage(user: user, token: token);
         },
       ),
 

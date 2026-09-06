@@ -114,13 +114,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// ブラウザから戻った時にサーバーのセッションを確認
   /// セッションがあればユーザー情報を取得
   Future<bool> completeOAuth() async {
-    _logger.i('AuthNotifier: OAuth 完了確認開始');
+    _logger.i('AuthNotifier: ==================== OAuth 完了確認開始 ====================');
     state = state.copyWith(loading: true, error: null);
 
     try {
+      _logger.i('AuthNotifier: サーバーから GET /api/auth/me を実行中...');
       // サーバーからユーザー情報を取得
       final user = await _authService.getUserInfo();
-      _logger.i('AuthNotifier: OAuth 完了、ユーザー情報取得成功: ${user["email"]}');
+      _logger.i('AuthNotifier: ✅ OAuth 完了、ユーザー情報取得成功: ${user["email"]}');
       
       state = state.copyWith(
         user: user,
@@ -128,10 +129,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
         loading: false,
       );
       
+      _logger.i('AuthNotifier: 🎉 AuthState を更新完了 (isAuthenticated=true)');
       return true;
     } catch (e) {
       // セッションがない場合やエラーの場合
-      _logger.w('AuthNotifier: OAuth 完了確認失敗 (セッションなし)', error: e);
+      _logger.w('AuthNotifier: ⛔ OAuth 完了確認失敗 (セッションなし または エラー)', error: e);
       state = state.copyWith(loading: false);
       return false;
     }
@@ -146,6 +148,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     try {
       await _authService.logout();
+      await _authService.deleteToken();
       _logger.i('AuthNotifier: ログアウト完了');
     } catch (e) {
       _logger.e('AuthNotifier: ログアウト失敗', error: e);
@@ -153,6 +156,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
       rethrow;
     } finally {
       state = AuthState.reset();
+    }
+  }
+
+  /// トークンとユーザー情報を保存（ディープリンク経由）
+  /// 
+  /// ディープリンクからトークンを受け取り、SecureStorage に保存
+  /// @param userInfo ユーザー情報
+  /// @param token JWT アクセストークン
+  Future<void> saveTokenAndSetUser(dynamic userInfo, String token) async {
+    _logger.i('AuthNotifier: ==================== トークンとユーザー情報を保存 ====================');
+    state = state.copyWith(loading: true, error: null);
+
+    try {
+      _logger.i('AuthNotifier: トークンを SecureStorage に保存中...');
+      await _authService.saveToken(token);
+      _logger.i('AuthNotifier: ✅ トークン保存完了');
+      
+      state = state.copyWith(
+        user: userInfo,
+        isAuthenticated: true,
+        loading: false,
+      );
+      
+      _logger.i('AuthNotifier: 🎉 AuthState を更新完了 (isAuthenticated=true)');
+    } catch (e) {
+      _logger.e('AuthNotifier: ⛔ トークン保存失敗', error: e);
+      state = state.copyWith(error: e.toString(), loading: false);
+      rethrow;
     }
   }
 }

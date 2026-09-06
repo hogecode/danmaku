@@ -9,6 +9,9 @@ import { oauthAccounts } from '../../database';
 import { eq, and } from 'drizzle-orm';
 import axios, { AxiosError } from 'axios';
 import { GoogleTokenDto } from '../dto';
+import * as jwt from 'jsonwebtoken';
+import type { SignOptions } from 'jsonwebtoken';
+import type { StringValue } from 'ms';
 
 /**
  * Google OAuth トークン管理サービス
@@ -208,5 +211,27 @@ export class TokenService {
     }
 
     return oauthAccount.access_token;
+  }
+
+  /**
+   * アクセストークンを生成（Flutter ディープリンク用）
+   * 有効期限: 15分
+   */
+  generateAccessToken(userId: bigint): string {
+    const secret = this.configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new InternalServerErrorException('JWT_SECRET not configured');
+    }
+
+    const payload = {
+      sub: String(userId),
+      type: 'access',
+    };
+
+    const expiresInValue = this.configService.get<string>('JWT_ACCESS_EXPIRATION') || '15m';
+    const expiresIn: StringValue | number = expiresInValue as StringValue | number;
+    const options: SignOptions = { expiresIn };
+
+    return jwt.sign(payload, secret, options);
   }
 }

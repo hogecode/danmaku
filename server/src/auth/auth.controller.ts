@@ -93,11 +93,15 @@ export class AuthController {
       (session as any).userId = userInfo.id;
 
       // Flutter版の場合はディープリンクにリダイレクト
-      // ユーザー情報をBase64エンコードして埋め込む
+      // JWT アクセストークンを生成
       if (isFlutterClient) {
         console.log('[AUTH] Redirecting Flutter client to deep link');
-        const userDataBase64 = Buffer.from(JSON.stringify(userInfo)).toString('base64');
-        const deepLinkUrl = `danmaku://auth/callback?code=${encodeURIComponent(query.code)}&state=${encodeURIComponent(query.state)}&user=${encodeURIComponent(userDataBase64)}`;
+        const tokenService = (this.authService as any).tokenService;
+        const accessToken = tokenService.generateAccessToken(BigInt(userInfo.id));
+        const userData = JSON.stringify(userInfo);
+        const deepLinkUrl = `danmaku://auth/callback?user=${encodeURIComponent(userData)}&token=${encodeURIComponent(accessToken)}`;
+        console.log('[AUTH] Deep link URL (full):', deepLinkUrl);
+        console.log('[AUTH] Access token generated:', accessToken.substring(0, 50) + '...');
         return response.redirect(302, deepLinkUrl);
       }
 

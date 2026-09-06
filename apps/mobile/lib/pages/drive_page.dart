@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/ui_provider.dart';
+import 'package:mobile/services/drive_service.dart';
 
 final _logger = Logger();
 
@@ -15,6 +16,7 @@ class DrivePage extends ConsumerStatefulWidget {
 }
 
 class _DrivePageState extends ConsumerState<DrivePage> {
+  late final DriveService _driveService = DriveService();
   late List<DriveFile> _files = [];
   bool _isLoading = true;
 
@@ -30,9 +32,11 @@ class _DrivePageState extends ConsumerState<DrivePage> {
     final isDark = ref.watch(darkModeProvider);
 
     return Scaffold(
+      // TODO: Widget分ける
       appBar: AppBar(
         title: const Text('Google Drive'),
         elevation: 0,
+        // TODO: 前に戻るようにする
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/'),
@@ -67,6 +71,7 @@ class _DrivePageState extends ConsumerState<DrivePage> {
                       ),
                       title: Text(file.name),
                       subtitle: Text(file.modifiedTime ?? 'Unknown'),
+                      // TODO: フォルダの場合も設定する
                       trailing: file.isVideo
                           ? IconButton(
                               icon: const Icon(Icons.play_arrow),
@@ -101,30 +106,11 @@ class _DrivePageState extends ConsumerState<DrivePage> {
       _logger.i('Google Drive のファイルを読み込み中...');
       setState(() => _isLoading = true);
 
-      // TODO: API でファイル一覧を取得
-      await Future.delayed(const Duration(seconds: 1));
+      // DriveService でファイル一覧を取得
+      final files = await _driveService.listFolder();
 
       setState(() {
-        _files = [
-          DriveFile(
-            id: '1',
-            name: 'サンプル動画 1.mp4',
-            modifiedTime: '2026-09-06',
-            isVideo: true,
-          ),
-          DriveFile(
-            id: '2',
-            name: 'サンプル動画 2.mp4',
-            modifiedTime: '2026-09-05',
-            isVideo: true,
-          ),
-          DriveFile(
-            id: '3',
-            name: 'フォルダ',
-            modifiedTime: '2026-09-04',
-            isVideo: false,
-          ),
-        ];
+        _files = files;
         _isLoading = false;
       });
 
@@ -147,19 +133,4 @@ class _DrivePageState extends ConsumerState<DrivePage> {
   Future<void> _refreshFiles() async {
     await _loadDriveFiles();
   }
-}
-
-/// Google Drive ファイルモデル
-class DriveFile {
-  final String id;
-  final String name;
-  final String? modifiedTime;
-  final bool isVideo;
-
-  DriveFile({
-    required this.id,
-    required this.name,
-    this.modifiedTime,
-    required this.isVideo,
-  });
 }

@@ -17,8 +17,52 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 
-class _LoginPageState extends ConsumerState<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserver {
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // アプリがフォアグラウンドに戻った時に認証確認
+      _checkAuthStatus();
+    }
+  }
+
+  Future<void> _checkAuthStatus() async {
+    try {
+      _logger.i('[LoginPage] ==================== Checking auth status ====================');
+      _logger.i('[LoginPage] ブラウザから戻った時のセッション確認を開始');
+      
+      final notifier = ref.read(authProvider.notifier);
+      _logger.i('[LoginPage] AuthNotifier を取得');
+      
+      final isComplete = await notifier.completeOAuth();
+      
+      _logger.i('[LoginPage] completeOAuth() 完了: isComplete=$isComplete');
+      
+      if (isComplete && mounted) {
+        _logger.i('[LoginPage] ✅ Auth check success, navigating to home');
+        context.go('/');
+      } else {
+        _logger.w('[LoginPage] ⚠️ Auth check failed (セッションなし): isComplete=$isComplete');
+      }
+    } catch (e) {
+      _logger.w('[LoginPage] ⛔ Auth check failed with error', error: e);
+      // エラーは無視（ユーザーは手動でログインできる）
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,15 +169,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         mode: LaunchMode.externalApplication,
       );
 
-      // ユーザーがブラウザで認証を完了すると、
-      // danmaku://auth/callback にリダイレクトされてアプリが自動で起動
+      // ユーザーがブラウザで認証を完了したら、
+      // ブラウザを閉じてアプリに戻る
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Google認証を完了してください'),
-            duration: Duration(seconds: 5),
+            duration: Duration(seconds: 10),
           ),
         );
+        
+        // 1秒後に認証状態を確認（ブラウザがまだ開いている可能性があるため）
+        // ユーザーが手動でブラウザを閉じた場合、didChangeAppLifecycleState() で処理される
+        Future.delayed(const Duration(seconds: 1), () async {
+          if (mounted) {
+            await _checkAuthStatus();
+          }
+        });
       }
     } catch (e) {
       _logger.e('[LoginPage] ログイン失敗', error: e);

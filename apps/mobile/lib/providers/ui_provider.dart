@@ -7,11 +7,13 @@ final storageServiceProvider = Provider<StorageService>((ref) {
       'storageServiceProvider must be overridden with a StorageService instance');
 });
 
+
 /// ダークモード状態プロバイダー
 final darkModeProvider = StateNotifierProvider<DarkModeNotifier, bool>((ref) {
   final storageService = ref.watch(storageServiceProvider);
   return DarkModeNotifier(storageService);
 });
+
 
 /// ダークモード状態管理クラス
 class DarkModeNotifier extends StateNotifier<bool> {

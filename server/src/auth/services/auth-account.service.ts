@@ -116,6 +116,17 @@ export class OAuthAccountService {
   }
 
   /**
+   * 有効な Google OAuth アクセストークンを取得
+   * トークンが期限切れの場合は自動的にリフレッシュして返す
+   *
+   * @param userId - ユーザーID
+   * @returns 有効な Google OAuth アクセストークン
+   */
+  async getValidAccessToken(userId: bigint): Promise<string> {
+    return await this.tokenService.getValidAccessToken(userId, 'google');
+  }
+
+  /**
    * ログアウト処理
    */
   async logout(userId: bigint): Promise<void> {

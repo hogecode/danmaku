@@ -20,6 +20,7 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
+
 class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
@@ -69,7 +70,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               const SizedBox(height: 48),
               // Google Driveボタン
               ElevatedButton.icon(
-                onPressed: () => context.go('/drive'),
+                onPressed: () => context.go(Routes.drive),
                 icon: const Icon(Icons.cloud),
                 label: const Text('Google Drive'),
                 style: ElevatedButton.styleFrom(
@@ -97,7 +98,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 onSubmitted: (query) {
                   if (query.isNotEmpty) {
-                    context.go('/search?q=$query');
+                    context.go(Routes.search + '?q=$query');
                   }
                 },
               ),
@@ -131,7 +132,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       await ref.read(authProvider.notifier).logout();
 
       if (mounted) {
-        context.go('/login');
+        context.go(Routes.login);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('ログアウトしました'),
