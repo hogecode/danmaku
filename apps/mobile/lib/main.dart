@@ -5,9 +5,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mobile/core/themes/app_theme.dart';
 import 'package:mobile/core/i18n/i18n.dart';
 import 'package:mobile/data/services/storage_service.dart';
-import 'package:mobile/presentation/providers/ui_provider.dart';
-import 'package:mobile/presentation/providers/app_provider.dart';
-import 'package:mobile/presentation/providers/router_provider.dart';
+import 'package:mobile/providers/ui_provider.dart';
+import 'package:mobile/providers/app_provider.dart';
+import 'package:mobile/providers/router_provider.dart';
 
 late StorageService _initializedStorageService;
 

@@ -47,12 +47,12 @@ export class AuthService {
    */
   async initializeLogin(): Promise<LoginResponseDto> {
     const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
-    const redirectUri = this.configService.get<string>('GOOGLE_REDIRECT_URI');
+    const baseRedirectUri = this.configService.get<string>('GOOGLE_REDIRECT_URI');
     const scopes =
       this.configService.get<string>('GOOGLE_SCOPES') ||
       'openid email profile https://www.googleapis.com/auth/drive.readonly';
 
-    if (!clientId || !redirectUri) {
+    if (!clientId || !baseRedirectUri) {
       throw new InternalServerErrorException(
         'Google OAuth configuration missing',
       );
@@ -67,6 +67,10 @@ export class AuthService {
     // Redis に state と verifier を保存（有効期限付き）
     await this.redis.setex(stateKey, this.STATE_TTL, '1');
     await this.redis.setex(verifierKey, this.STATE_TTL, verifier);
+
+    // OAuth認可リクエスト用のリダイレクトURI（常に ?client=mobile を付ける）
+    // Flutterブラウザはこのパラメータで判定される
+    const redirectUri = `${baseRedirectUri}?client=mobile`;
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -91,8 +95,11 @@ export class AuthService {
 
   /**
    * OAuthコールバック処理：コードをトークンに交換
+   * @param code - Google OAuth 認可コード
+   * @param state - state パラメータ
+   * @param isFlutterClient - Flutterクライアントからのリクエストかどうか
    */
-  async handleGoogleCallback(code: string, state: string): Promise<UserInfoDto> {
+  async handleGoogleCallback(code: string, state: string, isFlutterClient: boolean = false): Promise<UserInfoDto> {
     const stateKey = `oauth:state:${state}`;
     const stateExists = await this.redis.get(stateKey);
 
@@ -113,9 +120,14 @@ export class AuthService {
         this.redis.del(verifierKey),
       ]);
 
+      // OAuth認可リクエスト時に使用したリダイレクトURIと同じものを使用
+      const baseRedirectUri = this.configService.get<string>('GOOGLE_REDIRECT_URI');
+      const redirectUri = `${baseRedirectUri}?client=mobile`;
+
       const tokenData = await this.tokenService.exchangeCodeForToken(
         code,
         verifier,
+        redirectUri,
       );
 
       const googleUser = await this.fetchGoogleUserInfo(

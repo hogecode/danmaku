@@ -25,16 +25,19 @@ export class TokenService {
 
   /**
    * 認可コードからアクセストークンを取得
+   * @param code - Google OAuth 認可コード
+   * @param codeVerifier - PKCE code verifier
+   * @param redirectUri - OAuth認可リクエスト時に使用したリダイレクトURI（クエリパラメータ付き）
    */
   async exchangeCodeForToken(
     code: string,
     codeVerifier: string,
+    redirectUri: string,
   ): Promise<GoogleTokenDto> {
     const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
     const clientSecret = this.configService.get<string>(
       'GOOGLE_CLIENT_SECRET',
     );
-    const redirectUri = this.configService.get<string>('GOOGLE_REDIRECT_URI');
 
     if (!clientId || !clientSecret || !redirectUri) {
       throw new InternalServerErrorException('Google OAuth configuration missing');

@@ -1,0 +1,36 @@
+# OpenAPI Generator Configuration for Flutter
+# 
+# This configuration generates a Dart/Flutter API client from OpenAPI spec
+# 
+# Usage:
+#   flutter pub run openapi_generator_cli generate \
+#     -i ../../../server/openapi.yaml \
+#     -g dart \
+#     -c openapi-generator-config.yaml \
+#     -o lib/data/client
+
+generatorName: dart
+inputSpec: ../../../server/openapi.yaml
+outputDir: lib/data/client
+
+# Dart specific options
+additionalProperties:
+  # Package name for generated code
+  pubName: danmaku_api_client
+  pubVersion: 1.0.0
+  
+  # Use null safety (NNBD)
+  nullSafety: true
+  
+  # Browser support
+  browserClient: true
+  
+  # Serialization library
+  serialization: json
+
+# API configuration
+apiPackage: danmaku_api_client.api
+modelPackage: danmaku_api_client.model
+
+# Skip files
+skipOverwrite: false

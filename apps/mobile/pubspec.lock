@@ -573,6 +573,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.5.0"
+  openapi_generator_cli:
+    dependency: "direct main"
+    description:
+      name: openapi_generator_cli
+      sha256: "772694a131972634ce6d04754fc8b30a5106240c324f9e3454476462d80d72c2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.2"
   package_config:
     dependency: transitive
     description:

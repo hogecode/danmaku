@@ -1,88 +1,45 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:logger/logger.dart';
 
-/// ローカルストレージサービス（Hive使用）
+/// ローカルストレージサービス
+/// Hiveを使用してローカルデータを管理
 class StorageService {
-  late final Box<dynamic> _box;
-  late final Logger _logger;
-  static const String _boxName = 'danmaku_app_cache';
+  static const String _darkModeBox = 'dark_mode';
+  static const String _darkModeKey = 'is_dark_mode';
+  static const String _languageBox = 'language';
+  static const String _languageKey = 'language_code';
 
-  StorageService() {
-    _logger = Logger();
-  }
+  late Box<bool> _darkModeBoxInstance;
+  late Box<String> _languageBoxInstance;
 
-  /// 初期化
+  /// ストレージの初期化
   Future<void> initialize() async {
-    try {
-      _box = await Hive.openBox(_boxName);
-      _logger.i('StorageService initialized');
-    } catch (e) {
-      _logger.e('Failed to initialize StorageService', error: e);
-      rethrow;
-    }
+    _darkModeBoxInstance = await Hive.openBox<bool>(_darkModeBox);
+    _languageBoxInstance = await Hive.openBox<String>(_languageBox);
   }
 
-  /// 値を保存
-  Future<void> save(String key, dynamic value) async {
-    try {
-      await _box.put(key, value);
-      _logger.d('Saved key: $key');
-    } catch (e) {
-      _logger.e('Failed to save key: $key', error: e);
-      rethrow;
-    }
+  /// ダークモードの状態を取得
+  bool getDarkMode() {
+    return _darkModeBoxInstance.get(_darkModeKey, defaultValue: false) ?? false;
   }
 
-  /// 値を取得
-  T? get<T>(String key, [T? defaultValue]) {
-    try {
-      final value = _box.get(key, defaultValue: defaultValue);
-      return value is T ? value : defaultValue;
-    } catch (e) {
-      _logger.e('Failed to get key: $key', error: e);
-      return defaultValue;
-    }
+  /// ダークモードの状態を設定
+  Future<void> setDarkMode(bool isDarkMode) async {
+    await _darkModeBoxInstance.put(_darkModeKey, isDarkMode);
   }
 
-  /// キーが存在するか確認
-  bool contains(String key) {
-    try {
-      return _box.containsKey(key);
-    } catch (e) {
-      _logger.e('Failed to check key: $key', error: e);
-      return false;
-    }
+  /// 言語コードを取得
+  String getLanguageCode() {
+    return _languageBoxInstance.get(_languageKey, defaultValue: 'ja') ?? 'ja';
   }
 
-  /// 値を削除
-  Future<void> delete(String key) async {
-    try {
-      await _box.delete(key);
-      _logger.d('Deleted key: $key');
-    } catch (e) {
-      _logger.e('Failed to delete key: $key', error: e);
-      rethrow;
-    }
+  /// 言語コードを設定
+  Future<void> setLanguageCode(String languageCode) async {
+    await _languageBoxInstance.put(_languageKey, languageCode);
   }
 
-  /// すべてを削除
-  Future<void> deleteAll() async {
-    try {
-      await _box.clear();
-      _logger.i('Cleared all cache');
-    } catch (e) {
-      _logger.e('Failed to clear cache', error: e);
-      rethrow;
-    }
-  }
-
-  /// ボックスを閉じる
-  Future<void> close() async {
-    try {
-      await _box.close();
-      _logger.i('StorageService closed');
-    } catch (e) {
-      _logger.e('Failed to close StorageService', error: e);
-    }
+  /// 全データをクリア
+  Future<void> clear() async {
+    await _darkModeBoxInstance.clear();
+    await _languageBoxInstance.clear();
   }
 }

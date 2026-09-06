@@ -47,6 +47,9 @@ dependencies:
   # Routing
   go_router: ^14.0.0
 
+  # OpenAPI Generated Client
+  openapi_generator_cli: ^5.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -62,9 +65,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  # Assets
-  assets:
-    - assets/
-    - assets/images/
-    - assets/icons/

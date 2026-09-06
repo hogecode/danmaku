@@ -6,12 +6,14 @@ import {
   Session,
   UseGuards,
   Redirect,
+  Req,
+  Res,
   BadRequestException,
   HttpCode,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import type { Express } from 'express';
+import type { Express, Request, Response } from 'express';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 import { OAuthAccountService } from './services/auth-account.service';
@@ -21,6 +23,7 @@ import {
   LoginRequestDto,
   LoginResponseDto,
   CallbackQueryDto,
+  CallbackResponseDto,
   UserInfoDto,
   RefreshTokenResponseDto,
 } from './dto';
@@ -51,44 +54,82 @@ export class AuthController {
   /**
    * GET /api/auth/callback - OAuth コールバック
    * Google OAuth 認証後にリダイレクトされるエンドポイント
+   * - Web版: 302リダイレクト
+   * - Flutter版: ディープリンクにリダイレクト
    */
   @Get('callback')
-  @Redirect()
   async callback(
     @Query() query: CallbackQueryDto,
     @Session() session: Express.Session,
-  ) {
+    @Req() request: Request,
+    @Res() response: Response,
+  ): Promise<void> {
     // エラーパラメータをチェック
     if (query.error) {
-      throw new BadRequestException(
-        `Authorization failed: ${query.error_description || query.error}`,
-      );
+      const errorMsg = `Authorization failed: ${query.error_description || query.error}`;
+      console.error('[AUTH] OAuth error:', errorMsg);
+
+      throw new BadRequestException(errorMsg);
     }
 
     // コードとstateの存在をチェック
     if (!query.code || !query.state) {
-      throw new BadRequestException('Missing code or state parameter');
+      const errorMsg = 'Missing code or state parameter';
+      console.error('[AUTH] Missing OAuth parameters:', errorMsg);
+
+      throw new BadRequestException(errorMsg);
     }
 
     try {
       // コールバック処理
+      const isFlutterClient = this._isFlutterClient(request);
       const userInfo = await this.authService.handleGoogleCallback(
         query.code,
         query.state,
+        isFlutterClient,
       );
 
       // セッションにユーザーID（string）を保存
       (session as any).userId = userInfo.id;
 
-      // リダイレクト先
-      return {
-        url: `${this.configService.get('FRONTEND_URL')}/home`, // フロントエンドのホームページにリダイレクト
-        statusCode: 302,
-      };
+      // Flutter版の場合はディープリンクにリダイレクト
+      // ユーザー情報をBase64エンコードして埋め込む
+      if (isFlutterClient) {
+        console.log('[AUTH] Redirecting Flutter client to deep link');
+        const userDataBase64 = Buffer.from(JSON.stringify(userInfo)).toString('base64');
+        const deepLinkUrl = `danmaku://auth/callback?code=${encodeURIComponent(query.code)}&state=${encodeURIComponent(query.state)}&user=${encodeURIComponent(userDataBase64)}`;
+        return response.redirect(302, deepLinkUrl);
+      }
+
+      // Web版の場合はリダイレクト
+      console.log('[AUTH] Redirecting Web client to frontend home');
+      return response.redirect(302, `${this.configService.get('FRONTEND_URL')}/home`);
     } catch (error) {
-      console.error('Callback error:', error);
-      throw error;
+      console.error('[AUTH] Callback error:', error);
+      
+      const errorMsg = error instanceof Error ? error.message : 'Authentication failed';
+
+      throw new BadRequestException(errorMsg);
     }
+  }
+
+  /**
+   * Flutter クライアントかどうかを判定
+   * 
+   * ?client=mobile クエリパラメータをチェック（コールバック時）
+   * OAuth認可リクエストでは常にこのパラメータが付与される
+   */
+  private _isFlutterClient(request: Request): boolean {
+    const query = request.query as any;
+    const isFlutter = query?.client === 'mobile';
+    
+    if (isFlutter) {
+      console.log('[AUTH] Detected Flutter client via ?client=mobile');
+    } else {
+      console.log('[AUTH] Detected Web client');
+    }
+
+    return isFlutter;
   }
 
   /**
