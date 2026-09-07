@@ -8,7 +8,7 @@ generate-api-client: ## Axios TypeScriptクライアント生成 (Web用)
 
 .PHONY: generate-flutter-client
 generate-flutter-client: ## Dart OpenAPIクライアント生成 (Flutter用 - Docker使用)
-	powershell -Command "$$pwd = pwd; docker run --rm -v \"$$pwd`:/local\" openapitools/openapi-generator-cli:latest generate -i /local/server/openapi.yaml -g dart -o /local/apps/mobile/lib/data/client"
+	powershell -Command "$$pwd = pwd; docker run --rm -v \"$$pwd`:/local\" openapitools/openapi-generator-cli:latest generate -i /local/server/openapi.yaml -g dart -o /local/apps/mobile/lib/data/client --additional-properties=hideGenerationTimestamp=true,pubName=mobile,pubVersion=1.0.0"
 
 .PHONY: generate-all-clients
 generate-all-clients: generate-api-client generate-flutter-client ## すべてのクライアント生成 (Web + Flutter)

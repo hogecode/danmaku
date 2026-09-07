@@ -1,8 +1,8 @@
-# openapi.api.AppApi
+# mobile.api.AppApi
 
 ## Load the API package
 ```dart
-import 'package:openapi/api.dart';
+import 'package:mobile/api.dart';
 ```
 
 All URIs are relative to *http://localhost*
@@ -19,7 +19,7 @@ Method | HTTP request | Description
 
 ### Example
 ```dart
-import 'package:openapi/api.dart';
+import 'package:mobile/api.dart';
 
 final api_instance = AppApi();
 

@@ -28,12 +28,12 @@ export class FileItemDto {
   /**
    * 最終更新日時（ISO 8601形式）
    */
-  modifiedTime: string;
+  modifiedTime!: string;
 
   /**
    * Google Drive WebView URL
    */
-  webViewLink: string;
+  webViewLink!: string;
 
   /**
    * サムネイル URL（ビデオファイルの場合のみ）

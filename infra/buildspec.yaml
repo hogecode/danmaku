@@ -1,0 +1,83 @@
+version: 0.2
+
+# ========================================
+# CodeBuild Buildspec - Docker Build & Push (Multi-Service)
+# ========================================
+# このファイルは Next.js と Go Server のコンテナイメージをビルドし、ECR にプッシュします
+# クオーテーションエラーに注意
+
+phases:
+  pre_build:
+    commands:
+      - echo "=========================================="
+      - echo "Phase Pre-Build AWS ECR Login"
+      - echo "=========================================="
+      - "echo \"Logging in to ECR at $(date)\""
+      - "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+      - "NEXTJS_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$NEXTJS_REPO_NAME"
+      - "GO_SERVER_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$GO_SERVER_REPO_NAME"
+      - "COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)"
+      - "IMAGE_TAG=${COMMIT_HASH:=latest}"
+      - "echo \"Next.js Repository URI - $NEXTJS_REPO_URI\""
+      - "echo \"Go Server Repository URI - $GO_SERVER_REPO_URI\""
+      - "echo \"Image Tag - $IMAGE_TAG\""
+
+  build:
+    commands:
+      - echo "=========================================="
+      - echo "Phase Build Docker Images Build"
+      - echo "=========================================="
+      - "echo \"Building Next.js Docker image on $(date)\""
+      - "docker build -t $NEXTJS_REPO_URI:$IMAGE_TAG -t $NEXTJS_REPO_URI:latest ./web"
+      - echo "Next.js Docker image built successfully"
+      - "echo \"Building Go Server Docker image on $(date)\""
+      - "docker build -t $GO_SERVER_REPO_URI:$IMAGE_TAG -t $GO_SERVER_REPO_URI:latest ./server"
+      - echo "Go Server Docker image built successfully"
+      - echo "All images built successfully"
+      - docker images
+
+  post_build:
+    commands:
+      - echo "=========================================="
+      - echo "Phase Post-Build Push to ECR"
+      - echo "=========================================="
+      - echo "Pushing Next.js Docker image to ECR on $(date)"
+      - docker push $NEXTJS_REPO_URI:$IMAGE_TAG
+      - docker push $NEXTJS_REPO_URI:latest
+      - echo "Next.js Docker image pushed successfully"
+      - echo "Pushing Go Server Docker image to ECR on $(date)"
+      - docker push $GO_SERVER_REPO_URI:$IMAGE_TAG
+      - docker push $GO_SERVER_REPO_URI:latest
+      - echo "Go Server Docker image pushed successfully"
+      - echo "Generating imagedefinitions.json for ECS deployment"
+      - |
+        printf '[
+          {"name":"nextjs-container","imageUri":"%s"},
+          {"name":"go-server-container","imageUri":"%s"}
+        ]' $NEXTJS_REPO_URI:$IMAGE_TAG $GO_SERVER_REPO_URI:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
+      
+      - echo "=========================================="
+      - echo "Build completed successfully"
+      - echo "=========================================="
+
+artifacts:
+  files:
+    - appspec-nextjs.yaml
+    - appspec-go-server.yaml
+    - nextjs-taskdef.json
+    - go-server-taskdef.json
+  name: build_output
+
+cache:
+  paths:
+    - '/root/.docker/**/*'
+
+# ========================================
+# Environment Variables (from CodeBuild Project)
+# ========================================
+# 環境変数はコードビルドプロジェクトで定義される
+# - AWS_DEFAULT_REGION: ap-northeast-1
+# - AWS_ACCOUNT_ID: 885545925004
+# - NEXTJS_REPO_NAME: ecs-nextjs
+# - GO_SERVER_REPO_NAME: ecs-go-server

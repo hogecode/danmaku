@@ -1,0 +1,98 @@
+version: 0.2
+
+# ========================================
+# CodeBuild Buildspec - Security Scan (Trivy)
+# ========================================
+# このファイルは Trivy を使用してコンテナイメージをスキャンします
+
+phases:
+  pre_build:
+    commands:
+      - echo "=========================================="
+      - echo "Phase Pre-Build Trivy Installation"
+      - echo "=========================================="
+      - 'echo "Installing Trivy on $(date)"'
+      - apt-get update -y
+      - apt-get install -y wget apt-transport-https gnupg lsb-release
+      - "wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | apt-key add -"
+      - 'echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | tee -a /etc/apt/sources.list.d/trivy.list'
+      - apt-get update -y
+      - apt-get install -y trivy
+      - echo "Trivy installed successfully"
+      - trivy --version
+      - "NEXTJS_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$NEXTJS_REPO_NAME"
+      - "GO_SERVER_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$GO_SERVER_REPO_NAME"
+      - "COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)"
+      - "IMAGE_TAG=${COMMIT_HASH:=latest}"
+
+  build:
+    commands:
+      - echo "=========================================="
+      - echo "Phase Build Security Scan with Trivy"
+      - echo "=========================================="
+      - 'echo "Scanning Docker images for vulnerabilities on $(date)"'
+
+      - 'echo "Scanning Next.js image - $NEXTJS_REPO_URI:$IMAGE_TAG"'
+      - 'echo "Scanning Go Server image - $GO_SERVER_REPO_URI:$IMAGE_TAG"'
+
+      - echo "=========================================="
+      - echo "Scanning Next.js Image"
+      - echo "=========================================="
+      # --exit-code 0 を指定して、スキャン結果に関わらずビルドを継続させる
+      - "trivy image --severity HIGH,CRITICAL --exit-code 0 --format json --output nextjs-scan-results.json $NEXTJS_REPO_URI:$IMAGE_TAG"
+      - "trivy image --severity HIGH,CRITICAL --exit-code 0 $NEXTJS_REPO_URI:$IMAGE_TAG"
+      - |
+        NEXTJS_CRITICAL=$(trivy image --severity CRITICAL --format json $NEXTJS_REPO_URI:$IMAGE_TAG | jq '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "CRITICAL")] | length')
+        echo "Next.js Critical vulnerabilities found: $NEXTJS_CRITICAL"
+        if [ "$NEXTJS_CRITICAL" -gt 10 ]; then
+          echo "CRITICAL vulnerabilities detected in Next.js! Build failing."
+          exit 1
+        fi
+      - |
+        NEXTJS_HIGH=$(trivy image --severity HIGH --format json $NEXTJS_REPO_URI:$IMAGE_TAG | jq '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH")] | length')
+        echo "Next.js High vulnerabilities found: $NEXTJS_HIGH"
+
+      - echo "=========================================="
+      - echo "Scanning Go Server Image"
+      - echo "=========================================="
+      - "trivy image --severity HIGH,CRITICAL --exit-code 0 --format json --output go-server-scan-results.json $GO_SERVER_REPO_URI:$IMAGE_TAG"
+      - "trivy image --severity HIGH,CRITICAL --exit-code 0 $GO_SERVER_REPO_URI:$IMAGE_TAG"
+      - |
+        GO_CRITICAL=$(trivy image --severity CRITICAL --format json --exit-code 0 $GO_SERVER_REPO_URI:$IMAGE_TAG | jq '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "CRITICAL")] | length')
+        echo "Go Server Critical vulnerabilities found: $GO_CRITICAL"
+        # 閾値で制御、あるいはLambdaで通知するなどの対応を検討
+        if [ "$GO_CRITICAL" -gt 10 ]; then
+          echo "CRITICAL vulnerabilities detected in Go Server!."
+        fi
+      - |
+        GO_HIGH=$(trivy image --severity HIGH --format json  --exit-code 0 $GO_SERVER_REPO_URI:$IMAGE_TAG | jq '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH")] | length')
+        echo "Go Server High vulnerabilities found: $GO_HIGH"
+
+      - echo "=========================================="
+      - echo "Summary of Scan Results"
+      - echo "=========================================="
+      - 'echo "Next.js - Critical: $NEXTJS_CRITICAL, High: $NEXTJS_HIGH"'
+      - 'echo "Go Server - Critical: $GO_CRITICAL, High: $GO_HIGH"'
+
+  post_build:
+    commands:
+      - echo "=========================================="
+      - echo "Phase Post-Build Scan Complete"
+      - echo "=========================================="
+      - echo "Scan completed successfully on $(date)"
+      - ls -la nextjs-scan-results.json go-server-scan-results.json
+
+artifacts:
+  files:
+    - nextjs-scan-results.json
+    - go-server-scan-results.json
+  name: ScanArtifact
+
+# ========================================
+# Environment Variables (from CodeBuild Project)
+# ========================================
+# 環境変数はコードビルドプロジェクトで定義される
+# - AWS_DEFAULT_REGION: ap-northeast-1
+# - AWS_ACCOUNT_ID: 885545925004
+# - NEXTJS_REPO_NAME: ecs-nextjs
+# - GO_SERVER_REPO_NAME: ecs-go-server

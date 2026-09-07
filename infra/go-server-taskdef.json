@@ -1,0 +1,41 @@
+{
+  "containerDefinitions": [
+    {
+      "environment": [
+        {
+          "name": "DB_HOST",
+          "value": "ecs-sample-db-dev.cfqui8ukicml.ap-northeast-1.rds.amazonaws.com"
+        },
+        { "name": "DB_PORT", "value": "3306" },
+        { "name": "DB_NAME", "value": "ecsdb" },
+        { "name": "DB_ENGINE", "value": "mysql" },
+        {
+          "name": "DB_CREDENTIALS_SECRET_ARN",
+          "value": "arn:aws:secretsmanager:ap-northeast-1:885545925004:secret:rds!db-3928776f-7fa1-4cf7-9067-cbd9626e2352-JrEinb"
+        }
+      ],
+      "essential": true,
+      "image": "885545925004.dkr.ecr.ap-northeast-1.amazonaws.com/ecs-go-server:latest",
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/ecs-sample-go-server-dev",
+          "awslogs-region": "ap-northeast-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "name": "ecs-sample-go-server",
+      "portMappings": [
+        { "containerPort": 8080, "hostPort": 8080, "protocol": "tcp" }
+      ]
+    }
+  ],
+  "cpu": "256",
+  "enableExecuteCommand": true,
+  "executionRoleArn": "arn:aws:iam::885545925004:role/ecs-sample-ecs-task-execution-role-dev",
+  "family": "ecs-sample-go-server",
+  "memory": "512",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "taskRoleArn": "arn:aws:iam::885545925004:role/ecs-sample-ecs-task-role-go-server-dev"
+}

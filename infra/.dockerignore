@@ -1,0 +1,71 @@
+# Git
+.git
+.github
+.gitignore
+.gitattributes
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+
+# Go
+*.o
+*.a
+*.so
+.DS_Store
+vendor/
+
+# Development files
+.env*
+!.env.example
+*.log
+.claude
+.husky
+
+# IDE files
+*.swp
+*.swo
+*~
+.vscode
+.idea
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+
+# Documentation
+AGENTS.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+CLAUDE.md
+README.md
+RELEASE.md
+instructions
+
+# Test coverage
+coverage/
+.nyc_output
+
+# Infrastructure (not needed in Docker images)
+terraform/
+infrastructure/
+diagrams/
+docs/
+Makefile
+Makefile.config.example
+
+# CI/CD
+.github/
+buildspec.yaml
+buildspec-scan.yaml
+appspec.yaml
+
+# Next.js specific
+.next/cache/
+
+# Miscellaneous
+新しいフォルダー/

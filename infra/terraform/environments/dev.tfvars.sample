@@ -1,0 +1,104 @@
+# ========================================
+# Development Environment Configuration
+# ========================================
+# Purpose: Lightweight development setup for testing
+# Cost Focus: Minimal resources for low costs
+# HA: Single AZ
+#
+# USAGE: Copy this file to dev.tfvars and update the values for your environment
+# NOTE: This file is tracked in version control as a template
+
+# Basic Configuration
+environment  = "dev"
+project_name = "ecs-sample"
+aws_region   = "ap-northeast-1"
+
+# Network Configuration
+vpc_cidr                  = "10.0.0.0/16"
+availability_zones        = ["ap-northeast-1a", "ap-northeast-1c"]
+public_subnet_cidrs       = ["10.0.0.0/24", "10.0.1.0/24"]
+private_app_subnet_cidrs  = ["10.0.10.0/24", "10.0.11.0/24"]
+private_api_subnet_cidrs  = ["10.0.20.0/24", "10.0.21.0/24"]
+private_db_subnet_cidrs   = ["10.0.30.0/24", "10.0.31.0/24"]
+enable_nat_gateway        = false
+enable_vpc_flow_logs      = false
+
+# ECS Cluster
+ecs_cluster_name = "ecs-cluster"
+
+# ECS - Next.js Service
+nextjs_task_cpu     = 256      # CPU units: 256=0.25vCPU, 512=0.5vCPU, 1024=1vCPU
+nextjs_task_memory  = 512      # Memory in MB
+nextjs_desired_count = 1       # Desired number of tasks
+nextjs_min_capacity = 1        # Minimum for auto-scaling
+nextjs_max_capacity = 5        # Maximum for auto-scaling
+nextjs_environment_variables = []
+
+# ECS - Go Server Service
+go_server_task_cpu      = 512  # CPU units: 256=0.25vCPU, 512=0.5vCPU, 1024=1vCPU
+go_server_task_memory   = 1024 # Memory in MB
+go_server_desired_count = 1    # Desired number of tasks
+go_server_min_capacity  = 1    # Minimum for auto-scaling
+go_server_max_capacity  = 5    # Maximum for auto-scaling
+go_server_environment_variables = []
+go_server_secrets = []
+
+# RDS Database
+rds_engine                = "mysql"       # or "postgres"
+rds_engine_version        = "8.0"         # Engine version
+rds_instance_class        = "db.t3.micro" # Instance type (dev: micro, staging: small, prod: medium)
+rds_allocated_storage     = 20            # Storage in GB (minimum 20)
+rds_backup_retention_days = 3             # Backup retention (dev: 3, prod: 7)
+rds_multi_az              = false          # High availability (dev: false, prod: true)
+rds_publicly_accessible   = false          # Should never be true in production
+rds_database_name         = "ecsdb"       # Initial database name
+rds_username              = "admin"       # Master username
+rds_password              = ""             # IMPORTANT: Set a strong password or use AWS Secrets Manager
+rds_parameter_group_family = "mysql8.0"   # Parameter group family (mysql8.0 or postgres14, etc.)
+rds_parameters            = {}            # Custom DB parameters as map (e.g., {"max_connections" = "1000"})
+enable_enhanced_monitoring = true          # Enable RDS Enhanced Monitoring
+
+# ECR (Elastic Container Registry)
+ecr_nextjs_repository_name   = "ecs-nextjs"       # Repository name for Next.js service
+ecr_go_server_repository_name = "ecs-go-server"   # Repository name for Go server service
+ecr_image_scan_on_push       = true               # Scan images for vulnerabilities on push
+ecr_image_tag_mutability     = "MUTABLE"          # MUTABLE for dev/staging, IMMUTABLE for prod
+
+# ALB (Application Load Balancer)
+enable_https           = false             # Enable HTTPS listener
+alb_certificate_arn    = ""                # Required if enable_https is true (ACM certificate ARN)
+enable_alb_access_logs = false             # Enable ALB access logs
+alb_access_logs_bucket = ""                # S3 bucket for ALB logs (required if enable_alb_access_logs is true)
+
+# S3 Storage
+enable_artifact_bucket      = true         # S3 bucket for artifacts (CodePipeline, Lambda functions)
+enable_logs_bucket          = true         # S3 bucket for logs (ALB access logs, WAF logs)
+s3_filesystem_kms_key_arn   = ""           # Optional: ARN of KMS key for S3 encryption
+
+# Domain & Route53
+domain_name     = ""                       # Primary domain name (e.g., example.com)
+route53_zone_id = ""                       # Route53 Hosted Zone ID for DNS management
+
+# Email Service (SES - Simple Email Service)
+test_email_addresses    = []               # Email addresses for SES sandbox testing (e.g., ["test@example.com"])
+test_email_domains      = []               # Domains for SES sandbox testing (e.g., ["example.com"])
+test_domain_route53_zone_id = ""           # Route53 Zone ID for domain verification
+
+# Messaging (SQS - Simple Queue Service)
+sqs_queue_names = ["default", "email", "notifications"]  # List of SQS queues to create
+sqs_kms_key_arn = ""                       # Optional: ARN of KMS key for SQS encryption
+
+# Monitoring & Logging (CloudWatch, CloudTrail)
+cloudwatch_logs_kms_key_id = ""            # Optional: KMS key ID for CloudWatch Logs encryption
+enable_cloudtrail          = false         # Enable CloudTrail for audit logging
+cloudtrail_bucket_name     = ""            # S3 bucket for CloudTrail logs (required if enable_cloudtrail is true)
+
+# CI/CD
+github_token = ""  # IMPORTANT: Set your GitHub personal access token for CodePipeline (sensitive - never commit with value)
+
+# Resource Tagging
+tags = {
+  CostCenter = "Development"
+  Owner      = "Platform Team"
+  # Add more tags as needed
+}

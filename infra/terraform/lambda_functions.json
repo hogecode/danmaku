@@ -1,0 +1,24 @@
+{
+  "s3_file_validator": {
+    "description": "S3ファイル検証関数 - ファイル形式とサイズをチェック",
+    "source_path": "s3-file-validator",
+    "handler": "handler.handler",
+    "runtime": "nodejs20.x",
+    "timeout": 60,
+    "memory_size": 256,
+    "environment_variables": {
+      "MAX_FILE_SIZE_MB": "10"
+    },
+    "s3_trigger": {
+      "enabled": true,
+      "bucket_ref": "file_upload_bucket_id",
+      "key_prefix": "uploads/",
+      "events": ["s3:ObjectCreated:*"]
+    },
+    "s3_read_policy": true,
+    "tags": {
+      "Purpose": "FileValidation",
+      "Owner": "Platform"
+    }
+  }
+}

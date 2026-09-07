@@ -1,8 +1,8 @@
-# openapi.api.PlayerApi
+# mobile.api.PlayerApi
 
 ## Load the API package
 ```dart
-import 'package:openapi/api.dart';
+import 'package:mobile/api.dart';
 ```
 
 All URIs are relative to *http://localhost*
@@ -20,7 +20,7 @@ Method | HTTP request | Description
 
 ### Example
 ```dart
-import 'package:openapi/api.dart';
+import 'package:mobile/api.dart';
 
 final api_instance = PlayerApi();
 final videoFileId = videoFileId_example; // String | 
@@ -62,7 +62,7 @@ No authorization required
 
 ### Example
 ```dart
-import 'package:openapi/api.dart';
+import 'package:mobile/api.dart';
 
 final api_instance = PlayerApi();
 final fileId = fileId_example; // String | 

@@ -8,18 +8,6 @@ final authServiceProvider = Provider<AuthService>((ref) {
 });
 
 /// Auth 状態 + アクション
-/// 
-/// 使用例:
-/// ```dart
-/// // 状態取得
-/// final auth = ref.watch(authProvider);
-/// auth.user;
-/// auth.isAuthenticated;
-/// auth.loading;
-/// 
-/// // ログイン
-/// await ref.read(authProvider.notifier).login();
-/// ```
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authService = ref.watch(authServiceProvider);
   return AuthNotifier(authService);

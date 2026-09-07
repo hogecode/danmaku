@@ -1,0 +1,19 @@
+{
+  "name": "s3-file-validator-lambda",
+  "version": "1.0.0",
+  "description": "S3 file validation Lambda function",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.400.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.119",
+    "@types/node": "^20.19.39",
+    "typescript": "^5.1.6"
+  }
+}

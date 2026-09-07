@@ -1,0 +1,8 @@
+
+*.dot
+*.png
+tfplan
+*.tfstate
+*.txt
+builds/
+params.json
