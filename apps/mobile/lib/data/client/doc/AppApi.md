@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 
 # **appControllerGetHello**
-> appControllerGetHello()
+> String appControllerGetHello()
 
 
 
@@ -24,7 +24,8 @@ import 'package:mobile/api.dart';
 final api_instance = AppApi();
 
 try {
-    api_instance.appControllerGetHello();
+    final result = api_instance.appControllerGetHello();
+    print(result);
 } catch (e) {
     print('Exception when calling AppApi->appControllerGetHello: $e\n');
 }
@@ -35,7 +36,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-void (empty response body)
+**String**
 
 ### Authorization
 
@@ -44,7 +45,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -9,23 +9,23 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**nicovideoControllerDownloadComments**](NicovideoApi.md#nicovideocontrollerdownloadcomments) | **POST** /api/nicovideo/download/comments | 
+[**nicovideoControllerDownloadComments**](NicovideoApi.md#nicovideocontrollerdownloadcomments) | **POST** /api/nicovideo/download/comments | POST /api/nicovideo/download/comments セッション不要 - thread_keyが取得できれば可能  flow: 1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効
 
 
 # **nicovideoControllerDownloadComments**
-> nicovideoControllerDownloadComments(body)
+> nicovideoControllerDownloadComments(downloadCommentRequestDto)
 
-
+POST /api/nicovideo/download/comments セッション不要 - thread_keyが取得できれば可能  flow: 1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効
 
 ### Example
 ```dart
 import 'package:mobile/api.dart';
 
 final api_instance = NicovideoApi();
-final body = Object(); // Object | 
+final downloadCommentRequestDto = DownloadCommentRequestDto(); // DownloadCommentRequestDto | 
 
 try {
-    api_instance.nicovideoControllerDownloadComments(body);
+    api_instance.nicovideoControllerDownloadComments(downloadCommentRequestDto);
 } catch (e) {
     print('Exception when calling NicovideoApi->nicovideoControllerDownloadComments: $e\n');
 }
@@ -35,7 +35,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | **Object**|  | 
+ **downloadCommentRequestDto** | [**DownloadCommentRequestDto**](DownloadCommentRequestDto.md)|  | 
 
 ### Return type
 

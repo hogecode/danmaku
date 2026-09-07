@@ -16,11 +16,14 @@ class GDriveApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /api/gdrive/list' operation and returns the [Response].
+  /// GET /api/gdrive/list フォルダ内容を取得
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
-  /// * [String] folderId (required):
-  Future<Response> gDriveControllerListFolderWithHttpInfo(String folderId,) async {
+  /// * [String] folderId:
+  Future<Response> gDriveControllerListFolderWithHttpInfo({ String? folderId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/api/gdrive/list';
 
@@ -31,7 +34,9 @@ class GDriveApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (folderId != null) {
       queryParams.addAll(_queryParams('', 'folderId', folderId));
+    }
 
     const contentTypes = <String>[];
 
@@ -47,17 +52,30 @@ class GDriveApi {
     );
   }
 
+  /// GET /api/gdrive/list フォルダ内容を取得
+  ///
   /// Parameters:
   ///
-  /// * [String] folderId (required):
-  Future<void> gDriveControllerListFolder(String folderId,) async {
-    final response = await gDriveControllerListFolderWithHttpInfo(folderId,);
+  /// * [String] folderId:
+  Future<FolderListDto?> gDriveControllerListFolder({ String? folderId, }) async {
+    final response = await gDriveControllerListFolderWithHttpInfo( folderId: folderId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'FolderListDto',) as FolderListDto;
+    
+    }
+    return null;
   }
 
-  /// Performs an HTTP 'GET /api/gdrive/search' operation and returns the [Response].
+  /// GET /api/gdrive/search フォルダ内でキーワード検索
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] folderId (required):
@@ -91,15 +109,25 @@ class GDriveApi {
     );
   }
 
+  /// GET /api/gdrive/search フォルダ内でキーワード検索
+  ///
   /// Parameters:
   ///
   /// * [String] folderId (required):
   ///
   /// * [String] query (required):
-  Future<void> gDriveControllerSearch(String folderId, String query,) async {
+  Future<FolderListDto?> gDriveControllerSearch(String folderId, String query,) async {
     final response = await gDriveControllerSearchWithHttpInfo(folderId, query,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'FolderListDto',) as FolderListDto;
+    
+    }
+    return null;
   }
 }

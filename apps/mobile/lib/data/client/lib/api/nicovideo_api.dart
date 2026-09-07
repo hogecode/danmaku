@@ -16,16 +16,19 @@ class NicovideoApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /api/nicovideo/download/comments' operation and returns the [Response].
+  /// POST /api/nicovideo/download/comments セッション不要 - thread_keyが取得できれば可能  flow: 1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<Response> nicovideoControllerDownloadCommentsWithHttpInfo(Object body,) async {
+  /// * [DownloadCommentRequestDto] downloadCommentRequestDto (required):
+  Future<Response> nicovideoControllerDownloadCommentsWithHttpInfo(DownloadCommentRequestDto downloadCommentRequestDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/api/nicovideo/download/comments';
 
     // ignore: prefer_final_locals
-    Object? postBody = body;
+    Object? postBody = downloadCommentRequestDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -45,11 +48,13 @@ class NicovideoApi {
     );
   }
 
+  /// POST /api/nicovideo/download/comments セッション不要 - thread_keyが取得できれば可能  flow: 1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効
+  ///
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<void> nicovideoControllerDownloadComments(Object body,) async {
-    final response = await nicovideoControllerDownloadCommentsWithHttpInfo(body,);
+  /// * [DownloadCommentRequestDto] downloadCommentRequestDto (required):
+  Future<void> nicovideoControllerDownloadComments(DownloadCommentRequestDto downloadCommentRequestDto,) async {
+    final response = await nicovideoControllerDownloadCommentsWithHttpInfo(downloadCommentRequestDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -182,6 +182,22 @@ class ApiClient {
           return valueString == 'true' || valueString == '1';
         case 'DateTime':
           return value is DateTime ? value : DateTime.tryParse(value);
+        case 'DPlayerCommentDto':
+          return DPlayerCommentDto.fromJson(value);
+        case 'DPlayerCommentListDto':
+          return DPlayerCommentListDto.fromJson(value);
+        case 'DownloadCommentRequestDto':
+          return DownloadCommentRequestDto.fromJson(value);
+        case 'FileItemDto':
+          return FileItemDto.fromJson(value);
+        case 'FolderListDto':
+          return FolderListDto.fromJson(value);
+        case 'LoginResponseDto':
+          return LoginResponseDto.fromJson(value);
+        case 'RefreshTokenResponseDto':
+          return RefreshTokenResponseDto.fromJson(value);
+        case 'UserInfoDto':
+          return UserInfoDto.fromJson(value);
         default:
           dynamic match;
           if (value is List && (match = _regList.firstMatch(targetType)?.group(1)) != null) {
