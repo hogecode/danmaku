@@ -11,11 +11,13 @@ final _logger = Logger();
 
 class PlayerPage extends ConsumerStatefulWidget {
   final String videoId;  // Google Drive のファイルID
+  final String folderId;  // 動画が存在するフォルダID
   final String? fileName;
 
   const PlayerPage({
     Key? key,
     required this.videoId,
+    this.folderId = '',  // デフォルト値を空文字列に
     this.fileName,
   }) : super(key: key);
 
@@ -87,6 +89,8 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
           ),
           body: VideoPlayerPage(
             videoUrl: videoUrl,
+            videoFileId: widget.videoId,
+            folderId: widget.folderId,
             fileName: widget.fileName,
           ),
         );

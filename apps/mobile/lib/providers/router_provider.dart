@@ -134,7 +134,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final videoId = state.pathParameters['videoId'];
           final fileName = state.uri.queryParameters['fileName'];
-          return PlayerPage(videoId: videoId ?? '', fileName: fileName);
+          final folderId = state.uri.queryParameters['folderId'] ?? '';
+          
+          _logger.i('[Router] ========== PLAYER ROUTE ==========');
+          _logger.i('[Router] URI: ${state.uri}');
+          _logger.i('[Router] videoId from pathParameters: $videoId');
+          _logger.i('[Router] fileName from queryParameters: $fileName');
+          _logger.i('[Router] folderId from queryParameters: $folderId');
+          _logger.i('[Router] ========== END PLAYER ROUTE ==========');
+          
+          return PlayerPage(
+            videoId: videoId ?? '',
+            folderId: folderId,
+            fileName: fileName,
+          );
         },
       ),
 
@@ -179,8 +192,11 @@ extension GoRouterX on BuildContext {
   void goHome() => go(Routes.home);
   void goLogin() => go(Routes.login);
   void goDrive() => go(Routes.drive);
-  void goPlayer(String videoId, {String? fileName}) {
-    final query = fileName != null ? '?fileName=$fileName' : '';
+  void goPlayer(String videoId, {String? fileName, String? folderId}) {
+    final queryParams = <String>[];
+    if (fileName != null) queryParams.add('fileName=$fileName');
+    if (folderId != null) queryParams.add('folderId=$folderId');
+    final query = queryParams.isNotEmpty ? '?${queryParams.join('&')}' : '';
     go('${Routes.player.replaceFirst(':videoId', videoId)}$query');
   }
 

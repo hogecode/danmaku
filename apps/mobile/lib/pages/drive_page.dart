@@ -11,29 +11,22 @@ final _logger = Logger();
 
 class DrivePage extends ConsumerStatefulWidget {
   const DrivePage({Key? key}) : super(key: key);
-
   @override
   ConsumerState<DrivePage> createState() => _DrivePageState();
 }
-
 
 class _DrivePageState extends ConsumerState<DrivePage> {
   late final DriveService _driveService = DriveService();
   late List<FileItemDto> _files = [];
   bool _isLoading = true;
-  
-  // フォルダナビゲーション用
   late List<String> _folderStack = ['root'];
   String get _currentFolderId => _folderStack.last;
-
-  // MIME Type 定数
   static const String _folderMimeType = 'application/vnd.google-apps.folder';
 
   @override
   void initState() {
     super.initState();
     _logger.i('Google Drive ページを初期化');
-    // ログイン状態を確認してからファイルを読み込む
     Future.microtask(() {
       final authState = ref.read(authProvider);
       if (!authState.isAuthenticated) {
@@ -49,34 +42,20 @@ class _DrivePageState extends ConsumerState<DrivePage> {
   Widget build(BuildContext context) {
     final isDark = ref.watch(darkModeProvider);
     final authState = ref.watch(authProvider);
-    
-    // ログインしていない場合はローディング画面を表示
     if (!authState.isAuthenticated) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Google Drive'),
-          elevation: 0,
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        appBar: AppBar(title: const Text('Google Drive'), elevation: 0),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
-
     return Scaffold(
-      // TODO: Widget分ける
       appBar: AppBar(
         title: Text(_getDisplayTitle()),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _onBackPressed,
-        ),
+        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _onBackPressed),
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : _files.isEmpty
               ? Center(
                   child: Column(
@@ -84,10 +63,7 @@ class _DrivePageState extends ConsumerState<DrivePage> {
                     children: [
                       const Icon(Icons.cloud_off, size: 80, color: Colors.grey),
                       const SizedBox(height: 16),
-                      Text(
-                        'ファイルがありません',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
+                      Text('ファイルがありません', style: Theme.of(context).textTheme.bodyLarge),
                     ],
                   ),
                 )
@@ -97,93 +73,56 @@ class _DrivePageState extends ConsumerState<DrivePage> {
                     final file = _files[index];
                     final isVideo = _isVideo(file);
                     final isFolder = _isFolder(file);
-                    
                     return ListTile(
-                      leading: Icon(
-                        isVideo ? Icons.videocam : Icons.folder,
-                        color: Colors.blue,
-                      ),
+                      leading: Icon(isVideo ? Icons.videocam : Icons.folder, color: Colors.blue),
                       title: Text(file.name ?? 'Unknown'),
-                      subtitle: Text(file.modifiedTime ?? 'Unknown'),
+                      subtitle: isVideo ? Text(_formatFileSize(file.size)) : null,
                       trailing: isVideo
-                          ? IconButton(
-                              icon: const Icon(Icons.play_arrow),
-                              onPressed: () {
-                                context.go(
-                                  '/watch/${file.id}?fileName=${file.name}',
-                                );
-                              },
-                            )
+                          ? IconButton(icon: const Icon(Icons.play_arrow), onPressed: () => _navigateToVideo(file))
                           : isFolder
-                              ? IconButton(
-                                  icon: const Icon(Icons.chevron_right),
-                                  onPressed: () {
-                                    _navigateToFolder(file.id ?? '');
-                                  },
-                                )
+                              ? IconButton(icon: const Icon(Icons.chevron_right), onPressed: () => _navigateToFolder(file.id ?? ''))
                               : null,
                       onTap: () {
-                        if (isVideo) {
-                          context.go(
-                            '/watch/${file.id}?fileName=${file.name}',
-                          );
-                        } else if (isFolder) {
-                          _navigateToFolder(file.id ?? '');
-                        }
+                        if (isVideo) _navigateToVideo(file);
+                        else if (isFolder) _navigateToFolder(file.id ?? '');
                       },
                     );
                   },
                 ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _refreshFiles,
-        tooltip: '更新',
-        child: const Icon(Icons.refresh),
-      ),
+      floatingActionButton: FloatingActionButton(onPressed: _refreshFiles, tooltip: '更新', child: const Icon(Icons.refresh)),
     );
   }
 
-  /// Google Drive のファイルを読み込む
   Future<void> _loadDriveFiles(String folderId) async {
     try {
-      _logger.i('Google Drive のファイルを読み込み中... (folderId=$folderId)');
+      _logger.i('Google Drive のファイルを読み込み中... (folderId=' + folderId + ')');
       setState(() => _isLoading = true);
-
-      // DriveService でファイル一覧を取得
       final files = await _driveService.listFolder(folderId: folderId);
-
       setState(() {
         _files = files;
         _isLoading = false;
       });
-
-      _logger.i('Google Drive のファイル読み込み完了: ${_files.length} 個');
+      _logger.i('Google Drive のファイル読み込み完了: ' + _files.length.toString() + ' 個');
     } catch (e) {
       _logger.e('Google Drive のファイル読み込み失敗', error: e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('読み込み失敗: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('読み込み失敗: ' + e.toString()),
+          backgroundColor: Colors.red,
+        ));
       }
       setState(() => _isLoading = false);
     }
   }
 
-  /// ファイルを更新
-  Future<void> _refreshFiles() async {
-    await _loadDriveFiles(_currentFolderId);
-  }
+  Future<void> _refreshFiles() => _loadDriveFiles(_currentFolderId);
 
-  /// フォルダナビゲーション
   void _navigateToFolder(String folderId) {
-    _logger.i('フォルダに移動: $folderId');
+    _logger.i('フォルダに移動: ' + folderId);
     _folderStack.add(folderId);
     _loadDriveFiles(_currentFolderId);
   }
 
-  /// 親フォルダに戻る
   void _goBackFolder() {
     if (_folderStack.length > 1) {
       _logger.i('親フォルダに戻る');
@@ -192,31 +131,29 @@ class _DrivePageState extends ConsumerState<DrivePage> {
     }
   }
 
-  /// 戻るボタンのアクション
   void _onBackPressed() {
-    if (_folderStack.length > 1) {
-      _goBackFolder();
-    } else {
-      context.go('/');
-    }
+    if (_folderStack.length > 1) _goBackFolder();
+    else context.go('/');
   }
 
-  /// 現在のフォルダのタイトルを取得
-  String _getDisplayTitle() {
-    if (_folderStack.length == 1) {
-      return 'Google Drive';
-    }
-    // 最後のフォルダIDを表示（本来はフォルダ名を取得してもよい）
-    return 'Google Drive / ${_files.isNotEmpty ? _files.first.parentId ?? 'Subfolder' : 'Subfolder'}';
+  String _getDisplayTitle() => _folderStack.length == 1 ? 'Google Drive' : 'Google Drive / folder';
+
+  String _formatFileSize(num? bytes) {
+    if (bytes == null) return 'Unknown size';
+    if (bytes < 1024) return bytes.toString() + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toStringAsFixed(2) + ' KB';
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toStringAsFixed(2) + ' MB';
+    return (bytes / (1024 * 1024 * 1024)).toStringAsFixed(2) + ' GB';
   }
 
-  /// ファイルがビデオかどうか
-  bool _isVideo(FileItemDto file) {
-    return (file.mimeType ?? '').contains('video');
-  }
+  bool _isVideo(FileItemDto file) => (file.mimeType ?? '').contains('video');
+  bool _isFolder(FileItemDto file) => (file.mimeType ?? '').contains(_folderMimeType);
 
-  /// ファイルがフォルダかどうか
-  bool _isFolder(FileItemDto file) {
-    return (file.mimeType ?? '').contains(_folderMimeType);
+  void _navigateToVideo(FileItemDto file) {
+    final videoId = file.id ?? '';
+    final fileName = Uri.encodeComponent(file.name ?? '');
+    final url = '/watch/' + videoId + '?fileName=' + fileName + '&folderId=' + _currentFolderId;
+    debugPrint('Navigation URL: ' + url);
+    context.go(url);
   }
 }
