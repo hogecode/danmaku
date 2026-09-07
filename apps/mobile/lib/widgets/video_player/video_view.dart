@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:async';
@@ -24,6 +25,7 @@ class VideoView extends ConsumerStatefulWidget {
   ConsumerState<VideoView> createState() => VideoViewState();
 }
 
+
 class VideoViewState extends ConsumerState<VideoView> {
   late VideoPlayerController _controller;
   Timer? _updateTimer;
@@ -35,7 +37,10 @@ class VideoViewState extends ConsumerState<VideoView> {
   @override
   void initState() {
     super.initState();
-    _initializeVideo();
+    // トークンをリードしてからビデオを初期化
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeVideo();
+    });
 
     // Timer を開始（定期的に currentTime を更新）
     _updateTimer = Timer.periodic(const Duration(milliseconds: 16), (_) {
@@ -44,7 +49,31 @@ class VideoViewState extends ConsumerState<VideoView> {
   }
 
   /// ビデオコントローラーを初期化
-  void _initializeVideo() {
+  /// 
+  /// 注記: URL には既に ?token=xxx が含まれているため、
+  /// 追加の Authorization ヘッダーは不要
+  Future<void> _initializeVideo() async {
+    debugPrint('🎬 Initializing video with URL: ${widget.videoUrl}');
+
+    // URL のクエリパラメータを確認
+    try {
+      final uri = Uri.parse(widget.videoUrl);
+      debugPrint('🌐 URL Details:');
+      debugPrint('   - Scheme: ${uri.scheme}');
+      debugPrint('   - Host: ${uri.host}');
+      debugPrint('   - Port: ${uri.port}');
+      debugPrint('   - Path: ${uri.path}');
+      debugPrint('   - Query parameters: ${uri.queryParameters.keys.toList()}');
+      if (uri.queryParameters.containsKey('token')) {
+        final token = uri.queryParameters['token'];
+        debugPrint('   - Token present: ${token?.substring(0, 30)}...');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Failed to parse URL: $e');
+    }
+
+    debugPrint('📤 Sending request to: ${widget.videoUrl}');
+
     _controller = VideoPlayerController.networkUrl(
       Uri.parse(widget.videoUrl),
     )
@@ -53,6 +82,9 @@ class VideoViewState extends ConsumerState<VideoView> {
           setState(() {
             _isInitialized = true;
           });
+          debugPrint('✅ Video initialized successfully');
+          debugPrint('📊 Video duration: ${_controller.value.duration}');
+          debugPrint('📊 Video size: ${_controller.value.size}');
           widget.onReady?.call();
 
           // ビデオを自動再生
@@ -63,6 +95,15 @@ class VideoViewState extends ConsumerState<VideoView> {
         if (mounted) {
           widget.onError?.call();
           debugPrint('❌ Video initialization error: $error');
+          debugPrint('❌ Error type: ${error.runtimeType}');
+          debugPrint('❌ Error toString: ${error.toString()}');
+          
+          // PlatformException の詳細情報を出力
+          if (error is PlatformException) {
+            debugPrint('❌ PlatformException code: ${error.code}');
+            debugPrint('❌ PlatformException message: ${error.message}');
+            debugPrint('❌ PlatformException details: ${error.details}');
+          }
         }
       });
   }
@@ -91,7 +132,12 @@ class VideoViewState extends ConsumerState<VideoView> {
       _controller.pause();
       _controller.dispose();
       _isInitialized = false;
-      _initializeVideo();
+      // async 処理として実行（await しない）
+      _initializeVideo().then((_) {
+        // 初期化完了
+      }).catchError((e) {
+        debugPrint('⚠️ Error in didUpdateWidget: $e');
+      });
     }
   }
 
@@ -160,7 +206,11 @@ class VideoViewState extends ConsumerState<VideoView> {
       },
       child: Container(
         color: Colors.black,
-        child: VideoPlayer(_controller),
+        // アスペクト比を正しく保つ
+        child: AspectRatio(
+          aspectRatio: _controller.value.aspectRatio,
+          child: VideoPlayer(_controller),
+        ),
       ),
     );
   }

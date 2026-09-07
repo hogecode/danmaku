@@ -9,6 +9,7 @@ import {
   HttpCode,
   Res,
   Headers,
+  Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { PlayerService } from './player.service';
@@ -24,6 +25,8 @@ import { PlayerConstants } from './constants/player.constants';
 @Controller('api/player')
 @UseGuards(AuthGuard)
 export class PlayerController {
+  private readonly logger = new Logger(PlayerController.name);
+
   constructor(private readonly playerService: PlayerService) {}
 
   /**
@@ -57,38 +60,55 @@ export class PlayerController {
     @Res() res: Response,
     @Headers(PlayerConstants.RANGE.HEADER_NAME) rangeHeader?: string,
   ): Promise<void> {
-    if (!session.userId) {
-      throw new BadRequestException('User ID not found in session');
+    try {
+      this.logger.log(`🎬 streamVideo called with fileId: ${fileId}`);
+      this.logger.log(`👤 userId: ${session.userId}`);
+      this.logger.log(`📋 Range header: ${rangeHeader || 'not provided'}`);
+
+      if (!session.userId) {
+        this.logger.error('❌ User ID not found in session');
+        throw new BadRequestException('User ID not found in session');
+      }
+
+      if (!fileId || fileId.trim().length === 0) {
+        this.logger.error('❌ fileId parameter is required');
+        throw new BadRequestException('fileId parameter is required');
+      }
+
+      this.logger.log(`🔄 Calling playerService.getVideoStreamWithRange...`);
+      const streamResponse = await this.playerService.getVideoStreamWithRange(
+        BigInt(session.userId),
+        fileId,
+        rangeHeader,
+      );
+
+      this.logger.log(`✅ Got stream response with status: ${streamResponse.statusCode}`);
+      this.logger.log(`📊 Content-Length: ${streamResponse.headers.contentLength} bytes`);
+
+      // ステータスコードを設定
+      res.status(streamResponse.statusCode);
+
+      // レスポンスヘッダーを設定
+      res.set({
+        'Content-Type': streamResponse.headers.contentType,
+        'Content-Length': streamResponse.headers.contentLength.toString(),
+        'Accept-Ranges': streamResponse.headers.acceptRanges,
+        'Cache-Control': 'public, max-age=3600',
+      });
+
+      // Content-Range ヘッダーが必要な場合は設定
+      if (streamResponse.headers.contentRange) {
+        res.set('Content-Range', streamResponse.headers.contentRange);
+      }
+
+      this.logger.log(`📤 Piping stream to response...`);
+      // ストリーム送信
+      streamResponse.stream.pipe(res);
+    } catch (error) {
+      this.logger.error(`❌ streamVideo error: ${error.message}`);
+      this.logger.error(`Stack: ${error.stack}`);
+      throw error;
     }
-
-    if (!fileId || fileId.trim().length === 0) {
-      throw new BadRequestException('fileId parameter is required');
-    }
-
-    const streamResponse = await this.playerService.getVideoStreamWithRange(
-      BigInt(session.userId),
-      fileId,
-      rangeHeader,
-    );
-
-    // ステータスコードを設定
-    res.status(streamResponse.statusCode);
-
-    // レスポンスヘッダーを設定
-    res.set({
-      'Content-Type': streamResponse.headers.contentType,
-      'Content-Length': streamResponse.headers.contentLength.toString(),
-      'Accept-Ranges': streamResponse.headers.acceptRanges,
-      'Cache-Control': 'public, max-age=3600',
-    });
-
-    // Content-Range ヘッダーが必要な場合は設定
-    if (streamResponse.headers.contentRange) {
-      res.set('Content-Range', streamResponse.headers.contentRange);
-    }
-
-    // ストリーム送信
-    streamResponse.stream.pipe(res);
   }
 
   /**

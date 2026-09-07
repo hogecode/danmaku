@@ -42,6 +42,25 @@ export class AuthGuard implements CanActivate {
       }
     }
 
+    // 3. JWT トークン（URL クエリパラメータ ?token=xxx）をチェック
+    // 動画ストリーミング用（モバイルアプリ対応）
+    const queryToken = (request.query as any)?.token;
+    if (queryToken) {
+      try {
+        const secret = this.configService.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new UnauthorizedException('JWT_SECRET not configured');
+        }
+
+        const decoded = jwt.verify(queryToken, secret) as any;
+        // JWT から取得した userId をセッションに保存
+        (request.session as any).userId = decoded.sub;
+        return true;
+      } catch (error) {
+        throw new UnauthorizedException('Invalid JWT token in query parameter');
+      }
+    }
+
     throw new UnauthorizedException('Not authenticated');
   }
 }

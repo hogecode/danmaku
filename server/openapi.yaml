@@ -99,6 +99,21 @@ paths:
       summary: POST /api/auth/logout - ログアウト
       tags:
         - Auth
+  /api/auth/video-token:
+    post:
+      operationId: AuthController_generateVideoToken
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        POST /api/auth/video-token - 動画ストリーミング用トークン生成
+
+        目的: モバイルアプリでの動画URL認証
+        - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
+        - 有効期限: 15分（デフォルト）
+      tags:
+        - Auth
   /api/gdrive/list:
     get:
       operationId: GDriveController_listFolder

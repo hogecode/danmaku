@@ -16,27 +16,27 @@ final playerUIStateProvider =
   return PlayerUINotifier();
 });
 
-/// コントローラーバー表示状態（便利な参照用）
+/// コントローラーバー表示状態
 final controllerVisibleProvider = StateProvider<bool>((ref) {
   return ref.watch(playerUIStateProvider).controllerVisible;
 });
 
-/// 設定パネル表示状態（便利な参照用）
+/// 設定パネル表示状態
 final settingsPanelVisibleProvider = StateProvider<bool>((ref) {
   return ref.watch(playerUIStateProvider).settingsPanelVisible;
 });
 
-/// コメント透明度（便利な参照用）
+/// コメント透明度
 final danmakuOpacityProvider = StateProvider<double>((ref) {
   return ref.watch(danmakuSettingsProvider).opacity;
 });
 
-/// コメント速度（便利な参照用）
+/// コメント速度
 final danmakuSpeedRateProvider = StateProvider<double>((ref) {
   return ref.watch(danmakuSettingsProvider).speedRate;
 });
 
-/// コメント表示/非表示（便利な参照用）
+/// コメント表示/非表示
 final danmakuVisibilityProvider = StateProvider<bool>((ref) {
   return ref.watch(danmakuSettingsProvider).isVisible;
 });

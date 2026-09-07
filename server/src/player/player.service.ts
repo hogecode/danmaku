@@ -3,6 +3,7 @@ import {
   Inject,
   BadRequestException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
@@ -45,6 +46,8 @@ interface StreamResponse {
  */
 @Injectable()
 export class PlayerService {
+  private readonly logger = new Logger(PlayerService.name);
+
   constructor(
     @Inject('DATABASE_CONNECTION') private readonly db: Database,
     private readonly xmlParser: XmlParser,
@@ -384,76 +387,104 @@ export class PlayerService {
     videoFileId: string,
     rangeHeader?: string,
   ): Promise<StreamResponse> {
-    const accessToken = await this.tokenService.getValidAccessToken(userId);
-    const oauth2Client = new OAuth2Client();
-    oauth2Client.setCredentials({ access_token: accessToken });
+    try {
+      this.logger.log(`🎬 getVideoStreamWithRange called`);
+      this.logger.log(`  - userId: ${userId}`);
+      this.logger.log(`  - videoFileId: ${videoFileId}`);
 
-    const drive = google.drive({ version: 'v3', auth: oauth2Client });
+      // トークン取得
+      this.logger.log(`🔐 Getting valid access token...`);
+      const accessToken = await this.tokenService.getValidAccessToken(userId);
+      this.logger.log(`✅ Access token obtained (preview: ${accessToken.substring(0, 30)}...)`);
 
-    // ファイルメタデータを取得（サイズ確認）
-    const fileMetadata = await drive.files.get({
-      fileId: videoFileId,
-      fields: 'id,name,mimeType,size',
-    });
+      const oauth2Client = new OAuth2Client();
+      oauth2Client.setCredentials({ access_token: accessToken });
 
-    // MIME タイプが MP4 であることを確認
-    if (fileMetadata.data.mimeType !== PlayerConstants.MIME_TYPES.VIDEO_MP4) {
-      throw new BadRequestException(
-        `Invalid file type: ${fileMetadata.data.mimeType}. Only MP4 videos are supported.`,
-      );
-    }
+      const drive = google.drive({ version: 'v3', auth: oauth2Client });
 
-    const fileSize = fileMetadata.data.size
-      ? parseInt(fileMetadata.data.size as string, 10)
-      : 0;
+      // ファイルメタデータを取得（サイズ確認）
+      this.logger.log(`📋 Fetching file metadata from GDrive...`);
+      const fileMetadata = await drive.files.get({
+        fileId: videoFileId,
+        fields: 'id,name,mimeType,size',
+      });
 
-    // Range ヘッダーをパース
-    let rangeInfo: RangeInfo | null = null;
-    let statusCode = PlayerConstants.HTTP_STATUS.OK;
-    let contentLength = fileSize;
-    let contentRange: string | undefined;
+      this.logger.log(`✅ File metadata retrieved:`);
+      this.logger.log(`  - name: ${fileMetadata.data.name}`);
+      this.logger.log(`  - mimeType: ${fileMetadata.data.mimeType}`);
+      this.logger.log(`  - size: ${fileMetadata.data.size} bytes`);
 
-    if (rangeHeader) {
-      rangeInfo = this.parseRangeHeader(rangeHeader, fileSize);
-
-      if (!rangeInfo) {
-        // Range が無効な場合は 416 Range Not Satisfiable を返す
+      // MIME タイプが MP4 であることを確認
+      if (fileMetadata.data.mimeType !== PlayerConstants.MIME_TYPES.VIDEO_MP4) {
+        this.logger.error(`❌ Invalid MIME type: ${fileMetadata.data.mimeType}`);
         throw new BadRequestException(
-          `Invalid Range: bytes */` + fileSize,
+          `Invalid file type: ${fileMetadata.data.mimeType}. Only MP4 videos are supported.`,
         );
       }
 
-      statusCode = PlayerConstants.HTTP_STATUS.PARTIAL_CONTENT;
-      contentLength = rangeInfo.end - rangeInfo.start + 1;
-      contentRange = `bytes ${rangeInfo.start}-${rangeInfo.end}/${fileSize}`;
+      const fileSize = fileMetadata.data.size
+        ? parseInt(fileMetadata.data.size as string, 10)
+        : 0;
+
+      // Range ヘッダーをパース
+      let rangeInfo: RangeInfo | null = null;
+      let statusCode = PlayerConstants.HTTP_STATUS.OK;
+      let contentLength = fileSize;
+      let contentRange: string | undefined;
+
+      if (rangeHeader) {
+        this.logger.log(`📊 Parsing Range header: ${rangeHeader}`);
+        rangeInfo = this.parseRangeHeader(rangeHeader, fileSize);
+
+        if (!rangeInfo) {
+          this.logger.error(`❌ Invalid Range header`);
+          // Range が無効な場合は 416 Range Not Satisfiable を返す
+          throw new BadRequestException(
+            `Invalid Range: bytes */` + fileSize,
+          );
+        }
+
+        statusCode = PlayerConstants.HTTP_STATUS.PARTIAL_CONTENT;
+        contentLength = rangeInfo.end - rangeInfo.start + 1;
+        contentRange = `bytes ${rangeInfo.start}-${rangeInfo.end}/${fileSize}`;
+        this.logger.log(`✅ Range parsed: ${contentRange}`);
+      }
+
+      // GDrive API からファイルをダウンロード（Range 指定）
+      this.logger.log(`📥 Fetching video stream from GDrive (using alt=media)...`);
+      const response = await drive.files.get(
+        {
+          fileId: videoFileId,
+          alt: 'media',
+        },
+        {
+          responseType: 'stream',
+          headers: rangeInfo
+            ? {
+                Range: `bytes=${rangeInfo.start}-${rangeInfo.end}`,
+              }
+            : undefined,
+        },
+      );
+
+      this.logger.log(`✅ Stream obtained from GDrive`);
+      this.logger.log(`✅ Returning with status: ${statusCode}, contentLength: ${contentLength}`);
+
+      return {
+        stream: response.data,
+        statusCode,
+        headers: {
+          contentType: PlayerConstants.MIME_TYPES.VIDEO_MP4,
+          contentLength,
+          contentRange,
+          acceptRanges: PlayerConstants.RANGE.ACCEPT_RANGES,
+        },
+      };
+    } catch (error) {
+      this.logger.error(`❌ getVideoStreamWithRange failed: ${error.message}`);
+      this.logger.error(`Stack: ${error.stack}`);
+      throw error;
     }
-
-    // GDrive API からファイルをダウンロード（Range 指定）
-    const response = await drive.files.get(
-      {
-        fileId: videoFileId,
-        alt: 'media',
-      },
-      {
-        responseType: 'stream',
-        headers: rangeInfo
-          ? {
-              Range: `bytes=${rangeInfo.start}-${rangeInfo.end}`,
-            }
-          : undefined,
-      },
-    );
-
-    return {
-      stream: response.data,
-      statusCode,
-      headers: {
-        contentType: PlayerConstants.MIME_TYPES.VIDEO_MP4,
-        contentLength,
-        contentRange,
-        acceptRanges: PlayerConstants.RANGE.ACCEPT_RANGES,
-      },
-    };
   }
 
 }

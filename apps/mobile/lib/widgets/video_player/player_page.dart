@@ -24,7 +24,9 @@ class VideoPlayerPage extends ConsumerStatefulWidget {
   ConsumerState<VideoPlayerPage> createState() => _VideoPlayerPageState();
 }
 
+
 class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
+  // ビデオプレイヤーの状態を管理するためのキーとプレイヤー状態
   late GlobalKey<VideoViewState> _videoViewKey;
   late PlayerEntity _playerState;
 

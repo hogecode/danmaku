@@ -12,11 +12,13 @@ import {
   HttpCode,
   UsePipes,
   ValidationPipe,
+  Logger,
 } from '@nestjs/common';
 import type { Express, Request, Response } from 'express';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 import { OAuthAccountService } from './services/auth-account.service';
+import { TokenService } from './services/token.service';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitGuard, AuthGuard } from './guards';
 import {
@@ -33,10 +35,13 @@ import {
  */
 @Controller('api/auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly oauthAccountService: OAuthAccountService,
+    private readonly tokenService: TokenService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -193,4 +198,43 @@ export class AuthController {
 
     return { message: 'Logged out successfully' };
   }
+
+   /**
+    * POST /api/auth/video-token - 動画ストリーミング用トークン生成
+    * 
+    * 目的: モバイルアプリでの動画URL認証
+    * - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
+    * - 有効期限: 15分（デフォルト）
+    * 
+    * @example
+    * POST /api/auth/video-token
+    * Authorization: Bearer {access_token}
+    * 
+    * Response: { token: "eyJhbGciOiJIUzI1NiIs..." }
+    */
+   @Post('video-token')
+   @UseGuards(AuthGuard)
+   @HttpCode(200)
+   async generateVideoToken(
+     @Session() session: Express.Session,
+   ): Promise<{ token: string }> {
+     const userId = (session as any).userId;
+     if (!userId) {
+       throw new BadRequestException('User ID not found in session');
+     }
+
+     try {
+       this.logger.log(`🎬 Generating video token for userId: ${userId}`);
+       
+       // JWT トークンを生成（有効期限: 15分）
+       const token = this.tokenService.generateAccessToken(BigInt(userId));
+       
+       this.logger.log(`✅ Video token generated (length: ${token.length})`);
+       return { token };
+     } catch (error) {
+       this.logger.error(`❌ Failed to generate video token: ${error.message}`);
+       throw error;
+     }
+   }
+
 }
