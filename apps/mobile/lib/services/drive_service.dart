@@ -1,31 +1,11 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:logger/logger.dart';
 import 'package:mobile/data/client/lib/api.dart';
 import 'package:mobile/services/token_bearer_http_client.dart';
 import 'package:mobile/services/token_storage.dart';
 
 final _logger = Logger();
-
-/// Google Drive ファイルモデル
-// TODO: OpenAPIの自動生成モデルを使うように変更
-class DriveFile {
-  final String id;
-  final String name;
-  final String? modifiedTime;
-  final bool isVideo;
-  final String? thumbnailLink;
-  final String? webViewLink;
-
-  DriveFile({
-    required this.id,
-    required this.name,
-    this.modifiedTime,
-    required this.isVideo,
-    this.thumbnailLink,
-    this.webViewLink,
-  });
-}
 
 /// Google Drive エラー
 class DriveException implements Exception {
@@ -74,40 +54,56 @@ class DriveService {
   ///
   /// GET /api/gdrive/list
   /// @param folderId フォルダID（デフォルト: 'root'）
-  /// @return DriveFile のリスト
-  Future<List<DriveFile>> listFolder({String folderId = 'root'}) async {
+  /// @return FileItemDtoのリスト
+  Future<List<FileItemDto>> listFolder({String folderId = 'root'}) async {
     try {
       _logger.i('DriveService: フォルダ一覧を取得中 (folderId=$folderId)');
 
-      // OpenAPI で GET /api/gdrive/list を呼び出し
+      // OpenAPI クライアント使用（自動生成）
+      // HTTPレスポンスを取得してデシリアライゼーション時のエラーを回避
       final response = await _gDriveApi.gDriveControllerListFolderWithHttpInfo(
-        folderId,
+        folderId: folderId,
       );
 
-      // ステータスコード確認
-      if (response.statusCode == null || response.statusCode! >= 400) {
+      if (response.statusCode != null && response.statusCode! >= 400) {
         throw DriveException(
-          'Failed to list folder',
+          'API Error: ${response.statusCode}',
           response.statusCode,
         );
       }
 
-      // レスポンスボディをJSON デコード
+      // レスポンスボディをJSON として取得
       if (response.body.isEmpty) {
-        throw DriveException('No data received from list folder endpoint');
+        _logger.w('DriveService: フォルダが空です');
+        return [];
       }
 
-      final data = jsonDecode(response.body);
-      _logger.i('DriveService: レスポンス受信: $data');
+      // JSON デコード（自動生成コードのバグを回避）
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final items = <FileItemDto>[];
 
-      // items の配列をマッピング
-      if (data is! Map<String, dynamic> || data['items'] is! List) {
-        throw DriveException('Invalid response format from server');
+      if (json['items'] is List) {
+        for (final item in json['items'] as List) {
+          try {
+            // アイテムを手動でマッピング（デシリアライゼーション エラーを回避）
+            items.add(
+              FileItemDto(
+                id: item['id'] ?? '',
+                name: item['name'] ?? 'Unknown',
+                mimeType: item['mimeType'] ?? '',
+                size: _parseSize(item['size']),
+                modifiedTime: item['modifiedTime'] ?? '',
+                webViewLink: item['webViewLink'] ?? '',
+                thumbnailLink: item['thumbnailLink'] as String?,
+                parentId: item['parentId'] as String?,
+              ),
+            );
+          } catch (e) {
+            _logger.w('DriveService: アイテムのマッピング失敗: $e');
+            continue;
+          }
+        }
       }
-
-      final items = (data['items'] as List)
-          .map((item) => _mapFileItemDtoToDriveFile(item))
-          .toList();
 
       _logger.i('DriveService: フォルダ一覧取得成功: ${items.length} 個');
       return items;
@@ -122,8 +118,8 @@ class DriveService {
   /// GET /api/gdrive/search
   /// @param folderId 検索対象フォルダID
   /// @param query 検索キーワード
-  /// @return DriveFile のリスト
-  Future<List<DriveFile>> search({
+  /// @return FileItemDto（OpenAPI 自動生成モデル）のリスト
+  Future<List<FileItemDto>> search({
     required String folderId,
     required String query,
   }) async {
@@ -132,36 +128,51 @@ class DriveService {
         'DriveService: 検索実行中 (folderId=$folderId, query=$query)',
       );
 
-      // GET /api/gdrive/search を呼び出し
+      // HTTPレスポンスを取得してデシリアライゼーション時のエラーを回避
       final response = await _gDriveApi.gDriveControllerSearchWithHttpInfo(
         folderId,
         query,
       );
 
-      // ステータスコード確認
-      if (response.statusCode == null || response.statusCode! >= 400) {
+      if (response.statusCode != null && response.statusCode! >= 400) {
         throw DriveException(
-          'Failed to search in folder',
+          'API Error: ${response.statusCode}',
           response.statusCode,
         );
       }
 
-      // レスポンスボディをJSON デコード
+      // レスポンスボディをJSON として取得
       if (response.body.isEmpty) {
-        throw DriveException('No data received from search endpoint');
+        _logger.w('DriveService: 検索結果なし');
+        return [];
       }
 
-      final data = jsonDecode(response.body);
-      _logger.i('DriveService: 検索レスポンス受信: $data');
+      // JSON デコード（自動生成コードのバグを回避）
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final items = <FileItemDto>[];
 
-      // items の配列をマッピング
-      if (data is! Map<String, dynamic> || data['items'] is! List) {
-        throw DriveException('Invalid response format from server');
+      if (json['items'] is List) {
+        for (final item in json['items'] as List) {
+          try {
+            // アイテムを手動でマッピング（デシリアライゼーション エラーを回避）
+            items.add(
+              FileItemDto(
+                id: item['id'] ?? '',
+                name: item['name'] ?? 'Unknown',
+                mimeType: item['mimeType'] ?? '',
+                size: _parseSize(item['size']),
+                modifiedTime: item['modifiedTime'] ?? '',
+                webViewLink: item['webViewLink'] ?? '',
+                thumbnailLink: item['thumbnailLink'] as String?,
+                parentId: item['parentId'] as String?,
+              ),
+            );
+          } catch (e) {
+            _logger.w('DriveService: アイテムのマッピング失敗: $e');
+            continue;
+          }
+        }
       }
-
-      final items = (data['items'] as List)
-          .map((item) => _mapFileItemDtoToDriveFile(item))
-          .toList();
 
       _logger.i('DriveService: 検索完了: ${items.length} 件');
       return items;
@@ -171,25 +182,18 @@ class DriveService {
     }
   }
 
-  /// FileItemDto を DriveFile にマッピング
-  DriveFile _mapFileItemDtoToDriveFile(dynamic item) {
-    final id = item['id'] as String;
-    final name = item['name'] as String;
-    final mimeType = item['mimeType'] as String;
-    final modifiedTime = item['modifiedTime'] as String?;
-    final thumbnailLink = item['thumbnailLink'] as String?;
-    final webViewLink = item['webViewLink'] as String?;
-
-    // フォルダかビデオかを判定
-    final isVideo = mimeType.contains('video');
-
-    return DriveFile(
-      id: id,
-      name: name,
-      modifiedTime: modifiedTime,
-      isVideo: isVideo,
-      thumbnailLink: thumbnailLink,
-      webViewLink: webViewLink,
-    );
+  /// size を安全にパース（null対応）
+  num? _parseSize(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value;
+    if (value is String) {
+      try {
+        return num.parse(value);
+      } catch (e) {
+        _logger.w('DriveService: size パース失敗: $value');
+        return null;
+      }
+    }
+    return null;
   }
 }

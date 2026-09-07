@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:mobile/data/client/lib/api.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/ui_provider.dart';
 import 'package:mobile/services/drive_service.dart';
@@ -18,7 +19,7 @@ class DrivePage extends ConsumerStatefulWidget {
 
 class _DrivePageState extends ConsumerState<DrivePage> {
   late final DriveService _driveService = DriveService();
-  late List<DriveFile> _files = [];
+  late List<FileItemDto> _files = [];
   bool _isLoading = true;
 
   @override
@@ -67,13 +68,13 @@ class _DrivePageState extends ConsumerState<DrivePage> {
                     final file = _files[index];
                     return ListTile(
                       leading: Icon(
-                        file.isVideo ? Icons.videocam : Icons.folder,
+                        (file.mimeType ?? '').contains('video') ? Icons.videocam : Icons.folder,
                         color: Colors.blue,
                       ),
-                      title: Text(file.name),
+                      title: Text(file.name ?? 'Unknown'),
                       subtitle: Text(file.modifiedTime ?? 'Unknown'),
                       // TODO: フォルダの場合も設定する
-                      trailing: file.isVideo
+                      trailing: (file.mimeType ?? '').contains('video')
                           ? IconButton(
                               icon: const Icon(Icons.play_arrow),
                               onPressed: () {
@@ -84,7 +85,7 @@ class _DrivePageState extends ConsumerState<DrivePage> {
                             )
                           : null,
                       onTap: () {
-                        if (file.isVideo) {
+                        if ((file.mimeType ?? '').contains('video')) {
                           context.go(
                             '/watch/${file.id}?fileName=${file.name}',
                           );
