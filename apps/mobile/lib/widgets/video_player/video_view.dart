@@ -1,8 +1,39 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
-import 'dart:async';
+
+/// DPlayer 互換コメント形式
+class DPlayerComment {
+  final num time;
+  final String type;
+  final String size;
+  final String color;
+  final String? author;
+  final String text;
+
+  DPlayerComment({
+    required this.time,
+    required this.type,
+    required this.size,
+    required this.color,
+    this.author,
+    required this.text,
+  });
+
+  factory DPlayerComment.fromJson(Map<String, dynamic> json) {
+    return DPlayerComment(
+      time: json['time'] as num,
+      type: json['type'] as String? ?? 'normal',
+      size: json['size'] as String? ?? 'normal',
+      color: json['color'] as String? ?? '#ffffff',
+      author: json['author'] as String?,
+      text: json['text'] as String,
+    );
+  }
+}
 
 /// ビデオ表示ウィジェット
 class VideoView extends ConsumerStatefulWidget {
@@ -11,6 +42,7 @@ class VideoView extends ConsumerStatefulWidget {
   final VoidCallback? onError;
   final Function(Duration)? onCurrentTimeChanged;
   final Function(bool)? onPlayingStateChanged;
+  final Function(Duration)? onDurationChanged;
 
   const VideoView({
     Key? key,
@@ -19,6 +51,7 @@ class VideoView extends ConsumerStatefulWidget {
     this.onError,
     this.onCurrentTimeChanged,
     this.onPlayingStateChanged,
+    this.onDurationChanged,
   }) : super(key: key);
 
   @override
@@ -37,13 +70,11 @@ class VideoViewState extends ConsumerState<VideoView> {
   @override
   void initState() {
     super.initState();
-    // トークンをリードしてからビデオを初期化
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeVideo();
     });
 
-    // Timer を開始（定期的に currentTime を更新）
-    _updateTimer = Timer.periodic(const Duration(milliseconds: 16), (_) {
+    _updateTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
       _safeUpdatePlayerState();
     });
   }
@@ -55,22 +86,7 @@ class VideoViewState extends ConsumerState<VideoView> {
   Future<void> _initializeVideo() async {
     debugPrint('🎬 Initializing video with URL: ${widget.videoUrl}');
 
-    // URL のクエリパラメータを確認
-    try {
-      final uri = Uri.parse(widget.videoUrl);
-      debugPrint('🌐 URL Details:');
-      debugPrint('   - Scheme: ${uri.scheme}');
-      debugPrint('   - Host: ${uri.host}');
-      debugPrint('   - Port: ${uri.port}');
-      debugPrint('   - Path: ${uri.path}');
-      debugPrint('   - Query parameters: ${uri.queryParameters.keys.toList()}');
-      if (uri.queryParameters.containsKey('token')) {
-        final token = uri.queryParameters['token'];
-        debugPrint('   - Token present: ${token?.substring(0, 30)}...');
-      }
-    } catch (e) {
-      debugPrint('⚠️ Failed to parse URL: $e');
-    }
+
 
     debugPrint('📤 Sending request to: ${widget.videoUrl}');
 
@@ -85,6 +101,9 @@ class VideoViewState extends ConsumerState<VideoView> {
           debugPrint('✅ Video initialized successfully');
           debugPrint('📊 Video duration: ${_controller.value.duration}');
           debugPrint('📊 Video size: ${_controller.value.size}');
+          
+          // duration をコールバックで通知
+          widget.onDurationChanged?.call(_controller.value.duration);
           widget.onReady?.call();
 
           // ビデオを自動再生
@@ -179,7 +198,6 @@ class VideoViewState extends ConsumerState<VideoView> {
 
   @override
   Widget build(BuildContext context) {
-    // ローディング中
     if (!_isInitialized) {
       return Container(
         color: Colors.black,
@@ -197,7 +215,6 @@ class VideoViewState extends ConsumerState<VideoView> {
 
     return GestureDetector(
       onTap: () {
-        // タップでビデオの再生/一時停止
         if (_controller.value.isPlaying) {
           pause();
         } else {
@@ -206,10 +223,18 @@ class VideoViewState extends ConsumerState<VideoView> {
       },
       child: Container(
         color: Colors.black,
-        // アスペクト比を正しく保つ
-        child: AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: VideoPlayer(_controller),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: _controller.value.aspectRatio,
+                  child: VideoPlayer(_controller),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

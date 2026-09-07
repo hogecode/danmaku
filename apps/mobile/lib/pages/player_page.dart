@@ -48,6 +48,13 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
 
         if (snapshot.hasError) {
           return Scaffold(
+            appBar: AppBar(
+              title: const Text('エラー'),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -55,6 +62,11 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
                   const Icon(Icons.error, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
                   Text('URL生成エラー: ${snapshot.error}'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('戻る'),
+                  ),
                 ],
               ),
             ),
@@ -65,9 +77,18 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
         _logger.i('PlayerPage: ストリーミングURL構築: $videoUrl');
         debugPrint('🔗 Final URL: $videoUrl');
 
-        return VideoPlayerPage(
-          videoUrl: videoUrl,
-          fileName: widget.fileName,
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(widget.fileName ?? '動画'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: VideoPlayerPage(
+            videoUrl: videoUrl,
+            fileName: widget.fileName,
+          ),
         );
       },
     );

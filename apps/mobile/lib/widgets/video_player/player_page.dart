@@ -93,6 +93,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     onError: () => _showError(),
     onCurrentTimeChanged: (d) => _updatePlayerState(currentTime: d),
     onPlayingStateChanged: (p) => _updatePlayerState(isPlaying: p),
+    onDurationChanged: (d) => _updatePlayerState(duration: d),
   );
 
   void _showError() {
@@ -133,7 +134,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
           _updatePlayerState(isPlaying: false);
         },
         onSeek: (pos) => _videoViewKey.currentState?.seek(pos),
-        onSpeedChange: (speed) => _videoViewKey.currentState?.setPlaybackSpeed(speed),
+        onSpeedChange: (speed) {
+          _videoViewKey.currentState?.setPlaybackSpeed(speed);
+          _updatePlayerState(playbackSpeed: speed);
+        },
         onSettingsTapped: () => ref.read(playerUIStateProvider.notifier).toggleSettingsPanel(),
         onFullscreenTapped: () => _updatePlayerState(isFullscreen: !_playerState.isFullscreen),
       ),
