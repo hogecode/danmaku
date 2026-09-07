@@ -13,8 +13,8 @@ class TokenBearerHttpClient extends http.BaseClient {
   
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    _logger.d('[TokenBearerClient] ========== HTTP Request ==========');
-    _logger.d('[TokenBearerClient] ${request.method} ${request.url}');
+    //_logger.d('[TokenBearerClient] ========== HTTP Request ==========');
+    //_logger.d('[TokenBearerClient] ${request.method} ${request.url}');
     
     // トークンを読み込み、Authorization ヘッダーに追加
     final token = await _tokenStorage.getToken();
@@ -22,12 +22,12 @@ class TokenBearerHttpClient extends http.BaseClient {
       request.headers['Authorization'] = 'Bearer $token';
       _logger.i('[TokenBearerClient] 🔐 Authorization header を付与');
     } else {
-      _logger.w('[TokenBearerClient] ⚠️ トークンが保存されていません');
+      //_logger.w('[TokenBearerClient] ⚠️ トークンが保存されていません');
     }
     
     // リクエスト実行
     return _inner.send(request).then((response) {
-      _logger.d('[TokenBearerClient] Response Status: ${response.statusCode}');
+      //_logger.d('[TokenBearerClient] Response Status: ${response.statusCode}');
       return response;
     });
   }

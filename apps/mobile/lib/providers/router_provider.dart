@@ -33,6 +33,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final isAuth = auth.isAuthenticated;
 
   return GoRouter(
+    // 初期ルート設定
     initialLocation: isAuth ? Routes.home : Routes.login,
     redirect: (context, state) {
       final isLoginPage = state.uri.toString().startsWith(Routes.login);
@@ -43,9 +44,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       _logger.i('[Router] redirect check - uri: $uri');
       _logger.i('[Router] scheme: ${state.uri.scheme}, isDeepLink: $isDeepLink');
-      _logger.i('[Router] isLoginPage: $isLoginPage, isCallbackPage: $isCallbackPage, isAuth: $isAuth');
+      //_logger.i('[Router] isLoginPage: $isLoginPage, isCallbackPage: $isCallbackPage, isAuth: $isAuth');
 
-      // Deep Link (danmaku://...) の場合、アプリ内パスに変換
+      // Deep Link (danmaku://...) の場合、アプリ内パスに変換してリダイレクト
       if (isDeepLink) {
         _logger.i('[Router] 🔗 Deep Link detected: $uri');
         
@@ -62,7 +63,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // コールバックページは常に許可
       if (isCallbackPage) {
-        _logger.i('[Router] Callback page, allowing to proceed');
+        //_logger.i('[Router] Callback page, allowing to proceed');
         return null;
       }
 
@@ -98,7 +99,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final user = state.uri.queryParameters['user'];
           final token = state.uri.queryParameters['token'];
 
-          _logger.i('[Router] user=${user != null ? "provided" : "missing"}, token=${token != null ? "provided" : "missing"}');
+          //_logger.i('[Router] user=${user != null ? "provided" : "missing"}, token=${token != null ? "provided" : "missing"}');
 
           if (user == null || token == null) {
             _logger.e('[Router] ⛔ user または token が指定されていません');

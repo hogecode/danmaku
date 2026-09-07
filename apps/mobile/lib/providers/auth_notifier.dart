@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:mobile/services/auth_service.dart';
+import 'package:mobile/services/token_storage.dart';
 
 final _logger = Logger();
 
@@ -41,20 +42,23 @@ class AuthState {
 /// Auth Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
+  final TokenStorage _tokenStorage;
 
-  AuthNotifier(this._authService) : super(AuthState());
+  AuthNotifier(this._authService, [TokenStorage? tokenStorage]) 
+      : _tokenStorage = tokenStorage ?? TokenStorage(),
+        super(AuthState());
 
   /// ログイン（OAuth URL 取得）
   /// 
   /// POST /api/auth/login
   /// 戻り値: {authorize_url, state, expires_in}
   Future<dynamic> login() async {
-    _logger.i('AuthNotifier: ログイン開始');
+    //_logger.i('AuthNotifier: ログイン開始');
     state = state.copyWith(loading: true, error: null);
     
     try {
       final result = await _authService.login();
-      _logger.i('AuthNotifier: ログインOAuth URL取得成功');
+      //_logger.i('AuthNotifier: ログインOAuth URL取得成功');
       return result;  // OAuth URL を呼び出し元で処理
     } catch (e) {
       _logger.e('AuthNotifier: ログイン失敗', error: e);
@@ -70,12 +74,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// OpenAPI: GET /api/auth/me
   /// 戻り値: {id, name, email, picture_url, ...}
   Future<void> fetchUserInfo() async {
-    _logger.i('AuthNotifier: ユーザー情報取得開始');
+    //_logger.i('AuthNotifier: ユーザー情報取得開始');
     state = state.copyWith(loading: true, error: null);
 
     try {
       final user = await _authService.getUserInfo();
-      _logger.i('AuthNotifier: ユーザー情報取得成功');
+      //_logger.i('AuthNotifier: ユーザー情報取得成功');
       
       state = state.copyWith(
         user: user,
@@ -94,14 +98,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// 
   /// ディープリンク経由でユーザー情報が渡された時に使用
   Future<void> setUserInfo(dynamic userInfo) async {
-    _logger.i('AuthNotifier: ユーザー情報を直接設定');
+    //_logger.i('AuthNotifier: ユーザー情報を直接設定');
     
     try {
       state = state.copyWith(
         user: userInfo,
         isAuthenticated: true,
       );
-      _logger.i('AuthNotifier: ユーザー情報設定成功: ${userInfo["email"]}');
+      //_logger.i('AuthNotifier: ユーザー情報設定成功: ${userInfo["email"]}');
     } catch (e) {
       _logger.e('AuthNotifier: ユーザー情報設定失敗', error: e);
       state = state.copyWith(error: e.toString());
@@ -114,14 +118,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// ブラウザから戻った時にサーバーのセッションを確認
   /// セッションがあればユーザー情報を取得
   Future<bool> completeOAuth() async {
-    _logger.i('AuthNotifier: ==================== OAuth 完了確認開始 ====================');
+    //_logger.i('AuthNotifier: ==================== OAuth 完了確認開始 ====================');
     state = state.copyWith(loading: true, error: null);
 
     try {
-      _logger.i('AuthNotifier: サーバーから GET /api/auth/me を実行中...');
+      //_logger.i('AuthNotifier: サーバーから GET /api/auth/me を実行中...');
       // サーバーからユーザー情報を取得
       final user = await _authService.getUserInfo();
-      _logger.i('AuthNotifier: ✅ OAuth 完了、ユーザー情報取得成功: ${user["email"]}');
+      //_logger.i('AuthNotifier: ✅ OAuth 完了、ユーザー情報取得成功: ${user["email"]}');
       
       state = state.copyWith(
         user: user,
@@ -129,7 +133,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         loading: false,
       );
       
-      _logger.i('AuthNotifier: 🎉 AuthState を更新完了 (isAuthenticated=true)');
+      //_logger.i('AuthNotifier: 🎉 AuthState を更新完了 (isAuthenticated=true)');
       return true;
     } catch (e) {
       // セッションがない場合やエラーの場合
@@ -148,7 +152,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     try {
       await _authService.logout();
-      await _authService.deleteToken();
+      await _tokenStorage.deleteToken();
       _logger.i('AuthNotifier: ログアウト完了');
     } catch (e) {
       _logger.e('AuthNotifier: ログアウト失敗', error: e);
@@ -170,7 +174,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     try {
       _logger.i('AuthNotifier: トークンを SecureStorage に保存中...');
-      await _authService.saveToken(token);
+      await _tokenStorage.saveToken(token);
       _logger.i('AuthNotifier: ✅ トークン保存完了');
       
       state = state.copyWith(

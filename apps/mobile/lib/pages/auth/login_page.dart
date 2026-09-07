@@ -40,29 +40,7 @@ class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserv
     }
   }
 
-  Future<void> _checkAuthStatus() async {
-    try {
-      _logger.i('[LoginPage] ==================== Checking auth status ====================');
-      _logger.i('[LoginPage] ブラウザから戻った時のセッション確認を開始');
-      
-      final notifier = ref.read(authProvider.notifier);
-      _logger.i('[LoginPage] AuthNotifier を取得');
-      
-      final isComplete = await notifier.completeOAuth();
-      
-      _logger.i('[LoginPage] completeOAuth() 完了: isComplete=$isComplete');
-      
-      if (isComplete && mounted) {
-        _logger.i('[LoginPage] ✅ Auth check success, navigating to home');
-        context.go('/');
-      } else {
-        _logger.w('[LoginPage] ⚠️ Auth check failed (セッションなし): isComplete=$isComplete');
-      }
-    } catch (e) {
-      _logger.w('[LoginPage] ⛔ Auth check failed with error', error: e);
-      // エラーは無視（ユーザーは手動でログインできる）
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -93,8 +71,6 @@ class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserv
               Text('Danmaku',
                   style: Theme.of(context).textTheme.headlineLarge),
               const SizedBox(height: 8),
-              Text('Google OAuth でログイン',
-                  style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 48),
               if (_error != null)
                 Container(
@@ -125,7 +101,7 @@ class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserv
                         children: [
                           Icon(Icons.login),
                           SizedBox(width: 8),
-                          Text('Google でログイン'),
+                          Text('Google ログイン'),
                         ],
                       ),
               ),
@@ -135,6 +111,7 @@ class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserv
       ),
     );
   }
+
 
   /// ログイン処理
   Future<void> _login() async {
@@ -156,7 +133,7 @@ class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserv
 
       // ブラウザで Google OAuth を開く
       final uri = Uri.parse(authorizeUrl);
-      _logger.i('[LoginPage] OAuth URL を開く: $authorizeUrl');
+      //_logger.i('[LoginPage] OAuth URL: $authorizeUrl');
       
       // Android エミュレータ / デバイスの場合
       if (!await canLaunchUrl(uri)) {
@@ -194,6 +171,31 @@ class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserv
           _error = 'ログイン失敗: $e';
         });
       }
+    }
+  }
+
+    Future<void> _checkAuthStatus() async {
+    try {
+      //_logger.i('[LoginPage] ==================== Checking auth status ====================');
+      _logger.i('[LoginPage] ブラウザから戻った時のセッション確認を開始');
+      
+      final notifier = ref.read(authProvider.notifier);
+      //_logger.i('[LoginPage] AuthNotifier を取得');
+      
+      // GET /api/auth/me で認証状態を確認
+      final isComplete = await notifier.completeOAuth();
+      
+      _logger.i('[LoginPage] completeOAuth() 完了: isComplete=$isComplete');
+      
+      if (isComplete && mounted) {
+        _logger.i('[LoginPage] ✅ Auth check success, navigating to home');
+        context.go('/');
+      } else {
+        _logger.w('[LoginPage] ⚠️ Auth check failed (セッションなし): isComplete=$isComplete');
+      }
+    } catch (e) {
+      _logger.w('[LoginPage] ⛔ Auth check failed with error', error: e);
+      // エラーは無視（ユーザーは手動でログインできる）
     }
   }
 }

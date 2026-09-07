@@ -33,6 +33,7 @@ void main() async {
   );
 }
 
+
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({Key? key})
       : super(key: key);
@@ -41,14 +42,13 @@ class MyApp extends ConsumerStatefulWidget {
   ConsumerState<MyApp> createState() => _MyAppState();
 }
 
+
 class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     
-    // ディープリンクをリッスン
-    _setupDeepLinkListener();
   }
 
   @override
@@ -57,27 +57,20 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  void _setupDeepLinkListener() {
-    _logger.i('[Main] Setting up deep link listener');
-    
-    // GoRouter はディープリンクを自動処理します。
-    // ただし、アプリがすでに起動している場合にディープリンクが届いた際、
-    // GoRouter は自動的には処理されないため、以下は参考用です。
-    _logger.i('[Main] Deep link listener setup complete');
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _logger.d('[Main] App lifecycle state changed: $state');
+    //_logger.d('[Main] App lifecycle state changed: $state');
     if (state == AppLifecycleState.resumed) {
-      _logger.i('[Main] App resumed, GoRouter will handle any pending deep links');
+      //_logger.i('[Main] App resumed, GoRouter will handle any pending deep links');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // ダークモード
     final isDarkMode =
         ref.watch(darkModeProvider);
+    // GoRouter
     final goRouter =
         ref.watch(goRouterProvider);
 
@@ -89,6 +82,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       themeMode: isDarkMode
           ? ThemeMode.dark
           : ThemeMode.light,
+      // ローカライズ
       localizationsDelegates: [
         GlobalMaterialLocalizations
             .delegate,

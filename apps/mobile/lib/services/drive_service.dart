@@ -8,6 +8,7 @@ import 'package:mobile/services/token_storage.dart';
 final _logger = Logger();
 
 /// Google Drive ファイルモデル
+// TODO: OpenAPIの自動生成モデルを使うように変更
 class DriveFile {
   final String id;
   final String name;
@@ -71,7 +72,7 @@ class DriveService {
 
   /// Google Drive フォルダ内のファイル一覧を取得
   ///
-  /// OpenAPI: GET /api/gdrive/list
+  /// GET /api/gdrive/list
   /// @param folderId フォルダID（デフォルト: 'root'）
   /// @return DriveFile のリスト
   Future<List<DriveFile>> listFolder({String folderId = 'root'}) async {
@@ -118,7 +119,7 @@ class DriveService {
 
   /// Google Drive でキーワード検索
   ///
-  /// OpenAPI: GET /api/gdrive/search
+  /// GET /api/gdrive/search
   /// @param folderId 検索対象フォルダID
   /// @param query 検索キーワード
   /// @return DriveFile のリスト
@@ -131,7 +132,7 @@ class DriveService {
         'DriveService: 検索実行中 (folderId=$folderId, query=$query)',
       );
 
-      // OpenAPI で GET /api/gdrive/search を呼び出し
+      // GET /api/gdrive/search を呼び出し
       final response = await _gDriveApi.gDriveControllerSearchWithHttpInfo(
         folderId,
         query,

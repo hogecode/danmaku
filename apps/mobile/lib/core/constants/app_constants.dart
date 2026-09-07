@@ -4,7 +4,7 @@ class AppConstants {
 
   // API Configuration
   // 開発環境ではモックサーバーまたはlocalhostを使用
-  static const String apiBaseUrl = 'http://localhost:3001';
+  static const String apiBaseUrl = 'http://api.danmaku.cloud:3001';
   static const Duration apiConnectTimeout = Duration(seconds: 10);
   static const Duration apiReceiveTimeout = Duration(seconds: 10);
   static const Duration apiSendTimeout = Duration(seconds: 10);
@@ -14,6 +14,7 @@ class AppConstants {
   static const bool useMockData = false;
 
   // Danmaku Configuration
+  // TODO: ユーザーが弾幕の設定を変更できるようにする
   static const int maxDanmakuCount = 1000;
   static const double danmakuDurationSeconds = 8.0;
   static const double danmakuDistancePx = 1280.0;
