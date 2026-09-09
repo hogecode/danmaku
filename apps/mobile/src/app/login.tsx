@@ -21,6 +21,7 @@ import { appLogger } from '@/utils/logger';
 import { DEEP_LINK_AUTH_CALLBACK } from '@/utils/constants';
 
 if (Platform.OS === 'web') {
+  // Web での認証セッションを完了させるための処理
   WebBrowser.maybeCompleteAuthSession();
 }
 
@@ -29,32 +30,60 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Deep link リスナー
+  // Deep link リスナー（バックグラウンドから戻ってきた場合に対応）
   useEffect(() => {
     const handleDeepLink = ({ url }: { url: string }) => {
       appLogger.info(`[LoginScreen] Deep link 受信: ${url}`);
 
+      // Deep link を解析
       const parsed = Linking.parse(url);
       const { queryParams } = parsed;
 
       if (queryParams) {
+        // Backend から送信されるパラメータ:
+        // - token: JWT アクセストークン
+        // - user: ユーザー情報（JSON 文字列）
         const token = queryParams.token as string | undefined;
-        const userInfo = queryParams.user_info as string | undefined;
+        const userParam = queryParams.user as string | undefined;
 
-        if (token && userInfo) {
+        appLogger.info(
+          `[LoginScreen] Deep link パラメータ: token=${!!token}, user=${!!userParam}`
+        );
+
+        if (token && userParam) {
           try {
-            const user = JSON.parse(userInfo);
+            const user = JSON.parse(userParam);
+            appLogger.info(`[LoginScreen] ユーザー情報パース成功: id=${user.id}, name=${user.name}`);
+            
             auth.saveTokenAndSetUser(user, token).then(() => {
+              appLogger.info('[LoginScreen] Deep link からトークン保存成功、ホーム画面に遷移');
               router.replace('/');
             });
           } catch (e) {
             appLogger.error('[LoginScreen] ユーザー情報のパース失敗', e);
             setError('認証情報が正しくありません');
           }
+        } else {
+          appLogger.warning('[LoginScreen] トークンまたはユーザー情報がありません', {
+            token,
+            userParam,
+          });
         }
       }
     };
 
+    // 初期 Deep Link のチェック（アプリが Deep Link で起動した場合）
+    const checkInitialUrl = async () => {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl != null) {
+        appLogger.info(`[LoginScreen] 初期 Deep Link: ${initialUrl}`);
+        handleDeepLink({ url: initialUrl });
+      }
+    };
+
+    checkInitialUrl();
+
+    // リスナーの登録（後続の Deep Link のチェック）
     const subscription = Linking.addEventListener('url', handleDeepLink);
     return () => subscription.remove();
   }, [auth]);
@@ -69,20 +98,62 @@ export default function LoginScreen() {
       const loginResult = await auth.login();
       appLogger.info('[LoginScreen] OAuth URL 取得成功');
 
-      const authorizeUrl = loginResult.authorize_url;
+      const authorizeUrl = loginResult.authorizeUrl;
       if (!authorizeUrl) {
         throw new Error('authorize_url が含まれていません');
       }
 
-      appLogger.info('[LoginScreen] ブラウザで OAuth ページを開く');
+      appLogger.info(
+        `[LoginScreen] ブラウザで OAuth ページを開く (redirectUrl: ${DEEP_LINK_AUTH_CALLBACK})`
+      );
 
       const result = await WebBrowser.openAuthSessionAsync(
         authorizeUrl,
         DEEP_LINK_AUTH_CALLBACK
       );
 
+      appLogger.info(
+        `[LoginScreen] ブラウザセッション結果: type=${result.type}, url=${result.url}`
+      );
+
       if (result.type === 'success') {
         appLogger.info('[LoginScreen] ブラウザセッション成功');
+
+        // WebBrowser が成功した場合、URL からトークンを抽出
+        if (result.url) {
+          appLogger.info(`[LoginScreen] Redirect URL 受信: ${result.url}`);
+          const parsed = Linking.parse(result.url);
+          const { queryParams } = parsed;
+
+          if (queryParams) {
+            // Backend から送信されるパラメータ:
+            // - token: JWT アクセストークン
+            // - user: ユーザー情報（JSON 文字列）
+            const token = queryParams.token as string | undefined;
+            const userParam = queryParams.user as string | undefined;
+
+            appLogger.info(`[LoginScreen] クエリパラメータ: token=${!!token}, user=${!!userParam}`);
+
+            if (token && userParam) {
+              try {
+                const user = JSON.parse(userParam);
+                appLogger.info(`[LoginScreen] ユーザー情報パース成功: id=${user.id}, name=${user.name}`);
+                await auth.saveTokenAndSetUser(user, token);
+                appLogger.info('[LoginScreen] トークン保存成功、ホーム画面に遷移');
+                router.replace('/');
+              } catch (e) {
+                appLogger.error('[LoginScreen] ユーザー情報のパース失敗', e);
+                setError('認証情報が正しくありません');
+              }
+            } else {
+              appLogger.warning('[LoginScreen] トークンまたはユーザー情報がありません', {
+                token,
+                userParam,
+              });
+              setError('認証情報を取得できませんでした');
+            }
+          }
+        }
       } else if (result.type === 'dismiss') {
         appLogger.warning('[LoginScreen] ユーザーがブラウザを閉じた');
         setError('認証がキャンセルされました');
@@ -138,19 +209,6 @@ export default function LoginScreen() {
               </>
             )}
           </TouchableOpacity>
-
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoTitle}>ログインについて</Text>
-            <Text style={styles.infoText}>
-              • Google アカウントで安全にログイン
-            </Text>
-            <Text style={styles.infoText}>
-              • Google Drive のビデオファイルにアクセス可能
-            </Text>
-            <Text style={styles.infoText}>
-              • リアルタイムコメント表示対応
-            </Text>
-          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -6,9 +6,11 @@ import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+// スプラッシュスクリーンを自動的に非表示にしないように設定
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  // デバイスのカラースキームを取得
   const colorScheme = useColorScheme();
 
   useEffect(() => {
