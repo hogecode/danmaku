@@ -41,6 +41,8 @@ export function useDanmakuAnimation(config: DanmakuAnimationConfig = {}) {
   const [danmakuList, setDanmakuList] = useState<Danmaku[]>([]);
   const [visible, setVisible] = useState(true);
   const [paused, setPaused] = useState(false);
+
+  // ダンマクトンネルとインデックスの管理
   const danmakuTunnelRef = useRef<DanmakuTunnel>({
     right: {},
     top: {},
@@ -113,7 +115,9 @@ export function useDanmakuAnimation(config: DanmakuAnimationConfig = {}) {
         return [];
       }
 
+      // 表示範囲の半分を計算
       const range = displayRange / 2;
+      // 現在時刻に基づいて表示するダンマクをフィルタリング
       return danmakuList.filter(
         dan => Math.abs(dan.time - currentTime) <= range
       );

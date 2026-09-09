@@ -35,6 +35,7 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const [animatedDanmakus, setAnimatedDanmakus] = useState<AnimatedDanmakuItem[]>([]);
+  // ダンマクアニメーション用のフックを初期化
   const { computeVisibleDanmakus, getAnimationDuration } = useDanmakuAnimation({
     speedRate,
     fontSize,
@@ -42,6 +43,7 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
     screenWidth,
   });
 
+  // 現在表示すべきダンマクを取得
   const visibleDanmakus = computeVisibleDanmakus(currentTime);
 
   useEffect(() => {

@@ -30,8 +30,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.danmaku.mobile",
-      "usesCleartextTraffic": true
+      "package": "com.danmaku.mobile"
     },
     "web": {
       "output": "static",
@@ -47,11 +46,18 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "441c4ba9-a64d-4a13-b5a8-b6944fab3e97"
+      }
     }
   }
 }

@@ -28,7 +28,9 @@ export const Player: React.FC<PlayerProps> = ({
   onError,
   onDanmakuSend,
 }) => {
+  // ビデオプレイヤーの状態管理フック
   const videoPlayback = useVideoPlayback();
+  // ダンマクアニメーションの状態管理フック
   const danmakuAnimation = useDanmakuAnimation({
     speedRate: config.danmaku?.speedRate || 1,
     fontSize: config.danmaku?.fontSize || 16,
@@ -36,6 +38,7 @@ export const Player: React.FC<PlayerProps> = ({
     unlimited: config.danmaku?.unlimited,
   });
 
+  // ダンマク送信フォームの表示状態管理
   const [showDanmakuForm, setShowDanmakuForm] = useState(false);
 
   useEffect(() => {
@@ -51,6 +54,7 @@ export const Player: React.FC<PlayerProps> = ({
     }
   }, [config.apiBackend]);
 
+  // ダンマク送信処理
   const handleDanmakuSend = async (danmaku: Danmaku) => {
     danmakuAnimation.addDanmaku(danmaku);
 
@@ -69,7 +73,7 @@ export const Player: React.FC<PlayerProps> = ({
 
   return (
     <View className="flex-1 bg-black">
-      <View className="relative">
+      <View className="relative flex-1">
         <VideoPlayer
           config={config}
           onReady={onReady}
@@ -92,15 +96,6 @@ export const Player: React.FC<PlayerProps> = ({
       <View className="bg-neutral-900 px-4 py-3 gap-3">
         {config.danmaku && (
           <TouchableOpacity
-            onPress={() => setShowDanmakuForm(true)}
-            className="bg-pink-500 rounded px-4 py-2 items-center"
-          >
-            <Text className="text-white font-semibold">コメント送信</Text>
-          </TouchableOpacity>
-        )}
-
-        {config.danmaku && (
-          <TouchableOpacity
             onPress={() => danmakuAnimation.toggle()}
             className={`rounded px-4 py-2 items-center ${
               danmakuAnimation.visible ? 'bg-blue-600' : 'bg-neutral-700'
@@ -112,15 +107,6 @@ export const Player: React.FC<PlayerProps> = ({
           </TouchableOpacity>
         )}
       </View>
-
-      {config.danmaku && (
-        <DanmakuForm
-          visible={showDanmakuForm}
-          onSubmit={handleDanmakuSend}
-          onCancel={() => setShowDanmakuForm(false)}
-          currentTime={videoPlayback.state.currentTime}
-        />
-      )}
     </View>
   );
 };

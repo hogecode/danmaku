@@ -98,8 +98,6 @@ export default function PlayerScreen() {
           }
         },
         send: ({ comment, success, error }) => {
-          // コメント送信
-          // TODO: API にコメント送信
           success();
         },
       },

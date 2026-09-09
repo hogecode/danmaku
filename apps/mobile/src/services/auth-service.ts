@@ -46,8 +46,15 @@ export class AuthService {
       appLogger.info('AuthService: ログイン成功');
       return response as unknown as LoginResponse;
     } catch (error) {
-      appLogger.error('AuthService: ログイン失敗', error);
-      throw new AuthException('Login failed', (error as any)?.status);
+      // エラーの詳細をログに出力
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorStatus = (error as any)?.status || (error as any)?.response?.status;
+      appLogger.error('AuthService: ログイン失敗', {
+        message: errorMsg,
+        status: errorStatus,
+        error: JSON.stringify(error, null, 2),
+      });
+      throw new AuthException(`Login failed: ${errorMsg}`, errorStatus);
     }
   }
 
@@ -65,8 +72,13 @@ export class AuthService {
       appLogger.info('AuthService: ユーザー情報取得成功');
       return response as unknown as UserInfo;
     } catch (error) {
-      appLogger.error('AuthService: ユーザー情報取得失敗', error);
-      throw new AuthException('Get user info failed', (error as any)?.status);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorStatus = (error as any)?.status || (error as any)?.response?.status;
+      appLogger.error('AuthService: ユーザー情報取得失敗', {
+        message: errorMsg,
+        status: errorStatus,
+      });
+      throw new AuthException(`Get user info failed: ${errorMsg}`, errorStatus);
     }
   }
 
@@ -82,8 +94,13 @@ export class AuthService {
 
       appLogger.info('AuthService: ログアウト完了');
     } catch (error) {
-      appLogger.error('AuthService: ログアウト失敗', error);
-      throw new AuthException('Logout failed', (error as any)?.status);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorStatus = (error as any)?.status || (error as any)?.response?.status;
+      appLogger.error('AuthService: ログアウト失敗', {
+        message: errorMsg,
+        status: errorStatus,
+      });
+      throw new AuthException(`Logout failed: ${errorMsg}`, errorStatus);
     }
   }
 }

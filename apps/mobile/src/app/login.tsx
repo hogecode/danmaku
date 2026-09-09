@@ -205,7 +205,7 @@ export default function LoginScreen() {
             ) : (
               <>
                 <Text className="text-lg">🔐</Text>
-                <Text className="text-white text-base font-semibold">Google ログイン</Text>
+                <Text className="text-white text-base font-semibold">Googleログイン</Text>
               </>
             )}
           </TouchableOpacity>

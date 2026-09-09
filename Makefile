@@ -19,6 +19,13 @@ generate-all-clients: generate-api-client generate-mobile-client generate-flutte
 	@echo "✅ すべてのAPIクライアント生成が完了しました！"
 
 
+# desktop (Flutter)
 .PHONY: flutter-build-runner
 flutter-build-runner: ## Flutter build_runner 実行
 	cd apps/desktop && flutter pub run build_runner build --delete-conflicting-outputs
+
+
+# mobile (React Native/Expo)
+.PHONY: run-android-local
+run-android-local: ## ローカルで Android ビルド実行
+	cd apps/mobile && eas build --platform android --local
