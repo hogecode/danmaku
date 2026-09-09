@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile/data/services/storage_service.dart';
+import 'package:mobile/services/storage_service.dart';
 
 /// ストレージサービスプロバイダー
-// TODO: StorageService の実装を提供する必要
+/// 
+/// main.dart で ProviderScope.overrides を通じて、
+/// 初期化済みの StorageService インスタンスが設定される
 final storageServiceProvider = Provider<StorageService>((ref) {
-  throw UnimplementedError(
-      'storageServiceProvider must be overridden with a StorageService instance');
+  return StorageService();
 });
+
 
 // ============================================================================
 // ダークモード管理
@@ -18,6 +20,7 @@ final darkModeProvider = StateNotifierProvider<DarkModeNotifier, bool>((ref) {
   final storageService = ref.watch(storageServiceProvider);
   return DarkModeNotifier(storageService);
 });
+
 
 /// ダークモード状態管理クラス
 class DarkModeNotifier extends StateNotifier<bool> {
@@ -39,6 +42,7 @@ class DarkModeNotifier extends StateNotifier<bool> {
   }
 }
 
+
 // ============================================================================
 // 言語管理
 // ============================================================================
@@ -49,6 +53,7 @@ final languageProvider =
   final storageService = ref.watch(storageServiceProvider);
   return LanguageNotifier(storageService);
 });
+
 
 /// 言語状態管理クラス
 class LanguageNotifier extends StateNotifier<Locale> {

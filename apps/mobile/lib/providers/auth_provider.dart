@@ -37,6 +37,17 @@ class AuthState {
   static AuthState reset() => AuthState();
 }
 
+/// Auth Service プロバイダー
+final authServiceProvider = Provider<AuthService>((ref) {
+  return AuthService();
+});
+
+
+/// Auth 状態 + アクション
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final authService = ref.watch(authServiceProvider);
+  return AuthNotifier(authService);
+});
 
 /// Auth Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
@@ -46,6 +57,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._authService, [TokenStorage? tokenStorage])
       : _tokenStorage = tokenStorage ?? TokenStorage(),
         super(AuthState());
+
+  /// 初期化
+  Future<void> initialize() async {
+    final token = await _tokenStorage.getToken();
+    if (token != null) {
+      await fetchUserInfo();
+    }
+  }
 
   /// ログイン（OAuth URL 取得）
   ///
@@ -180,13 +199,4 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-/// Auth Service プロバイダー
-final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService();
-});
 
-/// Auth 状態 + アクション
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return AuthNotifier(authService);
-});

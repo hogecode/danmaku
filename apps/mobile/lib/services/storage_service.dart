@@ -2,7 +2,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 /// ローカルストレージサービス
 /// Hiveを使用してローカルデータを管理
-// TODO: services以下に移動
 class StorageService {
   static const String _darkModeBox = 'dark_mode';
   static const String _darkModeKey = 'is_dark_mode';

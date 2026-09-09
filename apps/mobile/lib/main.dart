@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/core/themes/app_theme.dart';
 import 'package:mobile/core/i18n/i18n.dart';
-import 'package:mobile/data/services/storage_service.dart';
+import 'package:mobile/services/storage_service.dart';
 import 'package:mobile/providers/app_ui_provider.dart';
 import 'package:mobile/providers/router_provider.dart';
 
