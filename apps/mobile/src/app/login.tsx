@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
@@ -171,32 +170,31 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-stone-100">
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 }}
       >
-        <View style={styles.content}>
-          <View style={styles.iconContainer}>
-            <Text style={styles.icon}>🎬</Text>
+        <View className="items-center">
+          <View className="mb-6">
+            <Text className="text-8xl">🎬</Text>
           </View>
 
-          <Text style={styles.title}>Danmaku</Text>
-          <Text style={styles.subtitle}>
+          <Text className="text-3xl font-bold mb-2 text-center">Danmaku</Text>
+          <Text className="text-sm text-gray-500 mb-8 text-center">
             Google Drive のビデオを再生できます
           </Text>
 
           {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
+            <View className="bg-red-50 rounded-lg p-3 mb-6 w-full">
+              <Text className="text-red-900 text-xs text-center">{error}</Text>
             </View>
           )}
 
           <TouchableOpacity
-            style={[
-              styles.loginButton,
-              isLoggingIn && styles.loginButtonDisabled,
-            ]}
+            className={`rounded-lg py-3 px-8 flex-row items-center gap-2 mb-8 ${
+              isLoggingIn || auth.loading ? 'bg-blue-300' : 'bg-blue-500'
+            }`}
             onPress={handleLogin}
             disabled={isLoggingIn || auth.loading}
           >
@@ -204,8 +202,8 @@ export default function LoginScreen() {
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <>
-                <Text style={styles.loginButtonIcon}>🔐</Text>
-                <Text style={styles.loginButtonText}>Google ログイン</Text>
+                <Text className="text-lg">🔐</Text>
+                <Text className="text-white text-base font-semibold">Google ログイン</Text>
               </>
             )}
           </TouchableOpacity>
@@ -214,86 +212,3 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  content: {
-    alignItems: 'center',
-  },
-  iconContainer: {
-    marginBottom: 24,
-  },
-  icon: {
-    fontSize: 80,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 32,
-    textAlign: 'center',
-  },
-  errorContainer: {
-    backgroundColor: '#ffebee',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 24,
-    width: '100%',
-  },
-  errorText: {
-    color: '#c62828',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  loginButton: {
-    backgroundColor: '#1976d2',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 32,
-  },
-  loginButtonDisabled: {
-    backgroundColor: '#90caf9',
-  },
-  loginButtonIcon: {
-    fontSize: 18,
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  infoContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    width: '100%',
-  },
-  infoTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  infoText: {
-    fontSize: 12,
-    color: '#555',
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-});

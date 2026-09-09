@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import '../../global.css';
 
 // スプラッシュスクリーンを自動的に非表示にしないように設定
 SplashScreen.preventAutoHideAsync();

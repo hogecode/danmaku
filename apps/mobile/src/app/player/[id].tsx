@@ -1,10 +1,10 @@
-import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator, TouchableOpacity, Platform, Dimensions } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { WebView } from 'react-native-webview';
 import { useVideo } from '@/hooks/use-video';
 import { appLogger } from '@/utils/logger';
-import { WebView } from 'react-native-webview';
 
 export default function PlayerScreen() {
   const video = useVideo();
@@ -104,13 +104,13 @@ export default function PlayerScreen() {
 
   if (video.loading || !video.config) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+      <SafeAreaView className="flex-1 bg-black">
+        <View className="min-h-[52px] flex-row items-center px-4 bg-neutral-900">
           <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>← Back</Text>
+            <Text className="text-white text-base">← Back</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.loadingContainer}>
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#1976d2" />
         </View>
       </SafeAreaView>
@@ -119,37 +119,36 @@ export default function PlayerScreen() {
 
   if (video.error) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+      <SafeAreaView className="flex-1 bg-black">
+        <View className="min-h-[52px] flex-row items-center px-4 bg-neutral-900">
           <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>← Back</Text>
+            <Text className="text-white text-base">← Back</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{video.error}</Text>
+        <View className="flex-1 items-center justify-center p-6">
+          <Text className="text-red-500 text-center">{video.error}</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
+    <SafeAreaView className="flex-1 bg-black" edges={['top']}>
+      <View className="min-h-[52px] flex-row items-center px-4 bg-neutral-900">
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text className="text-white text-base">← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>
+        <Text className="flex-1 ml-4 text-white text-base" numberOfLines={1}>
           {video.config.fileName}
         </Text>
       </View>
 
-      <View style={styles.playerContainer}>
+      <View className="flex-1 justify-center bg-black">
         {Platform.OS === 'web' ? (
           // Web版: HTML5 video
           <video
             src={video.config.videoUrl}
             controls
-            style={styles.webVideo as any}
             onLoadStart={() => setIsLoading(true)}
             onCanPlay={() => setIsLoading(false)}
           />
@@ -159,6 +158,7 @@ export default function PlayerScreen() {
             <WebView
               originWhitelist={['*']}
               source={{ html: webviewHtml }}
+              className="w-full bg-black"
               style={{
                 width: screenWidth,
                 height: screenWidth * (9 / 16),
@@ -187,16 +187,21 @@ export default function PlayerScreen() {
 
         {/* ローディングインジケーター */}
         {isLoading && (
-          <View style={styles.loadingOverlay}>
+          <View className="absolute inset-0 items-center justify-center">
             <ActivityIndicator size="large" color="#fff" />
           </View>
         )}
 
         {/* 弾幕オーバーレイ（Web のみ） */}
         {Platform.OS === 'web' && (
-          <View style={styles.danmakuOverlay}>
+          <View className="absolute inset-0 pointer-events-none">
             {video.visibleComments.map((comment: { no: string | number; text: string }, idx: number) => (
-              <Text key={`${comment.no}-${idx}`} style={[styles.danmakuText, { top: 50 + idx * 30 }]} numberOfLines={1}>
+              <Text 
+                key={`${comment.no}-${idx}`} 
+                className="absolute left-2 right-2 text-white text-lg" 
+                style={{ top: 50 + idx * 30, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 2 }}
+                numberOfLines={1}
+              >
                 {comment.text}
               </Text>
             ))}
@@ -204,89 +209,10 @@ export default function PlayerScreen() {
         )}
       </View>
 
-      <View style={styles.infoBar}>
-        <Text style={styles.infoText}>{video.currentTime.toFixed(1)}s</Text>
-        <Text style={styles.commentCountText}>{video.visibleComments.length} comments</Text>
+      <View className="flex-row justify-between items-center px-4 py-2 bg-neutral-900">
+        <Text className="text-white">{video.currentTime.toFixed(1)}s</Text>
+        <Text className="text-white">{video.visibleComments.length} comments</Text>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  header: {
-    minHeight: 52,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    backgroundColor: '#181818',
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  headerTitle: {
-    flex: 1,
-    marginLeft: 16,
-    color: '#fff',
-    fontSize: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  errorText: {
-    color: '#f44336',
-    textAlign: 'center',
-  },
-  playerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#000',
-  },
-  webVideo: {
-    width: '100%',
-    height: '100%',
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  danmakuOverlay: {
-    ...StyleSheet.absoluteFill,
-    pointerEvents: 'none',
-  },
-  danmakuText: {
-    position: 'absolute',
-    left: 8,
-    right: 8,
-    color: '#fff',
-    fontSize: 18,
-    textShadowColor: '#000',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  infoBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 12,
-    backgroundColor: '#181818',
-  },
-  infoText: {
-    color: '#fff',
-  },
-  commentCountText: {
-    color: '#aaa',
-  },
-});

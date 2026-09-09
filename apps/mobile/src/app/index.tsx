@@ -20,7 +20,7 @@ export default function Index() {
   }, [auth.isAuthenticated]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View className="flex-1 justify-center items-center">
       <ActivityIndicator size="large" color="#1976d2" />
     </View>
   );

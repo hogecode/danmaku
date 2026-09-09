@@ -6,7 +6,6 @@ import React, { useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
   FlatList,
@@ -35,7 +34,7 @@ export default function HomeScreen() {
 
   if (!auth.isAuthenticated) {
     return (
-      <View style={styles.loadingContainer}>
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#1976d2" />
       </View>
     );
@@ -72,166 +71,65 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.backButtonText}>←</Text>
+    <SafeAreaView className="flex-1 bg-stone-100" edges={['top']}>
+      <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <TouchableOpacity className="w-10 h-10 justify-center items-center" onPress={handleBack}>
+          <Text className="text-2xl">←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Google Drive</Text>
+        <Text className="flex-1 text-lg font-semibold text-center">Google Drive</Text>
         <TouchableOpacity
-          style={styles.refreshButton}
+          className="w-10 h-10 justify-center items-center"
           onPress={drive.refresh}
           disabled={drive.loading}
         >
-          <Text style={styles.refreshButtonText}>↻</Text>
+          <Text className="text-2xl">↻</Text>
         </TouchableOpacity>
       </View>
 
       {drive.loading && drive.files.length === 0 ? (
-        <View style={styles.centerContainer}>
+        <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#1976d2" />
         </View>
       ) : drive.files.length === 0 ? (
-        <View style={styles.centerContainer}>
-          <Text style={styles.emptyText}>ファイルがありません</Text>
+        <View className="flex-1 justify-center items-center px-6">
+          <Text className="text-base text-gray-400">ファイルがありません</Text>
         </View>
       ) : (
         <FlatList
           data={drive.files}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={{ paddingVertical: 8 }}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={styles.fileItem}
+              className="flex-row items-center px-4 py-3 bg-white my-1 mx-2 rounded-lg"
               onPress={() =>
                 handleFilePress(item.id, item.mimeType, item.name)
               }
             >
-              <Text style={styles.fileIcon}>
+              <Text className="text-2xl mr-3">
                 {isVideo(item.mimeType) ? '🎬' : '📁'}
               </Text>
-              <View style={styles.fileInfo}>
-                <Text style={styles.fileName} numberOfLines={2}>
+              <View className="flex-1">
+                <Text className="text-sm font-medium text-gray-900" numberOfLines={2}>
                   {item.name}
                 </Text>
                 {isVideo(item.mimeType) && item.size && (
-                  <Text style={styles.fileSize}>
+                  <Text className="text-xs text-gray-400 mt-1">
                     {formatFileSize(item.size)}
                   </Text>
                 )}
               </View>
-              <Text style={styles.fileArrow}>›</Text>
+              <Text className="text-lg text-gray-300">›</Text>
             </TouchableOpacity>
           )}
         />
       )}
 
       {drive.error && (
-        <View style={styles.errorBanner}>
-          <Text style={styles.errorText}>{drive.error}</Text>
+        <View className="bg-red-50 px-4 py-3 m-2 rounded-lg">
+          <Text className="text-red-900 text-xs">{drive.error}</Text>
         </View>
       )}
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'center',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backButtonText: {
-    fontSize: 20,
-  },
-  refreshButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  refreshButtonText: {
-    fontSize: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-  },
-  listContent: {
-    paddingVertical: 8,
-  },
-  fileItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    marginVertical: 4,
-    marginHorizontal: 8,
-    borderRadius: 8,
-  },
-  fileIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  fileInfo: {
-    flex: 1,
-  },
-  fileName: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-  },
-  fileSize: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 4,
-  },
-  fileArrow: {
-    fontSize: 18,
-    color: '#ccc',
-  },
-  errorBanner: {
-    backgroundColor: '#ffebee',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    margin: 8,
-    borderRadius: 8,
-  },
-  errorText: {
-    color: '#c62828',
-    fontSize: 12,
-  },
-});
