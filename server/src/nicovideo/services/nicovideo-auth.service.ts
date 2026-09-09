@@ -1,6 +1,5 @@
 import {
   Injectable,
-  Logger,
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -11,6 +10,7 @@ import { eq, and } from 'drizzle-orm';
 import Redis from 'ioredis';
 import { NicovideoApiClient as NicovideoApiClient } from '../utils/nicovideo-api.client';
 import { NicovideoConstants } from '../constants/nicovideo.constants';
+import { LoggerService } from '../../common/logger/logger.service';
 
 /**
  * ニコ動認証サービス
@@ -18,13 +18,13 @@ import { NicovideoConstants } from '../constants/nicovideo.constants';
  */
 @Injectable()
 export class NicovideoAuthService {
-  private readonly logger = new Logger(NicovideoAuthService.name);
   private readonly REDIS_KEY_PREFIX = 'nicovideo:auth:';
 
   constructor(
     @Inject('DATABASE_CONNECTION') private readonly db: Database,
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
     private readonly apiClient: NicovideoApiClient,
+    private readonly logger: LoggerService,
   ) {}
 
 
@@ -78,9 +78,9 @@ export class NicovideoAuthService {
       const redisKey = this.getRedisKey(userId);
       await this.redis.del(redisKey);
 
-      this.logger.log(`ログアウト: ${userId}`);
+      this.logger.info(`ログアウト: ${userId}`, { userId });
     } catch (error) {
-      this.logger.error(`ログアウトエラー: ${error}`);
+      this.logger.error(`ログアウトエラー: ${error}`, error as Error);
       throw error;
     }
   }

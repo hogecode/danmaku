@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { NicovideoApiClient } from './nicovideo-api.client';
 import { NicovideoConstants } from '../constants/nicovideo.constants';
 import {
@@ -7,15 +7,17 @@ import {
   CommentsData,
 } from '../types/nicovideo.types';
 import { parseStringPromise } from 'xml2js';
+import { LoggerService } from '../../common/logger/logger.service';
 
 /**
  * ニコ動 コメント取得ユーティリティ
  */
 @Injectable()
 export class NicovideoCommentFetcher {
-  private readonly logger = new Logger(NicovideoCommentFetcher.name);
-
-  constructor(private readonly apiClient: NicovideoApiClient) {}
+  constructor(
+    private readonly apiClient: NicovideoApiClient,
+    private readonly logger: LoggerService,
+  ) {}
 
   /**
    * コメント取得
@@ -111,7 +113,7 @@ export class NicovideoCommentFetcher {
           },
         );
         
-        this.logger.log(`コメントAPI レスポンス成功 - ステータス: ${response.meta?.status}`);
+        this.logger.info(`コメントAPI レスポンス成功 - ステータス: ${response.meta?.status}`);
 
         // API エラー処理
         if (response.meta?.errorCode) {

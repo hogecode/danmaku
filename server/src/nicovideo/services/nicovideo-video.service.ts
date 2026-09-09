@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
@@ -7,6 +7,7 @@ import { NicovideoApiClient } from '../utils/nicovideo-api.client';
 import { NicovideoConstants } from '../constants/nicovideo.constants';
 import { NicovideoVideoMetadata } from '../types/nicovideo.types';
 import * as cheerio from 'cheerio';
+import { LoggerService } from '../../common/logger/logger.service';
 
 /**
  * ニコ動 動画サービス
@@ -14,10 +15,9 @@ import * as cheerio from 'cheerio';
  */
 @Injectable()
 export class NicovideoVideoService {
-  private readonly logger = new Logger(NicovideoVideoService.name);
-
   constructor(
     private readonly apiClient: NicovideoApiClient,
+    private readonly logger: LoggerService,
   ) {}
 
   /**
@@ -31,23 +31,23 @@ export class NicovideoVideoService {
     videoId: string,
   ): Promise<NicovideoVideoMetadata> {
     try {
-      this.logger.log(`動画情報取得: ${videoId}`);
+      this.logger.info(`動画情報取得: ${videoId}`, { videoId });
 
       const videoUrl = NicovideoConstants.VIDEO_WATCH_URL.replace('{0}', videoId);
-      this.logger.log(`ビデオURL: ${videoUrl}`);
+      this.logger.debug(`ビデオURL: ${videoUrl}`, { videoUrl });
       
       // main.py と同じ cookies を設定（watch_flash=0 で HTML5 プレイヤー）
       const cookies = { watch_flash: '0' };
-      this.logger.log(`Cookies: ${JSON.stringify(cookies)}`);
+      this.logger.debug(`Cookies: ${JSON.stringify(cookies)}`);
       
       const html = await this.apiClient.getHtml(videoUrl, cookies);
-      this.logger.log(`HTML取得成功: ${html.length} bytes`);
+      this.logger.debug(`HTML取得成功: ${html.length} bytes`, { htmlLength: html.length });
 
       const $ = cheerio.load(html);
       const scriptTag = $('meta[name="server-response"]');
 
       if (!scriptTag.length) {
-        this.logger.warn(`server-response メタタグが見つかりません。HTMLの最初100文字: ${html.substring(0, 100)}`);
+        this.logger.warn(`server-response メタタグが見つかりません。HTMLの最初100文字: ${html.substring(0, 100)}`, { htmlSnippet: html.substring(0, 100) });
         throw new BadRequestException('動画情報が取得できません');
       }
 

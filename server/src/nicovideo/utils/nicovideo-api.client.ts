@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import { NicovideoConstants as NicovideoConstants } from '../constants/nicovideo.constants';
+import { LoggerService } from '../../common/logger/logger.service';
 
 /**
  * ニコ動 API クライアント
@@ -9,10 +10,9 @@ import { NicovideoConstants as NicovideoConstants } from '../constants/nicovideo
  */
 @Injectable()
 export class NicovideoApiClient {
-  private readonly logger = new Logger(NicovideoApiClient.name);
   private readonly httpClient: AxiosInstance;
 
-  constructor() {
+  constructor(private readonly logger: LoggerService) {
     this.httpClient = axios.create({
       timeout: 30000,
       headers: {
@@ -25,11 +25,11 @@ export class NicovideoApiClient {
     // レスポンスインターセプター
     this.httpClient.interceptors.response.use(
       (response) => {
-        this.logger.log(`API Response: ${response.status} ${response.config.url}`);
+        this.logger.debug(`API Response: ${response.status} ${response.config.url}`, { status: response.status, url: response.config.url });
         return response;
       },
       (error) => {
-        this.logger.error(`API Error: ${error.message}`, error.response?.status);
+        this.logger.error(`API Error: ${error.message}`, error as Error, { status: error.response?.status });
         throw error;
       },
     );
@@ -45,7 +45,7 @@ export class NicovideoApiClient {
       const response = await this.httpClient.get<T>(url, { params });
       return response.data;
     } catch (error) {
-      this.logger.error(`GET ${url} failed:`, error);
+      this.logger.error(`GET ${url} failed:`, error as Error);
       throw error;
     }
   }
@@ -123,13 +123,13 @@ export class NicovideoApiClient {
           .map(([key, value]) => `${key}=${value}`)
           .join('; ');
         config.headers['Cookie'] = cookieString;
-        this.logger.log(`HTMLリクエスト - URL: ${url}, Cookie: ${cookieString}`);
+        this.logger.debug(`HTMLリクエスト - URL: ${url}, Cookie: ${cookieString}`);
       } else {
-        this.logger.log(`HTMLリクエスト - URL: ${url}`);
+        this.logger.debug(`HTMLリクエスト - URL: ${url}`);
       }
 
       const response = await this.httpClient.get(url, config);
-      this.logger.log(`HTMLリクエスト成功 - ステータス: ${response.status}, サイズ: ${response.data.length}`);
+      this.logger.info(`HTMLリクエスト成功 - ステータス: ${response.status}, サイズ: ${response.data.length}`);
       return response.data;
     } catch (error: any) {
       this.logger.error(`HTML GET ${url} failed - ステータス: ${error.response?.status}, メッセージ: ${error.message}`);

@@ -12,7 +12,6 @@ import {
   HttpCode,
   UsePipes,
   ValidationPipe,
-  Logger,
 } from '@nestjs/common';
 import type { Express, Request, Response } from 'express';
 import { AuthService } from './services/auth.service';
@@ -29,20 +28,20 @@ import {
   UserInfoDto,
   RefreshTokenResponseDto,
 } from './dto';
+import { LoggerService } from '../common/logger/logger.service';
 
 /**
  * Google OAuth 認証コントローラー
  */
 @Controller('api/auth')
 export class AuthController {
-  private readonly logger = new Logger(AuthController.name);
-
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly oauthAccountService: OAuthAccountService,
     private readonly tokenService: TokenService,
     private readonly configService: ConfigService,
+    private readonly logger: LoggerService,
   ) {}
 
   /**
@@ -72,7 +71,7 @@ export class AuthController {
     // エラーパラメータをチェック
     if (query.error) {
       const errorMsg = `Authorization failed: ${query.error_description || query.error}`;
-      console.error('[AUTH] OAuth error:', errorMsg);
+      this.logger.error('[AUTH] OAuth error', new Error(errorMsg));
 
       throw new BadRequestException(errorMsg);
     }
@@ -80,7 +79,7 @@ export class AuthController {
     // コードとstateの存在をチェック
     if (!query.code || !query.state) {
       const errorMsg = 'Missing code or state parameter';
-      console.error('[AUTH] Missing OAuth parameters:', errorMsg);
+      this.logger.error('[AUTH] Missing OAuth parameters', new Error(errorMsg));
 
       throw new BadRequestException(errorMsg);
     }
@@ -100,21 +99,20 @@ export class AuthController {
       // Flutter版の場合はディープリンクにリダイレクト
       // JWT アクセストークンを生成
       if (isFlutterClient) {
-        console.log('[AUTH] Redirecting Flutter client to deep link');
+        this.logger.debug('[AUTH] Redirecting Flutter client to deep link');
         const tokenService = (this.authService as any).tokenService;
         const accessToken = tokenService.generateAccessToken(BigInt(userInfo.id));
         const userData = JSON.stringify(userInfo);
         const deepLinkUrl = `danmaku://auth/callback?user=${encodeURIComponent(userData)}&token=${encodeURIComponent(accessToken)}`;
-        console.log('[AUTH] Deep link URL (full):', deepLinkUrl);
-        console.log('[AUTH] Access token generated:', accessToken.substring(0, 50) + '...');
+        this.logger.debug('[AUTH] Access token generated', { tokenLength: accessToken.length });
         return response.redirect(302, deepLinkUrl);
       }
 
       // Web版の場合はリダイレクト
-      console.log('[AUTH] Redirecting Web client to frontend home');
+      this.logger.debug('[AUTH] Redirecting Web client to frontend home');
       return response.redirect(302, `${this.configService.get('FRONTEND_URL')}/home`);
     } catch (error) {
-      console.error('[AUTH] Callback error:', error);
+      this.logger.error('[AUTH] Callback error', error as Error);
       
       const errorMsg = error instanceof Error ? error.message : 'Authentication failed';
 
@@ -133,9 +131,9 @@ export class AuthController {
     const isFlutter = query?.client === 'mobile';
     
     if (isFlutter) {
-      console.log('[AUTH] Detected Flutter client via ?client=mobile');
+      this.logger.debug('[AUTH] Detected Flutter client via ?client=mobile');
     } else {
-      console.log('[AUTH] Detected Web client');
+      this.logger.debug('[AUTH] Detected Web client');
     }
 
     return isFlutter;
@@ -224,15 +222,15 @@ export class AuthController {
      }
 
      try {
-       this.logger.log(`🎬 Generating video token for userId: ${userId}`);
+       this.logger.info(`🎬 Generating video token for userId: ${userId}`);
        
        // JWT トークンを生成（有効期限: 15分）
        const token = this.tokenService.generateAccessToken(BigInt(userId));
        
-       this.logger.log(`✅ Video token generated (length: ${token.length})`);
+       this.logger.info(`✅ Video token generated (length: ${token.length})`);
        return { token };
      } catch (error) {
-       this.logger.error(`❌ Failed to generate video token: ${error.message}`);
+       this.logger.error(`❌ Failed to generate video token: ${(error as Error).message}`);
        throw error;
      }
    }

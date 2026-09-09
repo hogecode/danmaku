@@ -9,7 +9,6 @@ import {
   HttpCode,
   Res,
   Headers,
-  Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { PlayerService } from './player.service';
@@ -17,6 +16,7 @@ import { AuthGuard } from '../auth/guards';
 import { DPlayerCommentListDto } from './dto';
 import { Express } from 'express';
 import { PlayerConstants } from './constants/player.constants';
+import { LoggerService } from '../common/logger/logger.service';
 
 /**
  * プレイヤー Controller
@@ -25,9 +25,10 @@ import { PlayerConstants } from './constants/player.constants';
 @Controller('api/player')
 @UseGuards(AuthGuard)
 export class PlayerController {
-  private readonly logger = new Logger(PlayerController.name);
-
-  constructor(private readonly playerService: PlayerService) {}
+  constructor(
+    private readonly playerService: PlayerService,
+    private readonly logger: LoggerService,
+  ) {}
 
   /**
    * GET /api/player/stream/:fileId
@@ -61,29 +62,29 @@ export class PlayerController {
     @Headers(PlayerConstants.RANGE.HEADER_NAME) rangeHeader?: string,
   ): Promise<void> {
     try {
-      this.logger.log(`🎬 streamVideo called with fileId: ${fileId}`);
-      this.logger.log(`👤 userId: ${session.userId}`);
-      this.logger.log(`📋 Range header: ${rangeHeader || 'not provided'}`);
+      this.logger.info(`🎬 streamVideo called with fileId: ${fileId}`, { fileId });
+      this.logger.debug(`👤 userId: ${session.userId}`, { userId: session.userId });
+      this.logger.debug(`📋 Range header: ${rangeHeader || 'not provided'}`, { rangeHeader });
 
       if (!session.userId) {
-        this.logger.error('❌ User ID not found in session');
+        this.logger.error('❌ User ID not found in session', new Error('User ID missing'));
         throw new BadRequestException('User ID not found in session');
       }
 
       if (!fileId || fileId.trim().length === 0) {
-        this.logger.error('❌ fileId parameter is required');
+        this.logger.error('❌ fileId parameter is required', new Error('fileId missing'));
         throw new BadRequestException('fileId parameter is required');
       }
 
-      this.logger.log(`🔄 Calling playerService.getVideoStreamWithRange...`);
+      this.logger.debug(`🔄 Calling playerService.getVideoStreamWithRange...`);
       const streamResponse = await this.playerService.getVideoStreamWithRange(
         BigInt(session.userId),
         fileId,
         rangeHeader,
       );
 
-      this.logger.log(`✅ Got stream response with status: ${streamResponse.statusCode}`);
-      this.logger.log(`📊 Content-Length: ${streamResponse.headers.contentLength} bytes`);
+      this.logger.info(`✅ Got stream response with status: ${streamResponse.statusCode}`, { statusCode: streamResponse.statusCode });
+      this.logger.debug(`📊 Content-Length: ${streamResponse.headers.contentLength} bytes`, { contentLength: streamResponse.headers.contentLength });
 
       // ステータスコードを設定
       res.status(streamResponse.statusCode);
@@ -101,12 +102,11 @@ export class PlayerController {
         res.set('Content-Range', streamResponse.headers.contentRange);
       }
 
-      this.logger.log(`📤 Piping stream to response...`);
+      this.logger.debug(`📤 Piping stream to response...`);
       // ストリーム送信
       streamResponse.stream.pipe(res);
     } catch (error) {
-      this.logger.error(`❌ streamVideo error: ${error.message}`);
-      this.logger.error(`Stack: ${error.stack}`);
+      this.logger.error(`❌ streamVideo error: ${(error as Error).message}`, error as Error);
       throw error;
     }
   }

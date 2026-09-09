@@ -136,12 +136,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final fileName = state.uri.queryParameters['fileName'];
           final folderId = state.uri.queryParameters['folderId'] ?? '';
           
-          _logger.i('[Router] ========== PLAYER ROUTE ==========');
-          _logger.i('[Router] URI: ${state.uri}');
-          _logger.i('[Router] videoId from pathParameters: $videoId');
-          _logger.i('[Router] fileName from queryParameters: $fileName');
-          _logger.i('[Router] folderId from queryParameters: $folderId');
-          _logger.i('[Router] ========== END PLAYER ROUTE ==========');
+          //_logger.i('[Router] ========== PLAYER ROUTE ==========');
+          //_logger.i('[Router] URI: ${state.uri}');
+          //_logger.i('[Router] videoId from pathParameters: $videoId');
+          //_logger.i('[Router] fileName from queryParameters: $fileName');
+          //_logger.i('[Router] folderId from queryParameters: $folderId');
+          //_logger.i('[Router] ========== END PLAYER ROUTE ==========');
           
           return PlayerPage(
             videoId: videoId ?? '',

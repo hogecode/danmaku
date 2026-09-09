@@ -3,7 +3,6 @@ import {
   Inject,
   BadRequestException,
   NotFoundException,
-  Logger,
 } from '@nestjs/common';
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
@@ -14,6 +13,7 @@ import { CommentConverter } from './utils/comment-converter';
 import { PlayerConstants } from './constants/player.constants';
 import { TokenService } from '../auth/services';
 import { GDriveService } from '../gdrive/gdrive.service';
+import { LoggerService } from '../common/logger/logger.service';
 
 interface FileInfo {
   id: string;
@@ -46,14 +46,13 @@ interface StreamResponse {
  */
 @Injectable()
 export class PlayerService {
-  private readonly logger = new Logger(PlayerService.name);
-
   constructor(
     @Inject('DATABASE_CONNECTION') private readonly db: Database,
     private readonly xmlParser: XmlParser,
     private readonly commentConverter: CommentConverter,
     private readonly tokenService: TokenService,
     private readonly gdriveService: GDriveService,
+    private readonly logger: LoggerService,
   ) {}
 
   /**
@@ -388,14 +387,14 @@ export class PlayerService {
     rangeHeader?: string,
   ): Promise<StreamResponse> {
     try {
-      this.logger.log(`🎬 getVideoStreamWithRange called`);
-      this.logger.log(`  - userId: ${userId}`);
-      this.logger.log(`  - videoFileId: ${videoFileId}`);
+      this.logger.info(`🎬 getVideoStreamWithRange called`);
+      this.logger.debug(`  - userId: ${userId}`);
+      this.logger.debug(`  - videoFileId: ${videoFileId}`);
 
       // トークン取得
-      this.logger.log(`🔐 Getting valid access token...`);
+      this.logger.info(`🔐 Getting valid access token...`);
       const accessToken = await this.tokenService.getValidAccessToken(userId);
-      this.logger.log(`✅ Access token obtained (preview: ${accessToken.substring(0, 30)}...)`);
+      this.logger.debug(`✅ Access token obtained (preview: ${accessToken.substring(0, 30)}...)`);
 
       const oauth2Client = new OAuth2Client();
       oauth2Client.setCredentials({ access_token: accessToken });
@@ -403,20 +402,20 @@ export class PlayerService {
       const drive = google.drive({ version: 'v3', auth: oauth2Client });
 
       // ファイルメタデータを取得（サイズ確認）
-      this.logger.log(`📋 Fetching file metadata from GDrive...`);
+      this.logger.debug(`📋 Fetching file metadata from GDrive...`);
       const fileMetadata = await drive.files.get({
         fileId: videoFileId,
         fields: 'id,name,mimeType,size',
       });
 
-      this.logger.log(`✅ File metadata retrieved:`);
-      this.logger.log(`  - name: ${fileMetadata.data.name}`);
-      this.logger.log(`  - mimeType: ${fileMetadata.data.mimeType}`);
-      this.logger.log(`  - size: ${fileMetadata.data.size} bytes`);
+      this.logger.info(`✅ File metadata retrieved:`, { name: fileMetadata.data.name, mimeType: fileMetadata.data.mimeType, size: fileMetadata.data.size });
+      this.logger.debug(`  - name: ${fileMetadata.data.name}`);
+      this.logger.debug(`  - mimeType: ${fileMetadata.data.mimeType}`);
+      this.logger.debug(`  - size: ${fileMetadata.data.size} bytes`);
 
       // MIME タイプが MP4 であることを確認
       if (fileMetadata.data.mimeType !== PlayerConstants.MIME_TYPES.VIDEO_MP4) {
-        this.logger.error(`❌ Invalid MIME type: ${fileMetadata.data.mimeType}`);
+        this.logger.error(`❌ Invalid MIME type: ${fileMetadata.data.mimeType}`, new Error(`Invalid MIME type: ${fileMetadata.data.mimeType}`));
         throw new BadRequestException(
           `Invalid file type: ${fileMetadata.data.mimeType}. Only MP4 videos are supported.`,
         );
@@ -433,11 +432,11 @@ export class PlayerService {
       let contentRange: string | undefined;
 
       if (rangeHeader) {
-        this.logger.log(`📊 Parsing Range header: ${rangeHeader}`);
+        this.logger.debug(`📊 Parsing Range header: ${rangeHeader}`, { rangeHeader });
         rangeInfo = this.parseRangeHeader(rangeHeader, fileSize);
 
         if (!rangeInfo) {
-          this.logger.error(`❌ Invalid Range header`);
+          this.logger.error(`❌ Invalid Range header`, new Error('Invalid Range header'));
           // Range が無効な場合は 416 Range Not Satisfiable を返す
           throw new BadRequestException(
             `Invalid Range: bytes */` + fileSize,
@@ -447,11 +446,11 @@ export class PlayerService {
         statusCode = PlayerConstants.HTTP_STATUS.PARTIAL_CONTENT;
         contentLength = rangeInfo.end - rangeInfo.start + 1;
         contentRange = `bytes ${rangeInfo.start}-${rangeInfo.end}/${fileSize}`;
-        this.logger.log(`✅ Range parsed: ${contentRange}`);
+        this.logger.debug(`✅ Range parsed: ${contentRange}`, { contentRange });
       }
 
       // GDrive API からファイルをダウンロード（Range 指定）
-      this.logger.log(`📥 Fetching video stream from GDrive (using alt=media)...`);
+      this.logger.debug(`📥 Fetching video stream from GDrive (using alt=media)...`);
       const response = await drive.files.get(
         {
           fileId: videoFileId,
@@ -467,8 +466,8 @@ export class PlayerService {
         },
       );
 
-      this.logger.log(`✅ Stream obtained from GDrive`);
-      this.logger.log(`✅ Returning with status: ${statusCode}, contentLength: ${contentLength}`);
+      this.logger.info(`✅ Stream obtained from GDrive`, { statusCode, contentLength });
+      this.logger.debug(`✅ Returning with status: ${statusCode}, contentLength: ${contentLength}`);
 
       return {
         stream: response.data,
@@ -481,8 +480,7 @@ export class PlayerService {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ getVideoStreamWithRange failed: ${error.message}`);
-      this.logger.error(`Stack: ${error.stack}`);
+      this.logger.error(`❌ getVideoStreamWithRange failed: ${(error as Error).message}`, error as Error);
       throw error;
     }
   }

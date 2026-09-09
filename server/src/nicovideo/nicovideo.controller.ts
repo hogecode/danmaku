@@ -7,7 +7,6 @@ import {
   Query,
   BadRequestException,
   Res,
-  Logger,
 } from '@nestjs/common';
 import type { Response, Express } from 'express';
 import { NicovideoVideoService } from './services/nicovideo-video.service';
@@ -17,6 +16,7 @@ import {
   DownloadCommentRequestDto,
 } from './dto';
 import { v4 as uuidv4 } from 'uuid';
+import { LoggerService } from '../common/logger/logger.service';
 
 /**
  * ニコ動 API Controller
@@ -24,11 +24,11 @@ import { v4 as uuidv4 } from 'uuid';
  */
 @Controller('api/nicovideo')
 export class NicovideoController {
-  private readonly logger = new Logger(NicovideoController.name);
 
   constructor(
     private readonly videoService: NicovideoVideoService,
     private readonly commentService: NicovideoCommentService,
+    private readonly logger: LoggerService,
   ) {}
 
   /**
@@ -52,7 +52,7 @@ export class NicovideoController {
       }
       const videoId = downloadDto.videoId;
 
-      this.logger.debug(`コメント取得開始: ${videoId}`);
+      this.logger.debug(`コメント取得開始: ${videoId}`, { videoId });
 
       // ステップ1: ビデオメタデータ取得（thread_key も同時に取得）
       const metadata = await this.videoService.getVideoMetadata(videoId);
@@ -74,8 +74,9 @@ export class NicovideoController {
         metadata.threadParams?.language || 'ja-jp',
       );
 
-      this.logger.log(
-        `コメント取得完了: ${videoId} (${comments.globalComments.retrievedCount}/${comments.globalComments.commentCount})`
+      this.logger.info(
+        `コメント取得完了: ${videoId} (${comments.globalComments.retrievedCount}/${comments.globalComments.commentCount})`,
+        { videoId, retrievedCount: comments.globalComments.retrievedCount, totalCount: comments.globalComments.commentCount }
       );
 
       res.json({
@@ -91,7 +92,7 @@ export class NicovideoController {
         comments
       });
     } catch (error) {
-      this.logger.error(`コメント取得エラー (${downloadDto.videoId}):`, error);
+      this.logger.error(`コメント取得エラー (${downloadDto.videoId}):`, error as Error);
       res.status(500).json({
         status: 'failed',
         message: `エラー: ${(error as Error).message}`,

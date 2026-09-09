@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { NicovideoCommentFetcher } from '../utils/nicovideo-comment.fetcher';
 import { CommentsData } from '../types/nicovideo.types';
+import { LoggerService } from '../../common/logger/logger.service';
 
 /**
  * ニコ動 コメント取得サービス
@@ -8,10 +9,9 @@ import { CommentsData } from '../types/nicovideo.types';
  */
 @Injectable()
 export class NicovideoCommentService {
-  private readonly logger = new Logger(NicovideoCommentService.name);
-
   constructor(
     private readonly commentFetcher: NicovideoCommentFetcher,
+    private readonly logger: LoggerService,
   ) {}
 
   /**
@@ -29,7 +29,7 @@ export class NicovideoCommentService {
   ): Promise<CommentsData> {
     try {
 
-      this.logger.log(`コメント取得開始: ${videoId}`);
+      this.logger.debug(`コメント取得開始: ${videoId}`, { videoId });
 
       const commentsData = await this.commentFetcher.fetchComments(
         videoId,
@@ -41,13 +41,14 @@ export class NicovideoCommentService {
         commentsLimit,
       );
 
-      this.logger.log(
+      this.logger.info(
         `コメント取得完了: ${videoId} (${commentsData.globalComments.retrievedCount} 件)`,
+        { videoId, retrievedCount: commentsData.globalComments.retrievedCount },
       );
 
       return commentsData;
     } catch (error) {
-      this.logger.error(`コメント取得エラー (${videoId}):`, error);
+      this.logger.error(`コメント取得エラー (${videoId}):`, error as Error);
       throw error;
     }
   }
