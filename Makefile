@@ -6,12 +6,16 @@
 generate-api-client: ## Axios TypeScriptクライアント生成 (Web用)
 	powershell -Command "$$pwd = pwd; docker run --rm -v \"$$pwd`:/local\" openapitools/openapi-generator-cli:latest generate -i /local/server/openapi.yaml -g typescript-axios -o /local/apps/web/lib/generated --additional-properties=typescriptThreePlus=true,supportsES6=true,hideGenerationTimestamp=true,withSeparateModelsAndApi=true,modelPackage=models,apiPackage=apis"
 
+.PHONY: generate-mobile-client
+generate-mobile-client: ## TypeScript Fetch クライアント生成 (React Native/Expo用)
+	powershell -Command "$$pwd = pwd; docker run --rm -v \"$$pwd`:/local\" openapitools/openapi-generator-cli:latest generate -i /local/server/openapi.yaml -g typescript-fetch -o /local/apps/mobile/src/generated --additional-properties=typescriptThreePlus=true,supportsES6=true,hideGenerationTimestamp=true,withSeparateModelsAndApi=true,modelPackage=models,apiPackage=apis"
+
 .PHONY: generate-flutter-client
 generate-flutter-client: ## Dart OpenAPIクライアント生成 (Flutter用 - Docker使用)
 	powershell -Command "$$pwd = pwd; docker run --rm -v \"$$pwd`:/local\" openapitools/openapi-generator-cli:latest generate -i /local/server/openapi.yaml -g dart -o /local/apps/desktop/lib/data/client --additional-properties=hideGenerationTimestamp=true,pubName=desktop,pubVersion=1.0.0"
 
 .PHONY: generate-all-clients
-generate-all-clients: generate-api-client generate-flutter-client ## すべてのクライアント生成 (Web + Flutter)
+generate-all-clients: generate-api-client generate-mobile-client generate-flutter-client ## すべてのクライアント生成 (Web + Mobile + Flutter)
 	@echo "✅ すべてのAPIクライアント生成が完了しました！"
 
 

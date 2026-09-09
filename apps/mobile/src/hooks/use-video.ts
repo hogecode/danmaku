@@ -1,0 +1,154 @@
+/**
+ * ビデオプレイヤー カスタムフック
+ */
+
+import { useCallback } from 'react';
+import { useVideoStore } from '@/stores/video-store';
+import { videoService } from '@/services/video-service';
+import { appLogger } from '@/utils/logger';
+import { VideoPlayerConfig } from '@/types';
+
+export function useVideo() {
+  const video = useVideoStore();
+
+  /**
+   * プレイヤー設定を初期化
+   */
+  const initializePlayer = useCallback(async (config: VideoPlayerConfig) => {
+    try {
+      video.setError(null);
+      video.setLoading(true);
+
+      appLogger.info(`[useVideo] プレイヤー初期化中: ${config.fileName}`);
+
+      // ビデオトークンを取得
+      const videoToken = await videoService.getVideoToken();
+
+      // ストリーミング URL を構築
+      const streamingUrl = videoService.buildStreamingUrl(
+        config.videoFileId,
+        videoToken
+      );
+
+      // 設定を更新
+      const updatedConfig = { ...config, videoUrl: streamingUrl };
+      video.setConfig(updatedConfig);
+
+      appLogger.info('[useVideo] プレイヤー初期化完了');
+
+      // コメントを読み込む（非同期・エラー無視）
+      loadComments(config.videoFileId);
+
+      return updatedConfig;
+    } catch (error) {
+      appLogger.error('[useVideo] プレイヤー初期化失敗', error);
+      video.setError(error instanceof Error ? error.message : String(error));
+      throw error;
+    } finally {
+      video.setLoading(false);
+    }
+  }, [video]);
+
+  /**
+   * 弾幕を読み込む
+   */
+  const loadComments = useCallback(async (fileId: string) => {
+    try {
+      video.setCommentsLoading(true);
+      appLogger.info(`[useVideo] コメント読み込み中: ${fileId}`);
+
+      const xmlContent = await videoService.getComments(fileId);
+
+      // XML をパース（簡易版）
+      const comments = parseCommentsFromXml(xmlContent);
+
+      video.setComments(comments);
+
+      appLogger.info(`[useVideo] コメント読み込み完了: ${comments.length} 件`);
+    } catch (error) {
+      appLogger.warning('[useVideo] コメント読み込み失敗（続行）', error);
+      // コメント読み込み失敗は致命的ではない
+    } finally {
+      video.setCommentsLoading(false);
+    }
+  }, [video]);
+
+  /**
+   * 現在の再生位置に基づいて表示するコメントを更新
+   */
+  const updateVisibleComments = useCallback(
+    (currentTime: number, duration: number) => {
+      const comments = video.comments;
+
+      // vpos は相対位置（ビデオの先頭からの秒数）で、displayRange を考慮
+      // ここでは簡素化して、現在時刻±3秒の範囲を表示
+      const displayRange = 3;
+      const visibleComments = comments.filter((comment: any) => {
+        const commentTime = comment.vpos;
+        return Math.abs(currentTime - commentTime) <= displayRange;
+      });
+
+      video.setVisibleComments(visibleComments);
+    },
+    [video]
+  );
+
+  /**
+   * 再生時間を更新
+   */
+  const setCurrentTime = useCallback(
+    (time: number) => {
+      video.setCurrentTime(time);
+      // コメント表示を更新
+      updateVisibleComments(time, video.duration);
+    },
+    [video, updateVisibleComments]
+  );
+
+  /**
+   * クリーンアップ
+   */
+  const cleanup = useCallback(() => {
+    appLogger.info('[useVideo] クリーンアップ');
+    video.reset();
+  }, [video]);
+
+  return {
+    ...video,
+    initializePlayer,
+    loadComments,
+    updateVisibleComments,
+    setCurrentTime,
+    cleanup,
+  };
+}
+
+/**
+ * XML 形式のコメント文字列をパース（簡易版）
+ */
+function parseCommentsFromXml(xmlContent: string) {
+   const comments = [];
+
+  // 正規表現でコメント要素を抽出（簡易版）
+  const chatRegex =
+    /<chat\s+thread="([^"]*?)"\s+no="([^"]*?)"\s+vpos="([^"]*?)"\s+date="([^"]*?)"[^>]*>([^<]*?)<\/chat>/g;
+
+  let match;
+  while ((match = chatRegex.exec(xmlContent)) !== null) {
+    try {
+      comments.push({
+        thread: match[1],
+        no: parseInt(match[2], 10),
+        vpos: parseInt(match[3], 10),
+        date: parseInt(match[4], 10),
+        user_id: '', // XML には user_id が含まれていないため空
+        text: match[5],
+      });
+    } catch (error) {
+      appLogger.warning('コメントパース失敗', error);
+      continue;
+    }
+  }
+
+  return comments;
+}

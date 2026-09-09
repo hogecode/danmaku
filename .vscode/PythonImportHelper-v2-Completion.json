@@ -9,12 +9,85 @@
         "documentation": {}
     },
     {
-        "label": "json",
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "os",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "json",
-        "description": "json",
-        "detail": "json",
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "unittest",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "unittest",
+        "description": "unittest",
+        "detail": "unittest",
+        "documentation": {}
+    },
+    {
+        "label": "kotlin_literal",
+        "importPath": "rewrite_feature_flag_defaults",
+        "description": "rewrite_feature_flag_defaults",
+        "isExtraImport": true,
+        "detail": "rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "rewrite",
+        "importPath": "rewrite_feature_flag_defaults",
+        "description": "rewrite_feature_flag_defaults",
+        "isExtraImport": true,
+        "detail": "rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "cxx_literal",
+        "importPath": "rewrite_feature_flag_defaults",
+        "description": "rewrite_feature_flag_defaults",
+        "isExtraImport": true,
+        "detail": "rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "rewrite",
+        "importPath": "rewrite_feature_flag_defaults",
+        "description": "rewrite_feature_flag_defaults",
+        "isExtraImport": true,
+        "detail": "rewrite_feature_flag_defaults",
         "documentation": {}
     },
     {
@@ -24,6 +97,74 @@
         "importPath": "argparse",
         "description": "argparse",
         "detail": "argparse",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
+        "documentation": {}
+    },
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "tree_sitter_cpp",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "tree_sitter_cpp",
+        "description": "tree_sitter_cpp",
+        "detail": "tree_sitter_cpp",
+        "documentation": {}
+    },
+    {
+        "label": "Language",
+        "importPath": "tree_sitter",
+        "description": "tree_sitter",
+        "isExtraImport": true,
+        "detail": "tree_sitter",
+        "documentation": {}
+    },
+    {
+        "label": "Parser",
+        "importPath": "tree_sitter",
+        "description": "tree_sitter",
+        "isExtraImport": true,
+        "detail": "tree_sitter",
+        "documentation": {}
+    },
+    {
+        "label": "Query",
+        "importPath": "tree_sitter",
+        "description": "tree_sitter",
+        "isExtraImport": true,
+        "detail": "tree_sitter",
+        "documentation": {}
+    },
+    {
+        "label": "QueryCursor",
+        "importPath": "tree_sitter",
+        "description": "tree_sitter",
+        "isExtraImport": true,
+        "detail": "tree_sitter",
         "documentation": {}
     },
     {
@@ -90,15 +231,6 @@
         "documentation": {}
     },
     {
-        "label": "os",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "os",
-        "description": "os",
-        "detail": "os",
-        "documentation": {}
-    },
-    {
         "label": "random",
         "kind": 6,
         "isExtraImport": true,
@@ -117,15 +249,6 @@
         "documentation": {}
     },
     {
-        "label": "re",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "re",
-        "description": "re",
-        "detail": "re",
-        "documentation": {}
-    },
-    {
         "label": "shutil",
         "kind": 6,
         "isExtraImport": true,
@@ -141,15 +264,6 @@
         "importPath": "string",
         "description": "string",
         "detail": "string",
-        "documentation": {}
-    },
-    {
-        "label": "sys",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "sys",
-        "description": "sys",
-        "detail": "sys",
         "documentation": {}
     },
     {
@@ -348,6 +462,87 @@
         "description": "apps.desktop.ios.Flutter.ephemeral.flutter_lldb_helper",
         "peekOfCode": "def handle_new_rx_page(frame: lldb.SBFrame, bp_loc, extra_args, intern_dict):\n    \"\"\"Intercept NOTIFY_DEBUGGER_ABOUT_RX_PAGES and touch the pages.\"\"\"\n    base = frame.register[\"x0\"].GetValueAsAddress()\n    page_len = frame.register[\"x1\"].GetValueAsUnsigned()\n    # Note: NOTIFY_DEBUGGER_ABOUT_RX_PAGES will check contents of the\n    # first page to see if handled it correctly. This makes diagnosing\n    # misconfiguration (e.g. missing breakpoint) easier.\n    data = bytearray(page_len)\n    data[0:8] = b'IHELPED!'\n    error = lldb.SBError()",
         "detail": "apps.desktop.ios.Flutter.ephemeral.flutter_lldb_helper",
+        "documentation": {}
+    },
+    {
+        "label": "RewriteFeatureFlagDefaultsTest",
+        "kind": 6,
+        "importPath": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.tests.test_rewrite_feature_flag_defaults",
+        "description": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.tests.test_rewrite_feature_flag_defaults",
+        "peekOfCode": "class RewriteFeatureFlagDefaultsTest(unittest.TestCase):\n    def setUp(self) -> None:\n        self.source = _load_source()\n    def test_empty_overrides_is_passthrough(self) -> None:\n        self.assertEqual(rewrite(self.source, {}), self.source)\n    def test_override_bool_to_true(self) -> None:\n        result = rewrite(self.source, {\"commonTestFlag\": True})\n        self.assertEqual(self._method_value(result, \"commonTestFlag\"), b\"true\")\n    def test_override_bool_to_false(self) -> None:\n        result = rewrite(self.source, {\"commonTestFlag\": False})",
+        "detail": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.tests.test_rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "kotlin_literal",
+        "kind": 2,
+        "importPath": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.rewrite_feature_flag_defaults",
+        "description": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.rewrite_feature_flag_defaults",
+        "peekOfCode": "def kotlin_literal(value: bool | int | float) -> str:\n    if isinstance(value, bool):\n        return \"true\" if value else \"false\"\n    if isinstance(value, (int, float)):\n        s = str(value)\n        if isinstance(value, int) or \".\" not in s:\n            s += \".0\"\n        return s\n    raise ValueError(f\"Unsupported value type {type(value).__name__} for override\")\ndef rewrite(source: bytes, overrides: dict[str, object]) -> bytes:",
+        "detail": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "rewrite",
+        "kind": 2,
+        "importPath": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.rewrite_feature_flag_defaults",
+        "description": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.rewrite_feature_flag_defaults",
+        "peekOfCode": "def rewrite(source: bytes, overrides: dict[str, object]) -> bytes:\n    text = source.decode(\"utf-8\")\n    for name, value in overrides.items():\n        kotlin_type = \"Boolean\" if isinstance(value, bool) else \"Double\"\n        pattern = rf\"\"\"\n            (\n                override \\s+ fun \\s+\n                {re.escape(name)}\n                \\s* \\( \\s* \\)\n                \\s* : \\s* {kotlin_type}",
+        "detail": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.rewrite_feature_flag_defaults",
+        "description": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.rewrite_feature_flag_defaults",
+        "peekOfCode": "def main() -> None:\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"--overrides\", default=\"{}\")\n    parser.add_argument(\"--input\", required=True)\n    args = parser.parse_args()\n    overrides: dict[str, object] = json.loads(args.overrides)\n    with open(args.input, \"rb\") as f:\n        source = f.read()\n    sys.stdout.buffer.write(rewrite(source, overrides))\nif __name__ == \"__main__\":",
+        "detail": "apps.mobile.node_modules.react-native.ReactAndroid.src.main.java.com.facebook.react.internal.featureflags.rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "RewriteFeatureFlagDefaultsTest",
+        "kind": 6,
+        "importPath": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.tests.test_rewrite_feature_flag_defaults",
+        "description": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.tests.test_rewrite_feature_flag_defaults",
+        "peekOfCode": "class RewriteFeatureFlagDefaultsTest(unittest.TestCase):\n    def setUp(self) -> None:\n        self.source = _load_header()\n    def test_empty_overrides_is_passthrough(self) -> None:\n        self.assertEqual(rewrite(self.source, {}), self.source)\n    def test_override_bool_to_true(self) -> None:\n        result = rewrite(self.source, {\"commonTestFlag\": True})\n        start, end = self._method_body_range(result, \"commonTestFlag\")\n        self.assertIn(b\"return true;\", result[start:end])\n    def test_override_bool_to_false(self) -> None:",
+        "detail": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.tests.test_rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "cxx_literal",
+        "kind": 2,
+        "importPath": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "description": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "peekOfCode": "def cxx_literal(value: bool | int | float) -> str:\n    if isinstance(value, bool):\n        return \"true\" if value else \"false\"\n    if isinstance(value, (int, float)):\n        s = str(value)\n        if isinstance(value, int) or \".\" not in s:\n            s += \".0\"\n        return s\n    raise ValueError(f\"Unsupported value type {type(value).__name__} for override\")\ndef rewrite(source: bytes, overrides: dict[str, object]) -> bytes:",
+        "detail": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "rewrite",
+        "kind": 2,
+        "importPath": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "description": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "peekOfCode": "def rewrite(source: bytes, overrides: dict[str, object]) -> bytes:\n    lang = Language(tree_sitter_cpp.language())\n    tree = Parser(lang).parse(source)\n    matches = QueryCursor(Query(lang, _method_query(overrides.keys()))).matches(\n        tree.root_node\n    )\n    matched: set[str] = set()\n    replacements: list[tuple[int, int, bytes]] = []\n    for _, match in matches:\n        method_node = match[\"method_name\"][0]",
+        "detail": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "description": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "peekOfCode": "def main() -> None:\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"--overrides\", default=\"{}\")\n    parser.add_argument(\"--input\", required=True)\n    args = parser.parse_args()\n    overrides: dict[str, object] = json.loads(args.overrides)\n    with open(args.input, \"rb\") as f:\n        source = f.read()\n    sys.stdout.buffer.write(rewrite(source, overrides))\nif __name__ == \"__main__\":",
+        "detail": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "documentation": {}
+    },
+    {
+        "label": "_TARGET_CLASS",
+        "kind": 5,
+        "importPath": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "description": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
+        "peekOfCode": "_TARGET_CLASS = \"ReactNativeFeatureFlagsDefaults\"\ndef _method_query(names: set[str]) -> str:\n    alternation = \"|\".join(re.escape(n) for n in sorted(names))\n    return f\"\"\"\n(class_specifier\n    name: (type_identifier) @class_name\n    body: (field_declaration_list\n        (function_definition\n            declarator: (function_declarator\n                declarator: (field_identifier) @method_name)",
+        "detail": "apps.mobile.node_modules.react-native.ReactCommon.react.featureflags.rewrite_feature_flag_defaults",
         "documentation": {}
     },
     {
