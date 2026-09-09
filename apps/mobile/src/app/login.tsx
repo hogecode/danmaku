@@ -87,6 +87,7 @@ export default function LoginScreen() {
     return () => subscription.remove();
   }, [auth]);
 
+  // ログインボタンを押したときの処理
   const handleLogin = async () => {
     try {
       setError(null);
@@ -106,6 +107,7 @@ export default function LoginScreen() {
         `[LoginScreen] ブラウザで OAuth ページを開く (redirectUrl: ${DEEP_LINK_AUTH_CALLBACK})`
       );
 
+      // Webブラウザでの認証セッションを開始
       const result = await WebBrowser.openAuthSessionAsync(
         authorizeUrl,
         DEEP_LINK_AUTH_CALLBACK

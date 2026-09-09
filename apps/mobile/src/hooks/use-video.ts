@@ -37,7 +37,7 @@ export function useVideo() {
       appLogger.info('[useVideo] プレイヤー初期化完了');
 
       // コメントを読み込む（非同期・エラー無視）
-      loadComments(config.videoFileId);
+      loadComments(config.videoFileId, config.folderId);
 
       return updatedConfig;
     } catch (error) {
@@ -52,19 +52,31 @@ export function useVideo() {
   /**
    * 弾幕を読み込む
    */
-  const loadComments = useCallback(async (fileId: string) => {
+  const loadComments = useCallback(async (fileId: string, folderId?: string) => {
     try {
       video.setCommentsLoading(true);
       appLogger.info(`[useVideo] コメント読み込み中: ${fileId}`);
 
-      const xmlContent = await videoService.getComments(fileId);
+      // DPlayer 互換形式でコメントを取得
+      const response = await videoService.getComments(fileId, folderId || 'root');
 
-      // XML をパース（簡易版）
-      const comments = parseCommentsFromXml(xmlContent);
+      // comments は DPlayer 形式：{ time, type, size, color, author, text }
+      const comments = response.comments || [];
+      appLogger.info(`[useVideo] Received ${comments.length} comments from API`);
 
-      video.setComments(comments);
+      // DPlayer 形式から内部形式に変換
+      const convertedComments = comments.map((comment: any) => ({
+        thread: '',
+        no: 0,
+        vpos: Math.floor(comment.time || 0), // time を vpos に変換（秒単位）
+        date: Math.floor(Date.now() / 1000),
+        user_id: comment.author || '',
+        text: comment.text || '',
+      }));
 
-      appLogger.info(`[useVideo] コメント読み込み完了: ${comments.length} 件`);
+      video.setComments(convertedComments);
+
+      appLogger.info(`[useVideo] コメント読み込み完了: ${convertedComments.length} 件`);
     } catch (error) {
       appLogger.warning('[useVideo] コメント読み込み失敗（続行）', error);
       // コメント読み込み失敗は致命的ではない
@@ -121,34 +133,4 @@ export function useVideo() {
     setCurrentTime,
     cleanup,
   };
-}
-
-/**
- * XML 形式のコメント文字列をパース（簡易版）
- */
-function parseCommentsFromXml(xmlContent: string) {
-   const comments = [];
-
-  // 正規表現でコメント要素を抽出（簡易版）
-  const chatRegex =
-    /<chat\s+thread="([^"]*?)"\s+no="([^"]*?)"\s+vpos="([^"]*?)"\s+date="([^"]*?)"[^>]*>([^<]*?)<\/chat>/g;
-
-  let match;
-  while ((match = chatRegex.exec(xmlContent)) !== null) {
-    try {
-      comments.push({
-        thread: match[1],
-        no: parseInt(match[2], 10),
-        vpos: parseInt(match[3], 10),
-        date: parseInt(match[4], 10),
-        user_id: '', // XML には user_id が含まれていないため空
-        text: match[5],
-      });
-    } catch (error) {
-      appLogger.warning('コメントパース失敗', error);
-      continue;
-    }
-  }
-
-  return comments;
 }

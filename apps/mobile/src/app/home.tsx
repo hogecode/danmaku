@@ -44,6 +44,7 @@ export default function HomeScreen() {
   const isVideo = (mimeType: string) =>
     VIDEO_MIME_TYPES.some((vmt) => mimeType.includes(vmt));
 
+  // ファイルサイズをフォーマットする関数
   const formatFileSize = (bytes: number | undefined) => {
     if (!bytes) return '';
     if (bytes < 1024) return `${bytes} B`;
@@ -55,7 +56,8 @@ export default function HomeScreen() {
 
   const handleFilePress = (fileId: string, mimeType: string, name: string) => {
     if (isVideo(mimeType)) {
-      router.push(`/player/${fileId}?fileName=${encodeURIComponent(name)}`);
+      const currentFolderId = drive.folderStack[drive.folderStack.length - 1];
+      router.push(`/player/${fileId}?fileName=${encodeURIComponent(name)}&folderId=${currentFolderId}`);
     } else if (isFolder(mimeType)) {
       drive.navigateToFolder(fileId);
     }
