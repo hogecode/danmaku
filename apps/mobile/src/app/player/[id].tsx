@@ -80,16 +80,27 @@ export default function PlayerScreen() {
           // コメント読み込み
           try {
             if (video.comments && video.comments.length > 0) {
+              console.log('[PlayerScreen] Converting comments:', {
+                count: video.comments.length,
+                sample: video.comments[0],
+              });
+              
               const danmakus: Danmaku[] = video.comments.map((comment: any) => ({
-                time: comment.vpos || 0,
+                time: parseFloat(comment.vpos) || 0, // vpos は秒単位（浮動小数点）
                 type: 'normal' as const,
                 color: '#ffffff',
                 author: comment.user_id || 'anonymous',
                 text: comment.text || '',
               }));
+              
+              console.log('[PlayerScreen] Converted danmakus:', {
+                count: danmakus.length,
+                sample: danmakus[0],
+              });
               appLogger.debug(`[PlayerScreen] Loaded ${danmakus.length} danmakus`);
               success(danmakus);
             } else {
+              console.log('[PlayerScreen] No comments to load');
               success([]);
             }
           } catch (err) {

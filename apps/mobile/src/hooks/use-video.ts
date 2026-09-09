@@ -62,13 +62,15 @@ export function useVideo() {
 
       // comments は DPlayer 形式：{ time, type, size, color, author, text }
       const comments = response.comments || [];
-      appLogger.info(`[useVideo] Received ${comments.length} comments from API`);
+
 
       // DPlayer 形式から内部形式に変換
+      // NOTE: comment.time は秒単位（浮動小数点数）
+      // これを vpos として保持（Player.tsx で time に戻す）
       const convertedComments = comments.map((comment: any) => ({
         thread: '',
         no: 0,
-        vpos: Math.floor(comment.time || 0), // time を vpos に変換（秒単位）
+        vpos: parseFloat(comment.time) || 0, // 秒単位のまま保持（小数点を保つ）
         date: Math.floor(Date.now() / 1000),
         user_id: comment.author || '',
         text: comment.text || '',
@@ -76,7 +78,6 @@ export function useVideo() {
 
       video.setComments(convertedComments);
 
-      appLogger.info(`[useVideo] コメント読み込み完了: ${convertedComments.length} 件`);
     } catch (error) {
       appLogger.warning('[useVideo] コメント読み込み失敗（続行）', error);
       // コメント読み込み失敗は致命的ではない

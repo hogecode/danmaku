@@ -7,10 +7,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Text, Dimensions } from 'react-native';
 import { VideoPlayer } from './components/VideoPlayer';
 import { DanmakuDisplay } from './components/DanmakuDisplay';
-import { DanmakuForm } from './components/DanmakuForm';
 import { useVideoPlayback } from './hooks/useVideoPlayback';
 import { useDanmakuAnimation } from './hooks/useDanmakuAnimation';
 import type { PlayerConfig, Danmaku } from './types';
@@ -30,7 +29,7 @@ export const Player: React.FC<PlayerProps> = ({
 }) => {
   // ビデオプレイヤーの状態管理フック
   const videoPlayback = useVideoPlayback();
-  // ダンマクアニメーションの状態管理フック
+  // ダンマク管理フック
   const danmakuAnimation = useDanmakuAnimation({
     speedRate: config.danmaku?.speedRate || 1,
     fontSize: config.danmaku?.fontSize || 16,
@@ -38,9 +37,15 @@ export const Player: React.FC<PlayerProps> = ({
     unlimited: config.danmaku?.unlimited,
   });
 
-  // ダンマク送信フォームの表示状態管理
-  const [showDanmakuForm, setShowDanmakuForm] = useState(false);
+  // ダンマク表示用の時刻（updateTime でリアルタイム更新）
+  const [displayTime, setDisplayTime] = useState(0);
+  
+  // ビデオプレイヤーの高さ（16:9 アスペクト比）
+  const screenWidth = Dimensions.get('window').width;
+  const videoPlayerHeight = (screenWidth * 9) / 16;
 
+  // API からダンマクを取得
+  // NOTE: config.apiBackend のみを依存配列に（danmakuAnimation は省略）
   useEffect(() => {
     if (config.apiBackend?.read) {
       config.apiBackend.read({
@@ -48,11 +53,32 @@ export const Player: React.FC<PlayerProps> = ({
           danmakuAnimation.addDanmaku(comments);
         },
         error: (msg: string) => {
-          console.error('Failed to load danmakus:', msg);
+          console.error('[Player] Failed to load danmakus:', msg);
         },
       });
     }
   }, [config.apiBackend]);
+
+  // ビデオの再生時刻をダンマク表示に同期
+  useEffect(() => {
+    setDisplayTime(videoPlayback.state.currentTime);
+    if (videoPlayback.state.currentTime > 0) {
+      //console.log('[Player] currentTime updated:', videoPlayback.state.currentTime);
+    }
+  }, [videoPlayback.state.currentTime]);
+
+  // ページ離脱時のクリーンアップ（動画停止 + 状態リセット）
+  // NOTE: 空の依存配列でマウント解除時のみ実行
+  useEffect(() => {
+    return () => {
+      console.log('[Player] Cleanup: stopping video');
+      try {
+        videoPlayback.pause();
+      } catch (e) {
+        // ignore
+      }
+    };
+  }, []);
 
   // ダンマク送信処理
   const handleDanmakuSend = async (danmaku: Danmaku) => {
@@ -78,17 +104,19 @@ export const Player: React.FC<PlayerProps> = ({
           config={config}
           onReady={onReady}
           onError={onError}
+          videoPlayback={videoPlayback}
         />
 
         {config.danmaku && (
           <DanmakuDisplay
             danmakuList={danmakuAnimation.danmakuList}
-            currentTime={videoPlayback.state.currentTime}
+            currentTime={displayTime}
             speedRate={config.danmaku.speedRate}
             fontSize={config.danmaku.fontSize}
             opacity={config.danmaku.opacity}
             visible={danmakuAnimation.visible}
             paused={danmakuAnimation.paused}
+            videoHeight={videoPlayerHeight}
           />
         )}
       </View>
