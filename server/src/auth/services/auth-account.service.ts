@@ -9,6 +9,7 @@ import { oauthAccounts } from '../../database';
 import { eq, and } from 'drizzle-orm';
 import { TokenService } from './token.service';
 import { RefreshTokenResponseDto } from '../dto';
+import { LoggerService } from '../../common/logger/logger.service';
 
 /**
  * OAuth アカウント管理サービス
@@ -18,6 +19,7 @@ export class OAuthAccountService {
   constructor(
     @Inject('DATABASE_CONNECTION') private readonly db: Database,
     private readonly tokenService: TokenService,
+    private readonly Logger: LoggerService
   ) {}
 
   /**
@@ -37,7 +39,7 @@ export class OAuthAccountService {
 
     const now = new Date();
     // 
-    console.log('Google user:', googleUser);
+    this.Logger.debug('Google user:', googleUser);
 
     const existingOAuth = await this.db.query.oauthAccounts.findFirst({
       where: and(

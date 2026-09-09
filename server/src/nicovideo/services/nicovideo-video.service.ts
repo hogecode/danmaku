@@ -54,7 +54,6 @@ export class NicovideoVideoService {
       const serverResponse = JSON.parse(scriptTag.attr('content') || '{}');
       const response = serverResponse.data?.response;
 
-      // console.log(`解析したサーバーレスポンス:`, serverResponse);
       if (!response) {
         throw new BadRequestException('メタデータが抽出できません');
       }

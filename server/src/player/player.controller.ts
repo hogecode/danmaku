@@ -31,28 +31,7 @@ export class PlayerController {
   ) {}
 
   /**
-   * GET /api/player/stream/:fileId
    * 動画ファイルをストリーミング再生
-   *
-   * Range リクエスト対応:
-   * - Range: bytes=0-1023 （最初の1KBのみ取得）
-   * - Range: bytes=1024- （1KBから最後まで取得）
-   * - Range: bytes=-512 （最後の512バイトを取得）
-   *
-   * レスポンス:
-   * - Range ヘッダーなし: HTTP 200 + Content-Length
-   * - Range ヘッダーあり（有効）: HTTP 206 + Content-Range
-   * - Range ヘッダーあり（無効）: HTTP 400 Bad Request
-   *
-   * @param fileId - GDrive ファイルID
-   * @param session - ユーザーセッション
-   * @param res - Response オブジェクト
-   * @param rangeHeader - Range ヘッダー（オプション）
-   * @returns 動画ストリーム（MP4バイナリ）
-   *
-   * @example
-   * GET /api/player/stream/abc123def456
-   * GET /api/player/stream/abc123def456 -H "Range: bytes=0-1048575"
    */
   @Get('stream/:fileId')
   async streamVideo(
@@ -64,7 +43,6 @@ export class PlayerController {
     try {
       this.logger.info(`🎬 streamVideo called with fileId: ${fileId}`, { fileId });
       this.logger.debug(`👤 userId: ${session.userId}`, { userId: session.userId });
-      this.logger.debug(`📋 Range header: ${rangeHeader || 'not provided'}`, { rangeHeader });
 
       if (!session.userId) {
         this.logger.error('❌ User ID not found in session', new Error('User ID missing'));
@@ -112,7 +90,6 @@ export class PlayerController {
   }
 
   /**
-   * GET /api/player/comments/:videoFileId
    * DPlayer 互換形式でコメントを取得
    *
    * コメントファイルの自動検出:
@@ -120,23 +97,6 @@ export class PlayerController {
    * - コメント: "aaa.xml" または "aaa.json" を自動検索
    * - 見つかった場合: DPlayer 互換形式に変換して返す
    * - 見つからない場合: 空配列を返す
-   *
-   * Query Parameters:
-   * - folderId (required): 動画ファイルが存在するフォルダID
-   *
-   * Response (DPlayer 互換形式):
-   * {
-   *   "comments": [
-   *     {
-   *       "time": 10.5,
-   *       "type": "normal",
-   *       "size": "normal",
-   *       "color": "#ffffff",
-   *       "author": "SlF_cF2J1CdotJTaojvbM9mDYAE or null",
-   *       "text": "てか無料期間中に見れば無料やん"
-   *     }
-   *   ]
-   * }
    *
    * @example
    * GET /api/player/comments/abc123def456?folderId=folder123

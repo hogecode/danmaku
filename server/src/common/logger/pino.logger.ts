@@ -1,47 +1,67 @@
 /**
  * Pino ロギングシステム
  * 
- * ✅ traceId による分散トレーシング対応
- * ✅ 構造化ログ（JSON形式）
- * ✅ レベル別フィルタリング
- * ✅ 開発環境では見やすく整形
+ * ✅ 開発環境: カラー出力で見やすくフォーマット
+ * ✅ 本番環境: 構造化ログ（JSON形式）
+ * ✅ 最小限の情報表示（開発環境）
  */
 
 import pino from 'pino';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
+ * 開発環境か判定
+ */
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+/**
  * Pino logger インスタンス
  * 
- * シンプルな JSON フォーマット（開発環境・本番環境共通）
- * ログ量を削減し、可読性を保つ
+ * 開発環境: pino-pretty で見やすくフォーマット
+ * 本番環境: JSON形式のまま
  */
-const basePinoLogger = pino({
-  // ✅ ログレベル（環境変数で制御可能）
-  level: process.env.LOG_LEVEL || 'info',
+const basePinoLogger = pino(
+  {
+    // ✅ ログレベル（環境変数で制御可能）
+    level: process.env.LOG_LEVEL || 'info',
 
-  // ✅ タイムスタンプフォーマット
-  timestamp: pino.stdTimeFunctions.isoTime,
+    // ✅ タイムスタンプフォーマット
+    timestamp: pino.stdTimeFunctions.isoTime,
 
-  // ✅ メタデータ（最小限）
-  base: {
-    env: process.env.NODE_ENV || 'development',
+    // ✅ メタデータ（本番環境のみ）
+    base: isDevelopment
+      ? undefined
+      : {
+          env: process.env.NODE_ENV || 'development',
+        },
+
+    // ✅ traceId（本番環境のみ）
+    mixin() {
+      if (isDevelopment) {
+        return {};
+      }
+      return {
+        traceId: getTraceId(),
+      };
+    },
   },
-
-  // ✅ トレースID
-  mixin() {
-    return {
-      traceId: getTraceId(),
-    };
-  },
-});
+  // ✅ 開発環境では pino-pretty を使用
+  isDevelopment
+    ? pino.transport({
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          singleLine: true,
+          translateTime: false,
+          ignore: 'pid,hostname,time,env',
+        },
+      })
+    : undefined,
+);
 
 /**
  * NestJS LoggerService インターフェースに適合させたラッパー
- * 
- * basePinoLogger をそのまま使い、NestJS の log() メソッドのみ追加
  */
-// NestJS logger スタイルのメソッドを作成
 const nestJsLoggerAdapter = {
   log(message: string, context?: string): void {
     basePinoLogger.info({ context }, message);
@@ -49,7 +69,8 @@ const nestJsLoggerAdapter = {
 };
 
 // basePinoLogger に log メソッドを追加
-export const pinoLogger = Object.assign(basePinoLogger, nestJsLoggerAdapter) as typeof basePinoLogger & typeof nestJsLoggerAdapter;
+export const pinoLogger = Object.assign(basePinoLogger, nestJsLoggerAdapter) as typeof basePinoLogger &
+  typeof nestJsLoggerAdapter;
 
 /**
  * traceId の管理（AsyncLocalStorage を使用）
@@ -96,11 +117,3 @@ export async function withTraceId<T>(
     });
   });
 }
-
-/**
- * ログ出力例
- * 
- * pinoLogger.info('User logged in', { userId: '123' });
- * // 開発環境: [info] User logged in {"traceId":"abc-123","userId":"123"}
- * // 本番環境: {"level":30,"time":"2024-01-01T00:00:00.000Z","traceId":"abc-123","userId":"123","msg":"User logged in"}
- */

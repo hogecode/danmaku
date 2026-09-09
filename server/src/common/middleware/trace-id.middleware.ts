@@ -3,6 +3,9 @@
  * 
  * リクエストごとに traceId を生成・設定し、
  * レスポンスヘッダーに付与する
+ * 
+ * 開発環境では最小限のログ出力
+ * 本番環境では traceId を含めて詳細ログ出力
  */
 
 import { Injectable, NestMiddleware } from '@nestjs/common';
@@ -16,6 +19,20 @@ import { pinoLogger } from '../logger/pino.logger';
 const TRACE_ID_HEADER = 'x-trace-id';
 
 /**
+ * 開発環境か判定
+ */
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+/**
+ * HTTP メソッドのログレベルを決定
+ */
+function getLogLevel(statusCode: number): 'info' | 'warn' | 'error' {
+  if (statusCode >= 500) return 'error';
+  if (statusCode >= 400) return 'warn';
+  return 'info';
+}
+
+/**
  * traceId を設定するミドルウェア
  */
 @Injectable()
@@ -27,33 +44,35 @@ export class TraceIdMiddleware implements NestMiddleware {
     // ✅ req オブジェクトに traceId を付与
     (req as any).traceId = traceId;
 
-    // ✅ レスポンスヘッダーに traceId を付与
-    res.setHeader(TRACE_ID_HEADER, traceId);
-
-    // ✅ リクエストログを出力
-    pinoLogger.info(
-      {
-        method: req.method,
-        url: req.url,
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-      },
-      `${req.method} ${req.url}`,
-    );
+    // ✅ レスポンスヘッダーに traceId を付与（本番環境のみ）
+    if (!isDevelopment) {
+      res.setHeader(TRACE_ID_HEADER, traceId);
+    }
 
     // ✅ レスポンス完了時にログを出力
     const startTime = Date.now();
     res.on('finish', () => {
       const duration = Date.now() - startTime;
-      pinoLogger.info(
-        {
-          method: req.method,
-          url: req.url,
-          statusCode: res.statusCode,
-          duration: `${duration}ms`,
-        },
-        `${req.method} ${req.url} ${res.statusCode} - ${duration}ms`,
-      );
+      const logLevel = getLogLevel(res.statusCode);
+
+      // 開発環境: シンプルな1行ログ
+      if (isDevelopment) {
+        const logMessage = `${req.method} ${req.url} → ${res.statusCode} (${duration}ms)`;
+        pinoLogger[logLevel](logMessage);
+      } else {
+        // 本番環境: 詳細ログ（traceId付き）
+        pinoLogger[logLevel](
+          {
+            method: req.method,
+            url: req.url,
+            statusCode: res.statusCode,
+            duration: `${duration}ms`,
+            traceId,
+            ip: req.ip,
+          },
+          `${req.method} ${req.url} ${res.statusCode} - ${duration}ms`,
+        );
+      }
     });
 
     next();

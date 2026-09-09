@@ -56,7 +56,6 @@ export class NicovideoController {
 
       // ステップ1: ビデオメタデータ取得（thread_key も同時に取得）
       const metadata = await this.videoService.getVideoMetadata(videoId);
-      //console.log(`取得したメタデータ:`, metadata);
 
       // ステップ2: thread_key の確認
       if (!metadata.threadKey) {

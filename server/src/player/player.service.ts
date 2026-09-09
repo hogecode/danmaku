@@ -142,20 +142,20 @@ export class PlayerService {
     folderId: string,
   ): Promise<CommentDto[]> {
     try {
-      console.log(
+      this.logger.debug(
         `[PlayerService] Getting comments for videoFileId: ${videoFileId}, folderId: ${folderId}`,
       );
 
       // 1. 動画ファイル情報を取得
       const videoFile = await this.getVideoMetadata(userId, videoFileId);
-      console.log(`[PlayerService] Retrieved video metadata: name=${videoFile.name}`);
+      this.logger.debug(`[PlayerService] Retrieved video metadata: name=${videoFile.name}`);
 
       // 2. 対応するコメントファイルを検索
       const commentFile = await this.findCommentFile(userId, folderId, videoFile.name);
 
       if (!commentFile) {
         // コメント無し
-        console.log(
+        this.logger.debug(
           `[PlayerService] No comment file found for video: ${videoFile.name}`,
         );
         return [];
@@ -168,13 +168,13 @@ export class PlayerService {
         commentFile.mimeType,
       );
 
-      console.log(
+      this.logger.debug(
         `[PlayerService] Successfully loaded ${comments.length} comments for video: ${videoFile.name}`,
       );
       return comments;
     } catch (error) {
       // エラー時はログして空配列を返す（動画再生は継続）
-      console.error('[PlayerService] Failed to get comments:', {
+      this.logger.error('[PlayerService] Failed to get comments:', {
         error: error instanceof Error ? error.message : String(error),
         videoFileId,
       });
@@ -201,12 +201,12 @@ export class PlayerService {
       // ✅ DPlayer 互換形式に変換
       const dplayerComments = this.commentConverter.convertCommentsToDPlayer(comments);
 
-      console.log(
+      this.logger.debug(
         `[PlayerService] Converted ${dplayerComments.length} comments to DPlayer format`,
       );
       return dplayerComments;
     } catch (error) {
-      console.error('[PlayerService] Failed to get comments for DPlayer:', {
+      this.logger.error('[PlayerService] Failed to get comments for DPlayer:', {
         error: error instanceof Error ? error.message : String(error),
         videoFileId,
       });
@@ -235,7 +235,7 @@ export class PlayerService {
 
       const drive = google.drive({ version: 'v3', auth: oauth2Client });
 
-      console.log(
+      this.logger.debug(
         `[PlayerService] Searching for comment file for video: ${videoFileName} in folder: ${folderId}`,
       );
 
@@ -247,10 +247,6 @@ export class PlayerService {
         pageSize: PlayerConstants.API.PAGE_SIZE,
         supportsAllDrives: true,
       });
-
-      /*console.log(
-        `[PlayerService] Found ${response.data.files?.length || 0} files in folder: ${folderId}`,
-      );*/
       
       const files = response.data.files || [];
 
@@ -277,7 +273,7 @@ export class PlayerService {
 
       return null;
     } catch (error) {
-      console.error('[PlayerService] Error finding comment file:', {
+      this.logger.error('[PlayerService] Error finding comment file:', {
         error: error instanceof Error ? error.message : String(error),
         folderId,
         videoFileName,
@@ -312,7 +308,7 @@ export class PlayerService {
       const content = Buffer.from(response.data as ArrayBuffer).toString('utf-8');
       return content;
     } catch (error) {
-      console.error('[PlayerService] Error downloading file content:', {
+      this.logger.error('[PlayerService] Error downloading file content:', {
         error: error instanceof Error ? error.message : String(error),
         fileId,
       });
