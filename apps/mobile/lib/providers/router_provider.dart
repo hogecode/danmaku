@@ -10,6 +10,30 @@ import 'package:mobile/pages/player_page.dart';
 import 'package:mobile/providers/auth_provider.dart';
 
 /// ============================================================================
+/// GoRouter 刷新通知クラス
+/// ============================================================================
+
+/// GoRouter の状態変更を監視するための ChangeNotifier
+class GoRouterRefreshNotifier extends ChangeNotifier {
+  final Ref _ref;
+  late AuthState _latestAuthState;
+
+  GoRouterRefreshNotifier(this._ref) {
+    // 初期状態を取得
+    _latestAuthState = _ref.read(authProvider);
+    
+    // authProvider の変更を監視
+    _ref.listen(authProvider, (previous, next) {
+      _latestAuthState = next;
+      notifyListeners();
+    });
+  }
+
+  /// 最新の認証状態を取得
+  AuthState getLatestAuthState() => _latestAuthState;
+}
+
+/// ============================================================================
 /// ルート定義
 /// ============================================================================
 
@@ -30,10 +54,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authProvider);
   final isAuth = auth.isAuthenticated;
 
+  // 🔄 GoRouter を刷新するための Notifier
+  final refreshNotifier = GoRouterRefreshNotifier(ref);
+
   return GoRouter(
     // 初期ルート設定
     initialLocation: isAuth ? Routes.home : Routes.login,
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
+      // redirect 内で authProvider を監視するため、refreshNotifier 経由で状態取得
+      final currentAuth = refreshNotifier.getLatestAuthState();
+      final isAuth = currentAuth.isAuthenticated;
+      
       final isLoginPage = state.uri.toString().startsWith(Routes.login);
       final isCallbackPage =
           state.uri.toString().startsWith(Routes.authCallback);
@@ -90,21 +122,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/auth/callback',
         name: 'deepLinkCallback',
         builder: (context, state) {
-          _logger.i('[Router] ==================== Deep link受信 ====================');
-          _logger.i('[Router] ${state.uri}');
+          appLogger.info('[Router] ==================== Deep link受信 ====================');
+          appLogger.info('[Router] ${state.uri}');
           final user = state.uri.queryParameters['user'];
           final token = state.uri.queryParameters['token'];
 
-          //_logger.i('[Router] user=${user != null ? "provided" : "missing"}, token=${token != null ? "provided" : "missing"}');
+          appLogger.debug('[Router] user=${user != null ? "provided" : "missing"}, token=${token != null ? "provided" : "missing"}');
 
           if (user == null || token == null) {
-            _logger.e('[Router] ⛔ user または token が指定されていません');
+            appLogger.error('[Router] ⛔ user または token が指定されていません');
             return const Scaffold(
               body: Center(child: Text('認証パラメータが無効です')),
             );
           }
 
-          _logger.i('[Router] 🔐 AuthCallbackPage を作成');
+          appLogger.info('[Router] 🔐 AuthCallbackPage を作成');
           return AuthCallbackPage(user: user, token: token);
         },
       ),
@@ -132,13 +164,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final fileName = state.uri.queryParameters['fileName'];
           final folderId = state.uri.queryParameters['folderId'] ?? '';
           
-          //_logger.i('[Router] ========== PLAYER ROUTE ==========');
-          //_logger.i('[Router] URI: ${state.uri}');
-          //_logger.i('[Router] videoId from pathParameters: $videoId');
-          //_logger.i('[Router] fileName from queryParameters: $fileName');
-          //_logger.i('[Router] folderId from queryParameters: $folderId');
-          //_logger.i('[Router] ========== END PLAYER ROUTE ==========');
-          
           return PlayerPage(
             videoId: videoId ?? '',
             folderId: folderId,
@@ -157,26 +182,24 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
     ],
-    errorBuilder: (context, state) {
-      return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('ページが見つかりません',
-                  style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () => context.go(Routes.home),
-                child: const Text('ホームへ'),
-              ),
-            ],
-          ),
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('ページが見つかりません',
+                style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () => context.go(Routes.home),
+              child: const Text('ホームへ'),
+            ),
+          ],
         ),
-      );
-    },
+      ),
+    ),
   );
 });
 

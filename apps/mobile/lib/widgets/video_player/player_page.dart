@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/widgets/video_player/video_view.dart';
 import 'package:mobile/widgets/video_player/controller_bar.dart';
 import 'package:mobile/widgets/video_player/danmaku/danmaku_canvas.dart';
@@ -7,8 +8,21 @@ import 'package:mobile/widgets/video_player/danmaku/danmaku_particle.dart';
 import 'package:mobile/widgets/video_player/settings/settings_panel.dart';
 import 'package:mobile/widgets/video_player/models/player_entity.dart';
 import 'package:mobile/providers/video_player_provider.dart';
-import 'package:mobile/providers/video_comments_provider.dart';
+import 'package:mobile/services/video_service.dart';
 import 'package:mobile/data/client/lib/api.dart';
+
+/// ビデオコメント取得プロバイダー
+/// autoDispose を有効にして、使用されなくなったら自動的にキャッシュをクリア
+final _videoCommentsProvider = FutureProvider.autoDispose.family<List<DPlayerCommentDto>, (String, String)>(
+  (ref, args) async {
+    final (videoFileId, folderId) = args;
+    final videoService = VideoService();
+    return videoService.getVideoComments(
+      videoFileId: videoFileId,
+      folderId: folderId,
+    );
+  },
+);
 
 class VideoPlayerPage extends ConsumerStatefulWidget {
   final String videoUrl;
@@ -18,13 +32,13 @@ class VideoPlayerPage extends ConsumerStatefulWidget {
   final List<dynamic>? danmakuList;
 
   const VideoPlayerPage({
-    Key? key,
+    super.key,
     required this.videoUrl,
     required this.videoFileId,
     required this.folderId,
     this.fileName,
     this.danmakuList,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<VideoPlayerPage> createState() => _VideoPlayerPageState();
@@ -32,8 +46,9 @@ class VideoPlayerPage extends ConsumerStatefulWidget {
 
 
 class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
-  // ビデオプレイヤーの状態を管理するためのキーとプレイヤー状態
+  // ビデオプレイヤーの状態を管理するためのキー
   late GlobalKey<VideoViewState> _videoViewKey;
+  // プレイヤーの状態を管理
   late PlayerEntity _playerState;
 
   @override
@@ -71,9 +86,9 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     final uiState = ref.watch(playerUIStateProvider);
     final danmakuSettings = ref.watch(danmakuSettingsProvider);
     
-    // ✅ コメント取得（Riverpod 非同期プロバイダー）
+    // ✅ コメント取得
     final commentsAsync = ref.watch(
-      videoCommentsSimpleProvider((widget.videoFileId, widget.folderId))
+      _videoCommentsProvider((widget.videoFileId, widget.folderId))
     );
 
     return Scaffold(
@@ -189,7 +204,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       child: commentsAsync.when(
         // ⏳ コメント取得中
         loading: () {
-          debugPrint('⏳ Comments loading...');
+          // appLogger.debug('⏳ Comments loading...');
           return DanmakuCanvas(
             currentTime: _playerState.currentTime.inMilliseconds / 1000.0,
             globalOpacity: ref.watch(danmakuSettingsProvider).opacity,
@@ -200,8 +215,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         },
         // ❌ エラー時
         error: (error, stackTrace) {
-          debugPrint('❌ Comments loading error: $error');
-          debugPrint('Stack: $stackTrace');
+          appLogger.warning('❌ Comments loading error: $error');
+          appLogger.debug('Stack: $stackTrace');
           return DanmakuCanvas(
             currentTime: _playerState.currentTime.inMilliseconds / 1000.0,
             globalOpacity: ref.watch(danmakuSettingsProvider).opacity,
@@ -212,7 +227,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         },
         // ✅ データ取得成功
         data: (comments) {
-          debugPrint('✅ Comments loaded: ${comments.length} items');
+          // DEBUG: 本番環境ではログ出力を抑制
+          if (comments.length < 5000) {
+            appLogger.debug('✅ Comments loaded: ${comments.length} items');
+          }
           
           // DPlayerCommentDto を DanmakuEntity に変換
           final danmakuEntities = comments.map((comment) {

@@ -1,10 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:logger/logger.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/data/client/lib/api.dart';
 import 'package:mobile/services/token_bearer_http_client.dart';
 import 'package:mobile/services/token_storage.dart';
-
-final _logger = Logger();
 
 /// ビデオコメント取得エラー
 class VideoCommentException implements Exception {

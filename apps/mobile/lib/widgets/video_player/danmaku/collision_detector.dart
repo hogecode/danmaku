@@ -1,14 +1,10 @@
 import 'package:mobile/core/constants/app_constants.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/widgets/video_player/danmaku/danmaku_particle.dart';
-import 'package:logger/logger.dart';
 
 /// コリジョン検出・回避エンジン
 class CollisionDetector {
-  late final Logger _logger;
-
-  CollisionDetector() {
-    _logger = Logger();
-  }
+  CollisionDetector();
 
   /// すべての衝突を検出・解決
   void detectAndResolveCollisions(List<DanmakuParticle> particles) {

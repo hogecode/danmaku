@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/router_provider.dart';
-import 'package:mobile/providers/ui_provider.dart';
-
-final _logger = Logger();
-
+import 'package:mobile/providers/app_ui_provider.dart';
+  
 class HomePage extends ConsumerStatefulWidget {
   final String? searchQuery;
 
@@ -25,7 +23,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
-    _logger.i('ホーム画面を初期化');
+    appLogger.info('ホーム画面を初期化');
   }
 
   @override
@@ -128,7 +126,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// ログアウト処理
   Future<void> _logout() async {
     try {
-      _logger.i('ログアウト開始');
+      appLogger.info('ログアウト開始');
       await ref.read(authProvider.notifier).logout();
 
       if (mounted) {
@@ -141,7 +139,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         );
       }
     } catch (e) {
-      _logger.e('ログアウト失敗', error: e);
+      appLogger.error('ログアウト失敗', e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/constants/app_constants.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/widgets/video_player/danmaku/danmaku_particle.dart';
 import 'package:mobile/widgets/video_player/danmaku/danmaku_item_widget.dart';
 import 'package:mobile/widgets/video_player/danmaku/danmaku_lane_manager.dart';
-import 'package:logger/logger.dart';
 
 class _ActiveDanmaku {
   final DanmakuEntity danmaku;
@@ -37,7 +37,6 @@ class DanmakuCanvas extends ConsumerStatefulWidget {
 }
 
 class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas> {
-  late Logger _logger;
   DanmakuLaneManager? _laneManager;
 
   // アクティブなダンマクのリスト
@@ -48,7 +47,6 @@ class _DanmakuCanvasState extends ConsumerState<DanmakuCanvas> {
   @override
   void initState() {
     super.initState();
-    _logger = Logger();
   }
 
   @override

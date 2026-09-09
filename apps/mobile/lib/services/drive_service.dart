@@ -1,11 +1,9 @@
 import 'dart:convert';
 
-import 'package:logger/logger.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/data/client/lib/api.dart';
 import 'package:mobile/services/token_bearer_http_client.dart';
 import 'package:mobile/services/token_storage.dart';
-
-final _logger = Logger();
 
 /// Google Drive エラー
 class DriveException implements Exception {
@@ -33,7 +31,7 @@ class DriveService {
 
     // OpenAPI クライアント初期化
     final basePath = _getServerBasePath();
-    _logger.i('DriveService: basePath=$basePath');
+    appLogger.info('DriveService: basePath=$basePath');
 
     // TokenBearerHttpClient で JWT トークンを自動付与
     final httpClient = TokenBearerHttpClient(_tokenStorage);
@@ -57,7 +55,7 @@ class DriveService {
   /// @return FileItemDtoのリスト
   Future<List<FileItemDto>> listFolder({String folderId = 'root'}) async {
     try {
-      _logger.i('DriveService: フォルダ一覧を取得中 (folderId=$folderId)');
+      appLogger.info('DriveService: フォルダ一覧を取得中 (folderId=$folderId)');
 
       // OpenAPI クライアント使用（自動生成）
       // HTTPレスポンスを取得してデシリアライゼーション時のエラーを回避
@@ -74,7 +72,7 @@ class DriveService {
 
       // レスポンスボディをJSON として取得
       if (response.body.isEmpty) {
-        _logger.w('DriveService: フォルダが空です');
+        appLogger.warning('DriveService: フォルダが空です');
         return [];
       }
 
@@ -99,16 +97,16 @@ class DriveService {
               ),
             );
           } catch (e) {
-            _logger.w('DriveService: アイテムのマッピング失敗: $e');
+            appLogger.warning('DriveService: アイテムのマッピング失敗: $e');
             continue;
           }
         }
       }
 
-      _logger.i('DriveService: フォルダ一覧取得成功: ${items.length} 個');
+      appLogger.info('DriveService: フォルダ一覧取得成功: ${items.length} 個');
       return items;
     } catch (e) {
-      _logger.e('DriveService: フォルダ一覧取得失敗', error: e);
+      appLogger.error('DriveService: フォルダ一覧取得失敗', e);
       rethrow;
     }
   }
@@ -124,7 +122,7 @@ class DriveService {
     required String query,
   }) async {
     try {
-      _logger.i(
+      appLogger.info(
         'DriveService: 検索実行中 (folderId=$folderId, query=$query)',
       );
 
@@ -143,7 +141,7 @@ class DriveService {
 
       // レスポンスボディをJSON として取得
       if (response.body.isEmpty) {
-        _logger.w('DriveService: 検索結果なし');
+        appLogger.warning('DriveService: 検索結果なし');
         return [];
       }
 
@@ -168,16 +166,16 @@ class DriveService {
               ),
             );
           } catch (e) {
-            _logger.w('DriveService: アイテムのマッピング失敗: $e');
+            appLogger.warning('DriveService: アイテムのマッピング失敗: $e');
             continue;
           }
         }
       }
 
-      _logger.i('DriveService: 検索完了: ${items.length} 件');
+      appLogger.info('DriveService: 検索完了: ${items.length} 件');
       return items;
     } catch (e) {
-      _logger.e('DriveService: 検索失敗', error: e);
+      appLogger.error('DriveService: 検索失敗', e);
       rethrow;
     }
   }
@@ -190,7 +188,7 @@ class DriveService {
       try {
         return num.parse(value);
       } catch (e) {
-        _logger.w('DriveService: size パース失敗: $value');
+        appLogger.warning('DriveService: size パース失敗: $value');
         return null;
       }
     }

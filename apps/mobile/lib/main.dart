@@ -3,15 +3,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/core/themes/app_theme.dart';
 import 'package:mobile/core/i18n/i18n.dart';
 import 'package:mobile/data/services/storage_service.dart';
-import 'package:mobile/providers/ui_provider.dart';
-import 'package:mobile/providers/app_provider.dart';
+import 'package:mobile/providers/app_ui_provider.dart';
 import 'package:mobile/providers/router_provider.dart';
-
-final _logger = Logger();
 
 late StorageService _initializedStorageService;
 

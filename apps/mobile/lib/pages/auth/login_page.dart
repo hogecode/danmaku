@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:logger/logger.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/providers/auth_provider.dart';
-import 'package:mobile/providers/auth_notifier.dart';
-import 'package:mobile/providers/ui_provider.dart';
-
-final _logger = Logger();
+import 'package:mobile/providers/app_ui_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -118,12 +115,12 @@ class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserv
     try {
       setState(() => _error = null);
 
-      _logger.i('[LoginPage] ログイン開始');
+      appLogger.info('[LoginPage] ログイン開始');
 
       // OAuth URL を取得
       final loginResult = await ref.read(authProvider.notifier).login();
 
-      _logger.i('[LoginPage] OAuth URL 取得成功');
+      appLogger.info('[LoginPage] OAuth URL 取得成功');
 
       // レスポンス: {authorize_url, state, expires_in}
       final authorizeUrl = loginResult['authorize_url'] as String?;
@@ -133,11 +130,11 @@ class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserv
 
       // ブラウザで Google OAuth を開く
       final uri = Uri.parse(authorizeUrl);
-      //_logger.i('[LoginPage] OAuth URL: $authorizeUrl');
+      //appLogger.info('[LoginPage] OAuth URL: $authorizeUrl');
       
       // Android エミュレータ / デバイスの場合
       if (!await canLaunchUrl(uri)) {
-        _logger.e('[LoginPage] URL を開くことができません: $uri');
+        appLogger.error('[LoginPage] URL を開くことができません: $uri');
         throw Exception('OAuth URL を開くことができません');
       }
       
@@ -165,7 +162,7 @@ class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserv
         });
       }
     } catch (e) {
-      _logger.e('[LoginPage] ログイン失敗', error: e);
+      appLogger.error('[LoginPage] ログイン失敗', e);
       if (mounted) {
         setState(() {
           _error = 'ログイン失敗: $e';
@@ -176,25 +173,25 @@ class _LoginPageState extends ConsumerState<LoginPage> with WidgetsBindingObserv
 
     Future<void> _checkAuthStatus() async {
     try {
-      //_logger.i('[LoginPage] ==================== Checking auth status ====================');
-      _logger.i('[LoginPage] ブラウザから戻った時のセッション確認を開始');
+      //appLogger.info('[LoginPage] ==================== Checking auth status ====================');
+      appLogger.info('[LoginPage] ブラウザから戻った時のセッション確認を開始');
       
       final notifier = ref.read(authProvider.notifier);
-      //_logger.i('[LoginPage] AuthNotifier を取得');
+      //appLogger.info('[LoginPage] AuthNotifier を取得');
       
       // GET /api/auth/me で認証状態を確認
       final isComplete = await notifier.completeOAuth();
       
-      _logger.i('[LoginPage] completeOAuth() 完了: isComplete=$isComplete');
+      appLogger.info('[LoginPage] completeOAuth() 完了: isComplete=$isComplete');
       
       if (isComplete && mounted) {
-        _logger.i('[LoginPage] ✅ Auth check success, navigating to home');
+        appLogger.info('[LoginPage] ✅ Auth check success, navigating to home');
         context.go('/');
       } else {
-        _logger.w('[LoginPage] ⚠️ Auth check failed (セッションなし): isComplete=$isComplete');
+        appLogger.warning('[LoginPage] ⚠️ Auth check failed (セッションなし): isComplete=$isComplete');
       }
     } catch (e) {
-      _logger.w('[LoginPage] ⛔ Auth check failed with error', error: e);
+      appLogger.warning('[LoginPage] ⛔ Auth check failed with error', e);
       // エラーは無視（ユーザーは手動でログインできる）
     }
   }

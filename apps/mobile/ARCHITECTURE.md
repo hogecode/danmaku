@@ -16,8 +16,9 @@
 ```
 lib/
 ├── providers/                 ← State + Logic（Riverpod）
-│   ├── auth_provider.dart
-│   ├── ui_provider.dart
+│   ├── auth_provider.dart     ← Auth状態 + AuthNotifier
+│   ├── app_ui_provider.dart   ← DarkMode + Language
+│   ├── video_player_provider.dart ← Player設定 UI状態
 │   └── router_provider.dart
 │
 ├── pages/                     ← UI

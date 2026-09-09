@@ -2,12 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
-import 'package:mobile/providers/auth_notifier.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/providers/router_provider.dart';
-
-final _logger = Logger();
 
 /// ディープリンク受信時のコールバックページ
 /// danmaku://auth/callback?user=...&token=...
@@ -32,31 +29,31 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
   @override
   void initState() {
     super.initState();
-    _logger.i('[AuthCallbackPage] ==================== ディープリンク受信 ====================');
-    _logger.i('[AuthCallbackPage] user provided: ${widget.user != null}');
-    _logger.i('[AuthCallbackPage] token provided: ${widget.token != null}');
+    appLogger.info('[AuthCallbackPage] ==================== ディープリンク受信 ====================');
+    appLogger.info('[AuthCallbackPage] user provided: ${widget.user != null}');
+    appLogger.info('[AuthCallbackPage] token provided: ${widget.token != null}');
     _authFuture = _handleDeepLink();
   }
 
   Future<void> _handleDeepLink() async {
     try {
       if (widget.user == null || widget.token == null) {
-        _logger.w('[AuthCallbackPage] ⚠️ user または token が指定されていません');
+        appLogger.warning('[AuthCallbackPage] ⚠️ user または token が指定されていません');
         if (mounted) {
           context.go(Routes.login);
         }
         return;
       }
 
-      _logger.i('[AuthCallbackPage] 🔐 トークンとユーザー情報を処理中...');
+      appLogger.info('[AuthCallbackPage] 🔐 トークンとユーザー情報を処理中...');
 
       // ユーザー情報をパース（JSON形式）
       dynamic userInfo;
       try {
         userInfo = jsonDecode(widget.user!);
-        _logger.i('[AuthCallbackPage] ✅ ユーザー情報を取得: ${userInfo['email']}');
+        appLogger.info('[AuthCallbackPage] ✅ ユーザー情報を取得: ${userInfo['email']}');
       } catch (e) {
-        _logger.e('[AuthCallbackPage] ⛔ ユーザー情報のパース失敗', error: e);
+        appLogger.error('[AuthCallbackPage] ⛔ ユーザー情報のパース失敗', e);
         if (mounted) {
           context.go(Routes.login);
         }
@@ -70,14 +67,14 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
         await notifier.saveTokenAndSetUser(userInfo, widget.token!);
       });
 
-      _logger.i('[AuthCallbackPage] 🎉 認証完了、ホーム画面に遷移');
+      appLogger.info('[AuthCallbackPage] 🎉 認証完了、ホーム画面に遷移');
       
       if (mounted) {
         await Future.delayed(const Duration(milliseconds: 500));
         if (mounted) context.go(Routes.home);
       }
     } catch (e) {
-      _logger.e('[AuthCallbackPage] ⛔ ディープリンク処理エラー', error: e);
+      appLogger.error('[AuthCallbackPage] ⛔ ディープリンク処理エラー', e);
       if (mounted) {
         await Future.delayed(const Duration(milliseconds: 500));
         if (mounted) context.go(Routes.login);
@@ -86,8 +83,7 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -116,5 +112,4 @@ class _AuthCallbackPageState extends ConsumerState<AuthCallbackPage> {
         ),
       ),
     );
-  }
 }

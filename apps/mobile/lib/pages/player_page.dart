@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logger/logger.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/core/constants/app_constants.dart';
 import 'package:mobile/services/token_storage.dart';
 import 'package:mobile/widgets/video_player/player_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-final _logger = Logger();
 
 class PlayerPage extends ConsumerStatefulWidget {
   final String videoId;  // Google Drive のファイルID
@@ -25,77 +23,97 @@ class PlayerPage extends ConsumerStatefulWidget {
   ConsumerState<PlayerPage> createState() => _PlayerPageState();
 }
 
+
 class _PlayerPageState extends ConsumerState<PlayerPage> {
   late Future<String> _videoUrlFuture;
 
   @override
   void initState() {
     super.initState();
-    // 非同期でビデオURLを構築
+    // 非同期でトークンを取得して、ビデオURLを構築
     _videoUrlFuture = _buildStreamUrlAsync(widget.videoId);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-      future: _videoUrlFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
+  Widget build(BuildContext context) => FutureBuilder<String>(
+        future: _videoUrlFuture,
+        builder: (context, snapshot) {
+          // ローディング中の表示
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('読み込み中'),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => _handlePop(context),
+                ),
+              ),
+              body: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          // エラー時の表示
+          if (snapshot.hasError) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('エラー'),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => _handlePop(context),
+                ),
+              ),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text('URL生成エラー: ${snapshot.error}'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => _handlePop(context),
+                      child: const Text('戻る'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
 
-        if (snapshot.hasError) {
+          final videoUrl = snapshot.data ?? '';
+          appLogger.info('PlayerPage: ストリーミングURL構築: $videoUrl');
+
+          // ビデオプレイヤーの表示
           return Scaffold(
             appBar: AppBar(
-              title: const Text('エラー'),
+              title: Text(widget.fileName ?? '動画'),
+              // TODO: なぜかエラーになるので修正する
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => _handlePop(context),
               ),
             ),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text('URL生成エラー: ${snapshot.error}'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('戻る'),
-                  ),
-                ],
-              ),
+            body: VideoPlayerPage(
+              videoUrl: videoUrl,
+              videoFileId: widget.videoId,
+              folderId: widget.folderId,
+              fileName: widget.fileName,
             ),
           );
-        }
+        },
+      );
 
-        final videoUrl = snapshot.data ?? '';
-        _logger.i('PlayerPage: ストリーミングURL構築: $videoUrl');
-        debugPrint('🔗 Final URL: $videoUrl');
-
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(widget.fileName ?? '動画'),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          body: VideoPlayerPage(
-            videoUrl: videoUrl,
-            videoFileId: widget.videoId,
-            folderId: widget.folderId,
-            fileName: widget.fileName,
-          ),
-        );
-      },
-    );
+  /// ナビゲーションスタックをチェックしてpopする
+  void _handlePop(BuildContext context) {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      appLogger.warning('ナビゲーションスタックが空です。アプリを終了します。');
+      // スタックが空の場合はアプリを終了するか、ホーム画面に遷移
+      // 以下はプッシュして遷移する例：
+      // Navigator.pushReplacementNamed(context, '/');
+    }
   }
 
   /// 非同期でストリーミングURLを構築
@@ -141,8 +159,8 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
       debugPrint('✅ Video token obtained (length: ${videoToken.length})');
 
       // ステップ3: ストリーミング URL を構築
-      final String baseUrl = AppConstants.apiBaseUrl;
-      final String url =
+      const baseUrl = AppConstants.apiBaseUrl;
+      final url =
           '$baseUrl/api/player/stream/$fileId?token=${Uri.encodeComponent(videoToken)}';
 
       debugPrint('🔗 Streaming URL built: $url');
@@ -153,4 +171,5 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
     }
   }
 }
+
 
