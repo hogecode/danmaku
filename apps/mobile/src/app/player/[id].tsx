@@ -1,14 +1,91 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Platform, Dimensions } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useVideo } from '@/hooks/use-video';
 import { appLogger } from '@/utils/logger';
+import { WebView } from 'react-native-webview';
 
 export default function PlayerScreen() {
   const video = useVideo();
   const { id, fileName } = useLocalSearchParams<{ id: string; fileName?: string }>();
   const [isLoading, setIsLoading] = useState(true);
+
+  const screenWidth = Dimensions.get('window').width;
+  const screenHeight = Dimensions.get('window').height;
+
+  // ビデオを初期化
+  useEffect(() => {
+    if (!id) {
+      appLogger.error('[PlayerScreen] Video ID not provided');
+      router.back();
+      return;
+    }
+
+    // ビデオプレイヤーを初期化
+    const initVideo = async () => {
+      try {
+        appLogger.info(`[PlayerScreen] Initializing video: ${id}`);
+        await video.initializePlayer({
+          videoFileId: id,
+          fileName: fileName || 'Unknown',
+        });
+      } catch (error) {
+        appLogger.error('[PlayerScreen] Failed to initialize video', error);
+      }
+    };
+
+    initVideo();
+
+    // NOTE: cleanup は依存配列の無限ループを防ぐため除外
+    // ページを離れる時はスタック上のクリーンアップが行われる
+  }, [id, fileName]); // video を依存配列から除外
+
+  // WebView HTML を生成（シンプルな HTML5 video 使用）
+  const webviewHtml = video.config?.videoUrl ? `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { width: 100%; height: 100vh; background: #000; display: flex; align-items: center; justify-content: center; }
+        video { max-width: 100%; max-height: 100%; }
+      </style>
+    </head>
+    <body>
+      <video 
+        controls 
+        style="width: 100%; height: auto;"
+        onloadstart="window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({type: 'loadstart'}))"
+        oncanplay="window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({type: 'canplay'}))"
+        onerror="window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({type: 'error', message: this.error?.message || 'Unknown error'}))"
+      >
+        <source src="${video.config.videoUrl}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <script>
+        window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'loaded'
+        }));
+      <\/script>
+    </body>
+    </html>
+  ` : `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { margin: 0; padding: 0; background: #000; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .loading { color: #fff; font-size: 18px; }
+      </style>
+    </head>
+    <body>
+      <div class="loading">Loading video...</div>
+    </body>
+    </html>
+  `;
 
   useEffect(() => {
     if (!id) {
@@ -68,6 +145,7 @@ export default function PlayerScreen() {
 
       <View style={styles.playerContainer}>
         {Platform.OS === 'web' ? (
+          // Web版: HTML5 video
           <video
             src={video.config.videoUrl}
             controls
@@ -76,22 +154,54 @@ export default function PlayerScreen() {
             onCanPlay={() => setIsLoading(false)}
           />
         ) : (
-          <View style={styles.nativeVideoFallback}>
-            <Text style={styles.nativeVideoText}>Video playback is unavailable on this platform.</Text>
-          </View>
+          // モバイル版: WebView + HTML5 Video
+          <>
+            <WebView
+              originWhitelist={['*']}
+              source={{ html: webviewHtml }}
+              style={{
+                width: screenWidth,
+                height: screenWidth * (9 / 16),
+                backgroundColor: '#000',
+              }}
+              onLoadStart={() => setIsLoading(true)}
+              onLoadEnd={() => setIsLoading(false)}
+              onError={(error) => {
+                appLogger.error('[PlayerScreen] WebView error', error);
+              }}
+              onMessage={(event) => {
+                const data = JSON.parse(event.nativeEvent.data);
+                if (data.type === 'loaded') {
+                  appLogger.info('[PlayerScreen] HTML5 Video loaded');
+                } else if (data.type === 'error') {
+                  appLogger.error('[PlayerScreen] Video error', data.message);
+                }
+              }}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              allowsFullscreenVideo={true}
+              mediaPlaybackRequiresUserAction={false}
+            />
+          </>
         )}
+
+        {/* ローディングインジケーター */}
         {isLoading && (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color="#fff" />
           </View>
         )}
-        <View style={styles.danmakuOverlay}>
-          {video.visibleComments.map((comment: { no: string | number; text: string }, idx: number) => (
-            <Text key={`${comment.no}-${idx}`} style={[styles.danmakuText, { top: 50 + idx * 30 }]} numberOfLines={1}>
-              {comment.text}
-            </Text>
-          ))}
-        </View>
+
+        {/* 弾幕オーバーレイ（Web のみ） */}
+        {Platform.OS === 'web' && (
+          <View style={styles.danmakuOverlay}>
+            {video.visibleComments.map((comment: { no: string | number; text: string }, idx: number) => (
+              <Text key={`${comment.no}-${idx}`} style={[styles.danmakuText, { top: 50 + idx * 30 }]} numberOfLines={1}>
+                {comment.text}
+              </Text>
+            ))}
+          </View>
+        )}
       </View>
 
       <View style={styles.infoBar}>
@@ -148,21 +258,13 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  nativeVideoFallback: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nativeVideoText: {
-    color: '#fff',
-  },
   loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   danmakuOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     pointerEvents: 'none',
   },
   danmakuText: {

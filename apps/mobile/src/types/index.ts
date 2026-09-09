@@ -27,8 +27,8 @@ export interface DanmakuComment {
  * ビデオプレイヤー設定
  */
 export interface VideoPlayerConfig {
-  videoUrl: string;
+  videoUrl?: string; // initializePlayer で設定される
   videoFileId: string;
-  folderId: string;
+  folderId?: string;
   fileName?: string;
 }

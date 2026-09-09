@@ -113,14 +113,14 @@ export default function LoginScreen() {
       );
 
       appLogger.info(
-        `[LoginScreen] ブラウザセッション結果: type=${result.type}, url=${result.url}`
+        `[LoginScreen] ブラウザセッション結果: type=${result.type}`
       );
 
       if (result.type === 'success') {
         appLogger.info('[LoginScreen] ブラウザセッション成功');
 
         // WebBrowser が成功した場合、URL からトークンを抽出
-        if (result.url) {
+        if ('url' in result && result.url) {
           appLogger.info(`[LoginScreen] Redirect URL 受信: ${result.url}`);
           const parsed = Linking.parse(result.url);
           const { queryParams } = parsed;

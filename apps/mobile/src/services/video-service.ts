@@ -7,6 +7,7 @@ import { API_BASE_URL } from '@/utils/constants';
 import { appLogger } from '@/utils/logger';
 import { AuthApi, PlayerApi } from '@/generated';
 import { createApiConfiguration } from './api-config';
+import { tokenStorage } from '@/utils/token-storage';
 
 export class VideoException extends Error {
   constructor(
@@ -43,22 +44,46 @@ export class VideoService {
     try {
       appLogger.info('VideoService: ビデオトークン取得中...');
 
-      // authControllerGenerateVideoToken はvoidを返すため、
-      // トークン取得後、代わりにコールバック後のユーザー情報から取得するか
-      // または異なるエンドポイントを使用する必要があります
-      // 現在のAPIでは video-token エンドポイントは void を返すようです
-      await this.authApi.authControllerGenerateVideoToken();
+      // OpenAPI クライアントの型定義が不完全なため、
+      // 直接 fetch を使用してトークンを取得
+      const config = createApiConfiguration();
+      const response = await fetch(`${config.basePath}/api/auth/video-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await this.getAccessToken()}`,
+        },
+      });
 
-      // 実装に応じてトークンを取得
-      // Note: API仕様ではトークンが返されないため、別途実装が必要
-      const token = ''; // TODO: API仕様に応じて実装
+      if (!response.ok) {
+        throw new VideoException(`Failed to get video token: ${response.statusText}`, response.status);
+      }
 
-      appLogger.info(`VideoService: ビデオトークン取得成功`);
+      const data = await response.json();
+      const token = data.token as string;
+
+      if (!token) {
+        throw new VideoException('No token in response');
+      }
+
+      appLogger.info(`VideoService: ビデオトークン取得成功 (token length: ${token.length})`);
       return token;
     } catch (error) {
       appLogger.error('VideoService: ビデオトークン取得失敗', error);
       throw new VideoException('Failed to generate video token', (error as any)?.status);
     }
+  }
+
+  /**
+   * アクセストークンを取得
+   * @private
+   */
+  private async getAccessToken(): Promise<string> {
+    const token = await tokenStorage.getToken();
+    if (!token) {
+      throw new VideoException('No access token available');
+    }
+    return token;
   }
 
   /**
