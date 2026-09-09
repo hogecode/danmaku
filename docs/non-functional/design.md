@@ -15,9 +15,9 @@
   - Next.jsを使用する
   - DPlayerを使用する
 
-### 4.2 Mobile版
+### 4.2 desktop版
 
-- [PLATFORM-MOBILE-001] Mobile版対応
+- [PLATFORM-desktop-001] desktop版対応
   - スマートフォンおよびタブレットからアプリを利用できる
   - iOS 12.0以上に対応する
   - Android 5.0以上に対応する

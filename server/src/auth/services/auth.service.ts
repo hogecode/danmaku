@@ -68,9 +68,9 @@ export class AuthService {
     await this.redis.setex(stateKey, this.STATE_TTL, '1');
     await this.redis.setex(verifierKey, this.STATE_TTL, verifier);
 
-    // OAuth認可リクエスト用のリダイレクトURI（常に ?client=mobile を付ける）
+    // OAuth認可リクエスト用のリダイレクトURI（常に ?client=desktop を付ける）
     // Flutterブラウザはこのパラメータで判定される
-    const redirectUri = `${baseRedirectUri}?client=mobile`;
+    const redirectUri = `${baseRedirectUri}?client=desktop`;
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -122,7 +122,7 @@ export class AuthService {
 
       // OAuth認可リクエスト時に使用したリダイレクトURIと同じものを使用
       const baseRedirectUri = this.configService.get<string>('GOOGLE_REDIRECT_URI');
-      const redirectUri = `${baseRedirectUri}?client=mobile`;
+      const redirectUri = `${baseRedirectUri}?client=desktop`;
 
       const tokenData = await this.tokenService.exchangeCodeForToken(
         code,

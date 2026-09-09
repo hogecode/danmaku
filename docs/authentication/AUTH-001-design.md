@@ -120,7 +120,7 @@ userinfo.profile      // プロフ取得
 ### 4.1 ログイン開始: `POST /api/auth/login`
 
 ```
-Request: { "platform": "web" | "mobile" }
+Request: { "platform": "web" | "desktop" }
 
 Response 200:
 {

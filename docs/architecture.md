@@ -12,13 +12,13 @@ Google Drive 内のビデオファイルを、iPhoneの Documents アプリの�
 - Google Drive のファイル・フォルダ閲覧機能
 - MP4 ビデオのストリーミング再生
 - JSON , XMLフォーマットのコメント（弾幕）表示
-- Web 版（Next.js + DPlayer）と Mobile 版（Flutter）の 2 プラットフォーム
+- Web 版（Next.js + DPlayer）と desktop 版（Flutter）の 2 プラットフォーム
 - 単一ユーザーの利用想定
 
 ### 1.4 プロジェクト方針
 - **単人ユーザー**: コメント送信機能は不要（受信のみ）
 - **シンプル設計**: OAuth 認証はサーバー側で完結
-- **クロスプラットフォーム**: Web と Mobile で同じ UX を提供
+- **クロスプラットフォーム**: Web と desktop で同じ UX を提供
 - **CDN 活用**: Cloudflare でグローバルな高速配信
 
 ---
@@ -29,7 +29,7 @@ Google Drive 内のビデオファイルを、iPhoneの Documents アプリの�
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│           クライアント層（Web + Mobile）                       │
+│           クライアント層（Web + desktop）                       │
 ├───────────────────────────────────────────────────────────────┤
 │  Next.js 14              │              Flutter               │
 │  - Folder Browser        │              - Folder Browser      │
@@ -92,7 +92,7 @@ Google Drive 内のビデオファイルを、iPhoneの Documents アプリの�
 | | React | 18.x |
 | | DPlayer | 1.33+ |
 | | Axios | 1.x |
-| **Mobile** | Flutter | 3.24+ |
+| **desktop** | Flutter | 3.24+ |
 | | video_player | 2.x |
 | | provider | 6.x |
 | **Backend** | NestJS | 10.x |
@@ -161,7 +161,7 @@ GitHub (main branch)
   → GitHub Actions (build & test)
 ```
 
-### 8.2 Mobile 版
+### 8.2 desktop 版
 ```
 flutter build ios --release     → App Store
 flutter build apk --release     → Google Play

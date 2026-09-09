@@ -123,15 +123,15 @@ export class AuthController {
   /**
    * Flutter クライアントかどうかを判定
    * 
-   * ?client=mobile クエリパラメータをチェック（コールバック時）
+   * ?client=desktop クエリパラメータをチェック（コールバック時）
    * OAuth認可リクエストでは常にこのパラメータが付与される
    */
   private _isFlutterClient(request: Request): boolean {
     const query = request.query as any;
-    const isFlutter = query?.client === 'mobile';
+    const isFlutter = query?.client === 'desktop';
     
     if (isFlutter) {
-      this.logger.debug('[AUTH] Detected Flutter client via ?client=mobile');
+      this.logger.debug('[AUTH] Detected Flutter client via ?client=desktop');
     } else {
       this.logger.debug('[AUTH] Detected Web client');
     }

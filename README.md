@@ -11,7 +11,7 @@
 ```
 ┌─────────────────────────────────────────┐
 │     クライアント層                       │
-│  (Web: Next.js / Mobile: Flutter)       │
+│  (Web: Next.js / desktop: Flutter)       │
 └────────────┬────────────────────────────┘
              │
       ┌──────▼──────────┐
@@ -33,7 +33,7 @@
 | 層 | 技術 |
 |----|-----|
 | **Web** | Next.js 14 + React + DPlayer |
-| **Mobile** | Flutter + Custom Canvas Player |
+| **desktop** | Flutter + Custom Canvas Player |
 | **Backend** | NestJS + Node.js |
 | **CDN** | Cloudflare |
 | **Infra** | AWS ECS Fargate + ALB |

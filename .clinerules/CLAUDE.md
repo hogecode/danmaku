@@ -4,7 +4,7 @@
 Google Drive ビデオプレイヤー + リアルタイムコメント表示
 - **Backend**: NestJS + TypeScript + Drizzle + Redis
 - **Web**: Next.js 16 + React 19 + TypeScript + Tailwind + DPlayer
-- **Mobile**: Flutter + Dart + Riverpod + 自作動画プレイヤー
+- **desktop**: Flutter + Dart + Riverpod + 自作動画プレイヤー
 
 ---
 
@@ -23,7 +23,7 @@ Google Drive ビデオプレイヤー + リアルタイムコメント表示
 ---
 
 
-## Mobile (apps/mobile/mobile/) - Flutter
+## desktop (apps/desktop/desktop/) - Flutter
 
 
 ### クリーンアーキテクチャ
