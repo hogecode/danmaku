@@ -405,9 +405,6 @@ export class PlayerService {
       });
 
       this.logger.info(`✅ File metadata retrieved:`, { name: fileMetadata.data.name, mimeType: fileMetadata.data.mimeType, size: fileMetadata.data.size });
-      this.logger.debug(`  - name: ${fileMetadata.data.name}`);
-      this.logger.debug(`  - mimeType: ${fileMetadata.data.mimeType}`);
-      this.logger.debug(`  - size: ${fileMetadata.data.size} bytes`);
 
       // MIME タイプが MP4 であることを確認
       if (fileMetadata.data.mimeType !== PlayerConstants.MIME_TYPES.VIDEO_MP4) {

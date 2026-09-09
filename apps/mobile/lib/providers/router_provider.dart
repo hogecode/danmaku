@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/pages/auth/login_page.dart';
 import 'package:mobile/pages/auth/auth_callback_page.dart';
 import 'package:mobile/pages/home_page_go.dart';
 import 'package:mobile/pages/drive_page.dart';
 import 'package:mobile/pages/player_page.dart';
 import 'package:mobile/providers/auth_provider.dart';
-
-final _logger = Logger();
 
 /// ============================================================================
 /// ルート定義
@@ -42,13 +40,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isDeepLink = state.uri.scheme == 'danmaku';
       final uri = state.uri.toString();
 
-      _logger.i('[Router] redirect check - uri: $uri');
-      _logger.i('[Router] scheme: ${state.uri.scheme}, isDeepLink: $isDeepLink');
-      //_logger.i('[Router] isLoginPage: $isLoginPage, isCallbackPage: $isCallbackPage, isAuth: $isAuth');
+      appLogger.debug('[Router] redirect check - uri: $uri');
+      appLogger.debug('[Router] scheme: ${state.uri.scheme}, isDeepLink: $isDeepLink');
 
       // Deep Link (danmaku://...) の場合、アプリ内パスに変換してリダイレクト
       if (isDeepLink) {
-        _logger.i('[Router] 🔗 Deep Link detected: $uri');
+        appLogger.info('[Router] 🔗 Deep Link detected: $uri');
         
         // danmaku://auth/callback?... → /auth/callback?...
         if (uri.contains('auth/callback')) {
@@ -56,26 +53,25 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ? uri.substring(uri.indexOf('?')) 
               : '';
           final appPath = '/auth/callback$queryString';
-          _logger.i('[Router] Converting deep link to app path: $appPath');
+          appLogger.info('[Router] Converting deep link to app path: $appPath');
           return appPath;
         }
       }
 
       // コールバックページは常に許可
       if (isCallbackPage) {
-        //_logger.i('[Router] Callback page, allowing to proceed');
         return null;
       }
 
       // 認証されていない、ログイン/コールバックページ以外はログイン画面へ
       if (!isAuth && !isLoginPage) {
-        _logger.i('[Router] Redirecting to login (not authenticated)');
+        appLogger.info('[Router] Redirecting to login (not authenticated)');
         return Routes.login;
       }
 
       // 認証済みでログイン画面はホームへ
       if (isAuth && isLoginPage) {
-        _logger.i('[Router] Redirecting to home (already authenticated)');
+        appLogger.info('[Router] Redirecting to home (already authenticated)');
         return Routes.home;
       }
 

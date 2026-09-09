@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'package:logger/logger.dart';
+import 'package:mobile/core/logger/app_logger.dart';
 import 'package:mobile/data/client/lib/api.dart';
 import 'package:mobile/services/token_bearer_http_client.dart';
 import 'package:mobile/services/token_storage.dart';
-
-final _logger = Logger();
 
 /// 認証エラー
 class AuthException implements Exception {
@@ -30,7 +28,7 @@ class AuthService {
 
     // プラットフォームに応じてホストを選択
     final basePath = _getServerBasePath();
-    _logger.i('AuthService: basePath=$basePath');
+    appLogger.info('AuthService: basePath=$basePath');
 
     // TokenBearerHttpClient で JWT トークンを自動付与
     final httpClient = TokenBearerHttpClient(_tokenStorage);
@@ -56,7 +54,7 @@ class AuthService {
   /// → {authorize_url, state, expires_in}
   Future<dynamic> login() async {
     try {
-      _logger.i('AuthService: ログイン開始');
+      appLogger.info('AuthService: ログイン開始');
 
       // OpenAPI で POST /api/auth/login を呼び出し
       final response = await _authApi.authControllerLoginWithHttpInfo();
@@ -75,10 +73,10 @@ class AuthService {
       }
 
       final data = jsonDecode(response.body);
-      _logger.i('AuthService: ログイン成功');
+      appLogger.info('AuthService: ログイン成功');
       return data;
     } catch (e) {
-      _logger.e('AuthService: ログイン失敗', error: e);
+      appLogger.error('AuthService: ログイン失敗', e);
       rethrow;
     }
   }
@@ -89,7 +87,7 @@ class AuthService {
   /// → {id, name, email, picture_url, ...}
   Future<dynamic> getUserInfo() async {
     try {
-      _logger.i('AuthService: ユーザー情報取得開始 (OpenAPI)');
+      appLogger.info('AuthService: ユーザー情報取得開始 (OpenAPI)');
 
       // OpenAPI で GET /api/auth/me を呼び出し
       final response = await _authApi.authControllerGetUserInfoWithHttpInfo();
@@ -108,10 +106,10 @@ class AuthService {
       }
 
       final data = jsonDecode(response.body);
-      _logger.i('AuthService: ユーザー情報取得成功');
+      appLogger.info('AuthService: ユーザー情報取得成功');
       return data;
     } catch (e) {
-      _logger.e('AuthService: ユーザー情報取得失敗', error: e);
+      appLogger.error('AuthService: ユーザー情報取得失敗', e);
       rethrow;
     }
   }
@@ -121,7 +119,7 @@ class AuthService {
   /// OpenAPI: POST /api/auth/logout
   Future<void> logout() async {
     try {
-      _logger.i('AuthService: ログアウト開始 (OpenAPI)');
+      appLogger.info('AuthService: ログアウト開始 (OpenAPI)');
 
       // OpenAPI で POST /api/auth/logout を呼び出し
       final response = await _authApi.authControllerLogoutWithHttpInfo();
@@ -134,9 +132,9 @@ class AuthService {
         );
       }
 
-      _logger.i('AuthService: ログアウト完了');
+      appLogger.info('AuthService: ログアウト完了');
     } catch (e) {
-      _logger.e('AuthService: ログアウト失敗', error: e);
+      appLogger.error('AuthService: ログアウト失敗', e);
       rethrow;
     }
   }

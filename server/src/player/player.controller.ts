@@ -42,7 +42,6 @@ export class PlayerController {
   ): Promise<void> {
     try {
       this.logger.info(`🎬 streamVideo called with fileId: ${fileId}`, { fileId });
-      this.logger.debug(`👤 userId: ${session.userId}`, { userId: session.userId });
 
       if (!session.userId) {
         this.logger.error('❌ User ID not found in session', new Error('User ID missing'));
