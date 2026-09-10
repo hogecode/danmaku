@@ -4,11 +4,14 @@
  * - ビデオ再生
  * - ダンマク表示・管理
  * - コメント送信
+ * 
+ * 改善: VideoPlayer の位置情報を onLayout で検知し、
+ * DanmakuDisplay を absolute で正確に配置
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, TouchableOpacity, Text, Dimensions } from 'react-native';
-import { VideoPlayer } from './components/VideoPlayer';
+import { VideoPlayer, type VideoPlayerRef } from './components/VideoPlayer';
 import { DanmakuDisplay } from './components/DanmakuDisplay';
 import { useVideoPlayback } from './hooks/useVideoPlayback';
 import { useDanmakuAnimation } from './hooks/useDanmakuAnimation';
@@ -37,12 +40,18 @@ export const Player: React.FC<PlayerProps> = ({
     unlimited: config.danmaku?.unlimited,
   });
 
+  // VideoPlayer コンポーネントの ref
+  const videoPlayerRef = useRef<VideoPlayerRef>(null);
+
   // ダンマク表示用の時刻（updateTime でリアルタイム更新）
   const [displayTime, setDisplayTime] = useState(0);
   
-  // ビデオプレイヤーの高さ（16:9 アスペクト比）
+  // ビデオプレイヤーのレイアウト情報（画面回転時に自動更新）
+  const [videoLayout, setVideoLayout] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+
+  // 初期化時にレイアウトを取得（フォールバック）
   const screenWidth = Dimensions.get('window').width;
-  const videoPlayerHeight = (screenWidth * 9) / 16;
+  const videoPlayerHeight = videoLayout?.height || (screenWidth * 9) / 16;
 
   // API からダンマクを取得
   // NOTE: config.apiBackend のみを依存配列に（danmakuAnimation は省略）
@@ -80,44 +89,55 @@ export const Player: React.FC<PlayerProps> = ({
     };
   }, []);
 
+  // VideoPlayer のレイアウト変更を検知（画面回転やリサイズに対応）
+  const handleVideoLayoutChange = (layout: { x: number; y: number; width: number; height: number }) => {
+    setVideoLayout(layout);
+  };
+
   // ダンマク送信処理
   const handleDanmakuSend = async (danmaku: Danmaku) => {
-    danmakuAnimation.addDanmaku(danmaku);
-
-    if (config.apiBackend?.send) {
-      config.apiBackend.send({
-        comment: danmaku,
-        success: () => {
-          onDanmakuSend?.(danmaku);
-        },
-        error: (msg: string) => {
-          console.error('Failed to send danmaku:', msg);
-        },
-      });
-    }
   };
 
   return (
     <View className="flex-1 bg-black">
-      <View className="relative flex-1">
+      <View 
+        style={{
+          position: 'relative',
+          flex: 1,
+        }}
+      >
         <VideoPlayer
+          ref={videoPlayerRef}
           config={config}
           onReady={onReady}
           onError={onError}
+          onLayoutChange={handleVideoLayoutChange}
           videoPlayback={videoPlayback}
         />
 
-        {config.danmaku && (
-          <DanmakuDisplay
-            danmakuList={danmakuAnimation.danmakuList}
-            currentTime={displayTime}
-            speedRate={config.danmaku.speedRate}
-            fontSize={config.danmaku.fontSize}
-            opacity={config.danmaku.opacity}
-            visible={danmakuAnimation.visible}
-            paused={danmakuAnimation.paused}
-            videoHeight={videoPlayerHeight}
-          />
+        {config.danmaku && videoLayout && (
+          <View
+            style={{
+              position: 'absolute',
+              top: videoLayout.y,
+              left: videoLayout.x,
+              width: videoLayout.width,
+              height: videoLayout.height,
+              pointerEvents: 'none', // ダンマク表示はタッチイベントを透過
+              zIndex: 10,
+            }}
+          >
+            <DanmakuDisplay
+              danmakuList={danmakuAnimation.danmakuList}
+              currentTime={displayTime}
+              speedRate={config.danmaku.speedRate}
+              fontSize={config.danmaku.fontSize}
+              opacity={config.danmaku.opacity}
+              visible={danmakuAnimation.visible}
+              paused={danmakuAnimation.paused}
+              videoHeight={videoLayout.height}
+            />
+          </View>
         )}
       </View>
 
