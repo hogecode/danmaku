@@ -52,11 +52,15 @@ export const Player: React.FC<PlayerProps> = ({
   const videoPlayerHeight = videoLayout?.height || (screenWidth * 9) / 16;
 
   // API からダンマクを取得
-  // NOTE: config.apiBackend のみを依存配列に（danmakuAnimation は省略）
+  // ★修正: 新しい動画読み込み時に前のコメントをリセット、その後に新規コメント追加
   useEffect(() => {
     if (config.apiBackend?.read) {
+      // 前の動画のコメントをリセット
+      danmakuAnimation.reset();
+      
       config.apiBackend.read({
         success: (comments: Danmaku[]) => {
+          console.log('[Player] Loaded danmakus:', comments.length);
           danmakuAnimation.addDanmaku(comments);
         },
         error: (msg: string) => {
@@ -78,14 +82,16 @@ export const Player: React.FC<PlayerProps> = ({
   // NOTE: 空の依存配列でマウント解除時のみ実行
   useEffect(() => {
     return () => {
-      console.log('[Player] Cleanup: stopping video');
+      console.log('[Player] Cleanup: stopping video and clearing danmakus');
       try {
         videoPlayback.pause();
       } catch (e) {
         // ignore
       }
+      // ★修正: ページ離脱時にコメントをクリア
+      danmakuAnimation.reset();
     };
-  }, []);
+  }, []); // 空配列: マウント解除時のみ実行
 
   // VideoPlayer のレイアウト変更を検知（画面回転やリサイズに対応）
   const handleVideoLayoutChange = (layout: {

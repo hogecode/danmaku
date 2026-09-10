@@ -305,6 +305,18 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   };
 
   /**
+   * ★修正: 動画切り替え時のコメント表示済みフラグをリセット
+   * danmakuList が変わるたびに displayedIdsRef をクリア
+   */
+  useEffect(() => {
+    // 新しい danmakuList が来たら完全にリセット
+    console.log('[DanmakuDisplay] danmakuList changed, resetting displayedIds');
+    danIndexRef.current = 0;
+    displayedIdsRef.current.clear();
+    setAnimatingDanmakus([]);  // 進行中のアニメーションもクリア
+  }, [danmakuList]);
+
+  /**
    * DPlayer.frame() メソッドの実装
    * 現在時刻に基づいて表示すべきコメントを判定
    */
