@@ -8,6 +8,8 @@
 import React, { useRef, useState, useEffect, useImperativeHandle } from 'react';
 import { View, ActivityIndicator, Text, Dimensions, LayoutChangeEvent } from 'react-native';
 import { VideoView, useVideoPlayer } from 'expo-video';
+import * as Video from 'expo-video';
+import { useEventListener } from 'expo';
 import { useVideoPlayback } from '../hooks/useVideoPlayback';
 import CustomVideoControls from './CustomVideoControls';
 import type { PlayerConfig } from '../types';
@@ -53,6 +55,7 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
       setPlaybackRate,
       setDuration,
       updateTime,
+      setBuffering,
       setLoading,
       setError,
     } = videoPlayback;
@@ -77,6 +80,8 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const player = useVideoPlayer(config.video.url, (player) => {
       player.loop = true;
       player.play();
+      // ✅ timeUpdate イベントを 250ms 間隔で発火（bufferedPosition 取得用）
+      player.timeUpdateEventInterval = 0.25;
     });
     playerRef.current = player;
 
@@ -104,31 +109,32 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
       [videoLayout],
     );
 
-    // 再生時刻と再生状態のリアルタイム更新（ポーリング方式）
-    // expo-video には statusUpdate イベントがないため、定期的に状態を取得
-    useEffect(() => {
-      if (!player) return;
+    // ✅ expo-video の timeUpdate イベントでバッファ情報を取得
+    // timeUpdateEventInterval = 0.25 で 250ms ごとにイベント発火
+    useEventListener(
+      player,
+      'timeUpdate',
+      ({ bufferedPosition, currentTime }) => {
+        // 再生時刻を更新
+        updateTime(currentTime);
 
-      // 100ms ごとに currentTime と duration を更新
-      const interval = setInterval(() => {
-        try {
-          const currentTime = player.currentTime || 0;
-          const duration = player.duration || 0;
-
-          // ビデオフックで再生時刻と再生時間を更新
-          updateTime(currentTime);
-          if (duration > 0) {
-            setDuration(duration);
-          }
-        } catch (e) {
-          // ignore
+        // 総時間を更新（TimeUpdateEventPayload には duration がないので player から取得）
+        const duration = player?.duration || 0;
+        if (duration > 0) {
+          setDuration(duration);
         }
-      }, 10); // High-freq polling;
 
-      return () => {
-        clearInterval(interval);
-      };
-    }, [player, updateTime, setDuration]);
+        // ✅ bufferedPosition からバッファ進捗をパーセンテージに変換
+        if (duration > 0) {
+          const bufferingPercent = Math.min(
+            100,
+            (bufferedPosition / duration) * 100
+          );
+          setBuffering(bufferingPercent);
+          // console.log('[Buffer] Progress:', bufferingPercent.toFixed(1), '%');
+        }
+      }
+    );
 
     // 画面リサイズ時にスクリーン幅を更新（自動的に VideoView の layout も更新される）
     useEffect(() => {
@@ -168,16 +174,30 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
     const handlePipToggle = async (enterPip: boolean) => {
       try {
+        // ✅ PiP サポート確認
+        const isPipSupported = Video.isPictureInPictureSupported();
+        console.log('[PiP] Device supports PiP:', isPipSupported);
+        
+        if (!isPipSupported) {
+          console.error('[PiP] Device does not support Picture in Picture');
+          return;
+        }
+        
         if (enterPip) {
+          console.log('[PiP] Starting Picture in Picture...');     
+          // ✅ expo-video API を呼び出し
           await videoViewRef.current?.startPictureInPicture();
+          // Expo Go では onPictureInPictureStart が呼ばれないので手動更新
           setIsPip(true);
-        } else {
+        } else { 
+          // ✅ expo-video API を呼び出し
           await videoViewRef.current?.stopPictureInPicture();
+          // ✅ 手動で状態を更新
           setIsPip(false);
         }
       } catch (error) {
         console.error("PiP toggle error:", error);
-        setIsPip(!isPip);
+        console.error("PiP toggle error message:", (error as Error).message);
       }
     };
 
@@ -213,6 +233,15 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
             fullscreenOptions={{ enable: false }}
             allowsPictureInPicture
             startsPictureInPictureAutomatically={true}
+            // ✅ expo-video の PiP API コールバック
+            onPictureInPictureStart={() => {
+              setIsPip(true);
+              console.log('[PiP] Picture in Picture started');
+            }}
+            onPictureInPictureStop={() => {
+              setIsPip(false);
+              console.log('[PiP] Picture in Picture stopped');
+            }}
             onFullscreenEnter={() => {
               setIsFullscreen(true);
             }}
