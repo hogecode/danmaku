@@ -139,21 +139,17 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const videoHeight = (screenWidth * 9) / 16;
 
     return (
-      <View 
+      <View
         ref={videoContainerRef}
-        className="flex-1 bg-black"
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
+        style={{ flex: 1, backgroundColor: 'black', alignItems: 'center', justifyContent: 'center' }}
       >
-        <View 
+        <View
           style={{
             width: screenWidth,
             height: videoHeight,
-            backgroundColor: 'black',
-            justifyContent: 'center',
-            alignItems: 'center',
+            backgroundColor: "black",
+            justifyContent: "center",
+            alignItems: "center",
           }}
           onLayout={handleContainerLayout}
         >
@@ -163,8 +159,7 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
               width: screenWidth,
               height: videoHeight,
             }}
-            // TODO: 後でnativeControls をカスタマイズ可能にする
-            nativeControls={true} // ネイティブの再生コントロールを表示
+            nativeControls={true}
           />
         </View>
 

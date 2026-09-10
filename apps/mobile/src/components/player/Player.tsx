@@ -21,22 +21,17 @@ interface PlayerProps {
   config: PlayerConfig;
   onReady?: () => void;
   onError?: (error: string) => void;
-  onDanmakuSend?: (danmaku: Danmaku) => void;
 }
 
 export const Player: React.FC<PlayerProps> = ({
   config,
   onReady,
   onError,
-  onDanmakuSend,
 }) => {
   // ビデオプレイヤーの状態管理フック
   const videoPlayback = useVideoPlayback();
   // ダンマク管理フック
   const danmakuAnimation = useDanmakuAnimation({
-    speedRate: config.danmaku?.speedRate || 1,
-    fontSize: config.danmaku?.fontSize || 16,
-    opacity: config.danmaku?.opacity !== undefined ? config.danmaku.opacity : 0.8,
     unlimited: config.danmaku?.unlimited,
   });
 
@@ -90,12 +85,13 @@ export const Player: React.FC<PlayerProps> = ({
   }, []);
 
   // VideoPlayer のレイアウト変更を検知（画面回転やリサイズに対応）
-  const handleVideoLayoutChange = (layout: { x: number; y: number; width: number; height: number }) => {
+  const handleVideoLayoutChange = (layout: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }) => {
     setVideoLayout(layout);
-  };
-
-  // ダンマク送信処理
-  const handleDanmakuSend = async (danmaku: Danmaku) => {
   };
 
   return (
@@ -123,7 +119,7 @@ export const Player: React.FC<PlayerProps> = ({
               left: videoLayout.x,
               width: videoLayout.width,
               height: videoLayout.height,
-              pointerEvents: 'none', // ダンマク表示はタッチイベントを透過
+              pointerEvents: 'none',
               zIndex: 10,
             }}
           >
@@ -134,14 +130,13 @@ export const Player: React.FC<PlayerProps> = ({
               fontSize={config.danmaku.fontSize}
               opacity={config.danmaku.opacity}
               visible={danmakuAnimation.visible}
-              paused={danmakuAnimation.paused}
               videoHeight={videoLayout.height}
             />
           </View>
         )}
       </View>
 
-      <View className="bg-neutral-900 px-4 py-3 gap-3">
+      <View style={{ backgroundColor: '#171717', paddingHorizontal: 16, paddingVertical: 12, gap: 12 }}>
         {config.danmaku && (
           <TouchableOpacity
             onPress={() => danmakuAnimation.toggle()}

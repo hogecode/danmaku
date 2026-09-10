@@ -1,37 +1,64 @@
-/**
- * ダンマク（弾幕/コメント）表示コンポーネント - DPlayer実装参考版
- * DPlayerの二重表示対策とビデオ領域内限定表示を完全実装
- */
-
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, Text, Animated, Dimensions } from 'react-native';
+import { View, Text, Animated, Dimensions, Easing } from 'react-native';
 import type { Danmaku } from '../types';
 
-interface DanmakuDisplayProps {
-  danmakuList: Danmaku[];
-  currentTime: number;
-  speedRate?: number;
-  fontSize?: number;
-  opacity?: number;
-  visible?: boolean;
-  paused?: boolean;
-  videoHeight?: number;
+// ダンマク ID 生成（重複判定用）
+function getCommentId(danmaku: Danmaku): string {
+  return `${danmaku.time}-${danmaku.text}-${danmaku.author}`;
 }
 
-interface Track {
-  id: string;
-  endTime: number;
+// DPlayer準拠: コメント表示時間計算
+// normal: 5秒（右から左へスクロール）, top/bottom: 4秒（固定）
+// 計算式: (screenWidth + textWidth) / アニメーション時間 = 一定速度
+const COMMENT_DISPLAY_DURATION_NORMAL = 5; // 秒（DPlayer: 5.5秒）
+const COMMENT_DISPLAY_DURATION_TOP_BOTTOM = 4; // 秒（DPlayer: 4秒）
+
+function getCommentDuration(type: string, speedRate: number): number {
+  switch (type) {
+    case 'normal':
+      return COMMENT_DISPLAY_DURATION_NORMAL / speedRate;
+    case 'top':
+    case 'bottom':
+      return COMMENT_DISPLAY_DURATION_TOP_BOTTOM / speedRate;
+    default:
+      return COMMENT_DISPLAY_DURATION_NORMAL / speedRate;
+  }
 }
 
+/**
+ * DPlayer方式: Canvas APIに相当する正確なテキスト幅推定
+ * Canvas.measureText()の挙動をReact Nativeで再現
+ * 
+ * フォントサイズとテキスト長から、より正確に幅を推定
+ * 日本語と英字の混在に対応
+ */
+function estimateTextWidth(text: string, fontSize: number): number {
+  // DPlayer の measureText() を参考に実装
+  // canvas.font = `bold ${fontSize}px "Segoe UI", Arial`
+  
+  // フォント測定の近似: 1文字あたりの平均幅
+  // 全角（日本語）: fontSize * 0.85 - 0.95
+  // 半角（英字）: fontSize * 0.5 - 0.7
+  // ここでは加重平均で0.75を使用（保守的な値）
+  const baseWidth = text.length * fontSize * 0.75;
+  
+  // 最小幅を確保（フォントに余白を含める）
+  return Math.max(baseWidth, fontSize * 2);
+}
+
+// アニメーション中のダンマク情報
 interface AnimatingDanmaku {
   id: string;
   danmaku: Danmaku;
-  trackIndex: number;
+  trackIndex: number; // トラック番号（縦方向の位置を決定）
   animationValue: Animated.Value;
   displayStartTime: number;
   duration: number;
+  measurementComplete: boolean; // テキスト幅測定完了フラグ
+  actualTextWidth: number; // 実際のテキスト幅
 }
 
+// 個別ダンマクアイテムのプロップス
 interface DanmakuItemProps {
   item: AnimatingDanmaku;
   screenWidth: number;
@@ -40,25 +67,7 @@ interface DanmakuItemProps {
   fontSize: number;
   opacity: number;
   speedRate: number;
-}
-
-// ダンマク ID 生成（重複判定用）
-function getCommentId(danmaku: Danmaku): string {
-  return `${danmaku.time}-${danmaku.text}-${danmaku.author}`;
-}
-
-// コメント表示時間計算（DPlayer基準）
-// normal: 約8秒（右から左へスクロール）, top/bottom: 約4秒（固定）
-function getCommentDuration(type: string, speedRate: number): number {
-  switch (type) {
-    case 'normal':
-      return 8 / speedRate;
-    case 'top':
-    case 'bottom':
-      return 4 / speedRate;
-    default:
-      return 8 / speedRate;
-  }
+  onTextLayout?: (id: string, width: number) => void;
 }
 
 // 個別ダンマク描画
@@ -70,17 +79,42 @@ const DanmakuItem = React.memo<DanmakuItemProps>(({
   fontSize,
   opacity,
   speedRate,
+  onTextLayout,
 }) => {
-  const { danmaku, animationValue, trackIndex } = item;
+  const { danmaku, animationValue, trackIndex, actualTextWidth, measurementComplete } = item;
+  
+  // ★DPlayer方式: outputRangeをロック（アニメーション中に変わらない）
+  const outputRangeRef = useRef<[number, number] | null>(null);
 
   // normal型: 右から左へスクロール
   if (danmaku.type === 'normal') {
     const duration = getCommentDuration(danmaku.type, speedRate);
     
-    // アニメーション計算
+    // DPlayer方式: テキスト幅を推定
+    const estimatedCommentWidth = estimateTextWidth(danmaku.text, fontSize);
+    
+    // ★重要: outputRangeをキャッシュ（一度決めたら変わらない）
+    // アニメーション中にoutputRangeが変わると速度が変わるバグを防止
+    if (outputRangeRef.current === null) {
+      if (measurementComplete && actualTextWidth > 0) {
+        // 実測値が得られた場合はそれを使用
+        outputRangeRef.current = [screenWidth, -(screenWidth + actualTextWidth)];
+      } else {
+        // 推定値で計算（最初のアニメーション開始）
+        outputRangeRef.current = [screenWidth, -(screenWidth + estimatedCommentWidth)];
+      }
+    }
+    
+    const [startPos, endPos] = outputRangeRef.current;
+    
+    // DPlayer準拠: アニメーション計算
+    // 開始: translateX(screenWidth) ≈ 右端から開始
+    // 終了: translateX(-(screenWidth + commentWidth)) ≈ 左端に完全に出きる
+    // 移動距離 = screenWidth + commentWidth（テキスト全体が通り過ぎる距離）
+    // 速度 = 移動距離 / duration = 一定
     const translateX = animationValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [screenWidth, -300],
+      outputRange: [startPos, endPos],
     });
 
     // トラック位置を計算（ビデオ領域内に限定）
@@ -113,6 +147,12 @@ const DanmakuItem = React.memo<DanmakuItemProps>(({
             textShadowRadius: 2,
           }}
           numberOfLines={1}
+          onLayout={(event) => {
+            const { width } = event.nativeEvent.layout;
+            if (width > 0 && onTextLayout) {
+              onTextLayout(item.id, width);
+            }
+          }}
         >
           {danmaku.text}
         </Text>
@@ -158,6 +198,8 @@ const DanmakuItem = React.memo<DanmakuItemProps>(({
 }, (prevProps, nextProps) => {
   // React.memo カスタム比較関数
   // 同じ props の場合は true を返す（再レンダリングをスキップ）
+  // ★注意: measurementComplete と actualTextWidth の変化は無視
+  // （outputRangeは初回のみ計算されるため）
   return (
     prevProps.item.id === nextProps.item.id &&
     prevProps.screenWidth === nextProps.screenWidth &&
@@ -170,15 +212,30 @@ const DanmakuItem = React.memo<DanmakuItemProps>(({
 })
 
 
+// DnmakuDisplayのプロップス
+interface DanmakuDisplayProps {
+  danmakuList: Danmaku[];
+  currentTime: number;
+  speedRate?: number;
+  fontSize?: number;
+  opacity?: number;
+  visible?: boolean;
+  videoHeight?: number;
+}
+
+interface Track {
+  id: string;
+  endTime: number;
+}
+
 // ダンマク表示コンポーネント - DPlayer完全実装版
 export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   danmakuList,
   currentTime,
   speedRate = 1,
-  fontSize = 16,
-  opacity = 0.8,
+  fontSize = 24,
+  opacity = 1,
   visible = true,
-  paused = false,
   videoHeight = 0,
 }) => {
   const screenWidth = Dimensions.get('window').width;
@@ -196,6 +253,7 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   const danIndexRef = useRef(0);
   
   // ビデオ領域内に表示可能なトラック数を計算
+  // TODO: maxTracksの上限を動的に設定できるようにする
   const lineHeight = fontSize + 4;
   const maxTracks = Math.floor(displayVideoHeight / lineHeight);
 
@@ -207,6 +265,8 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
     // 各トラックをチェック
     for (let i = 0; i < maxTracks; i++) {
       const track = tracksRef.current[i];
+
+      // TODO: track.endTimeの設定を見直す
       // トラックが存在しないか、前のコメントが終了している場合は利用可能
       if (!track || track.endTime <= commentStartTime) {
         return i;
@@ -217,7 +277,7 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   };
 
   /**
-   * トラック終了時間を更新する
+   * 各トラックの終了時間を更新する
    */
   const updateTrack = (trackIndex: number, endTime: number) => {
     if (!tracksRef.current[trackIndex]) {
@@ -231,22 +291,38 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   };
 
   /**
+   * テキスト幅が測定されたときのコールバック
+   * actualTextWidthを更新して、アニメーション終了位置を正確に計算
+   */
+  const handleTextLayout = (id: string, width: number) => {
+    setAnimatingDanmakus(prev =>
+      prev.map(item =>
+        item.id === id
+          ? { ...item, actualTextWidth: width, measurementComplete: true }
+          : item
+      )
+    );
+  };
+
+  /**
    * DPlayer.frame() メソッドの実装
    * 現在時刻に基づいて表示すべきコメントを判定
    */
   useEffect(() => {
-    if (!visible || paused || danmakuList.length === 0) {
+    if (!visible || danmakuList.length === 0) {
       return;
     }
 
     // 現在時刻を超えたコメントを収集
     const newDanmakus: Danmaku[] = [];
+    // 先頭のコメントを取得
     let item = danmakuList[danIndexRef.current];
 
     // DPlayer参考: 時間条件を満たすコメントを一度に処理
     while (item && currentTime >= item.time) {
       newDanmakus.push(item);
       danIndexRef.current++;
+      // 次のコメントを取得
       item = danmakuList[danIndexRef.current];
     }
 
@@ -280,12 +356,17 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
 
       // トラックを割り当て
       const trackIndex = findAvailableTrack(commentStartTime, duration);
+      // TODO: commentEndTimeの計算方法を見直す
+      // MEMO: findAvailableTrackよりもupdateTrack関数を見直す
       updateTrack(trackIndex, commentEndTime);
 
       // アニメーション開始
+      // ★DPlayer準拠: 線形イージング（linear）で一定速度を実現
+      // デフォルトのease-outでは最初は遅く、後で早くなるため
       Animated.timing(animationValue, {
         toValue: 1,
         duration: duration * 1000,
+        easing: Easing.linear,
         useNativeDriver: true,
       }).start(() => {
         // アニメーション終了時にコメントを削除
@@ -299,12 +380,14 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
         animationValue,
         displayStartTime: currentTime,
         duration,
+        measurementComplete: false,
+        actualTextWidth: 0,
       };
     });
 
     // 既存のコメントに新しいコメントを追加
     setAnimatingDanmakus(prev => [...prev, ...newAnimatingDanmakus]);
-  }, [currentTime, visible, paused, danmakuList, speedRate]);
+  }, [currentTime, visible, danmakuList, speedRate]);
 
   if (!visible) return null;
 
@@ -330,6 +413,7 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
           fontSize={fontSize}
           opacity={opacity}
           speedRate={speedRate}
+          onTextLayout={handleTextLayout}
         />
       ))}
     </View>

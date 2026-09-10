@@ -54,8 +54,11 @@ export default function PlayerScreen() {
     appLogger.error(`[PlayerScreen] Player error: ${error}`);
   };
 
-  const handleDanmakuSend = (danmaku: Danmaku) => {
-  };
+  // TODO: videoplayer内でユーザーが動的に変更できるようにする
+  const AUTO_PLAY = true;
+  const SPEED_RATE = 1;
+  const FONT_SIZE = 24;
+  const OPACITY = 1;
 
   // プレイヤー設定を構築
   const playerConfig = useMemo((): PlayerConfig => {
@@ -66,13 +69,13 @@ export default function PlayerScreen() {
         type: 'normal',
         pic: undefined,
       },
-      autoplay: false,
+      autoplay: AUTO_PLAY,
       volume: 1,
       theme: '#E64F97',
       danmaku: {
-        speedRate: 1,
-        fontSize: 16,
-        opacity: 0.8,
+        speedRate: SPEED_RATE,
+        fontSize: FONT_SIZE,
+        opacity: OPACITY,
         unlimited: false,
       },
       apiBackend: {
@@ -80,11 +83,6 @@ export default function PlayerScreen() {
           // コメント読み込み
           try {
             if (video.comments && video.comments.length > 0) {
-              console.log('[PlayerScreen] Converting comments:', {
-                count: video.comments.length,
-                sample: video.comments[0],
-              });
-              
               const danmakus: Danmaku[] = video.comments.map((comment: any) => ({
                 time: parseFloat(comment.vpos) || 0, // vpos は秒単位（浮動小数点）
                 type: 'normal' as const,
@@ -92,11 +90,6 @@ export default function PlayerScreen() {
                 author: comment.user_id || 'anonymous',
                 text: comment.text || '',
               }));
-              
-              console.log('[PlayerScreen] Converted danmakus:', {
-                count: danmakus.length,
-                sample: danmakus[0],
-              });
               appLogger.debug(`[PlayerScreen] Loaded ${danmakus.length} danmakus`);
               success(danmakus);
             } else {
@@ -144,11 +137,11 @@ export default function PlayerScreen() {
 
       <View className="flex-1 bg-black">
         {video.config?.videoUrl && playerConfig.video.url ? (
+          // プレイヤーコンポーネントを表示
           <Player
             config={playerConfig}
             onReady={handlePlayerReady}
             onError={handlePlayerError}
-            onDanmakuSend={handleDanmakuSend}
           />
         ) : (
           <View className="flex-1 items-center justify-center">
