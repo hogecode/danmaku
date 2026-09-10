@@ -43,6 +43,9 @@ export const Player: React.FC<PlayerProps> = ({
   
   // ビデオプレイヤーのレイアウト情報（画面回転時に自動更新）
   const [videoLayout, setVideoLayout] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  
+  // コメント透明度の動的変更
+  const [danmakuOpacity, setDanmakuOpacity] = useState(config.danmaku?.opacity ?? 1);
 
   // 初期化時にレイアウトを取得（フォールバック）
   const screenWidth = Dimensions.get('window').width;
@@ -108,7 +111,9 @@ export const Player: React.FC<PlayerProps> = ({
           onReady={onReady}
           onError={onError}
           onLayoutChange={handleVideoLayoutChange}
+          onDanmakuOpacityChange={setDanmakuOpacity}
           videoPlayback={videoPlayback}
+          danmakuAnimation={danmakuAnimation}
         />
 
         {config.danmaku && videoLayout && (
@@ -128,26 +133,11 @@ export const Player: React.FC<PlayerProps> = ({
               currentTime={displayTime}
               speedRate={config.danmaku.speedRate}
               fontSize={config.danmaku.fontSize}
-              opacity={config.danmaku.opacity}
+              opacity={danmakuOpacity}
               visible={danmakuAnimation.visible}
               videoHeight={videoLayout.height}
             />
           </View>
-        )}
-      </View>
-
-      <View style={{ backgroundColor: '#171717', paddingHorizontal: 16, paddingVertical: 12, gap: 12 }}>
-        {config.danmaku && (
-          <TouchableOpacity
-            onPress={() => danmakuAnimation.toggle()}
-            className={`rounded px-4 py-2 items-center ${
-              danmakuAnimation.visible ? 'bg-blue-600' : 'bg-neutral-700'
-            }`}
-          >
-            <Text className="text-white font-semibold">
-              {danmakuAnimation.visible ? 'コメント表示中' : 'コメント非表示'}
-            </Text>
-          </TouchableOpacity>
         )}
       </View>
     </View>

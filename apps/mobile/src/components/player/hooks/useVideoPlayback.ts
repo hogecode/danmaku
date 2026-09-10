@@ -30,16 +30,20 @@ export function useVideoPlayback() {
    * 再生
    */
   const play = useCallback(() => {
-    videoRef.current?.play();
-    setState(prev => ({ ...prev, playing: true }));
+    if (videoRef.current) {
+      videoRef.current.play();
+      setState(prev => ({ ...prev, playing: true }));
+    }
   }, []);
 
   /**
    * 一時停止
    */
   const pause = useCallback(() => {
-    videoRef.current?.pause();
-    setState(prev => ({ ...prev, playing: false }));
+    if (videoRef.current) {
+      videoRef.current.pause();
+      setState(prev => ({ ...prev, playing: false }));
+    }
   }, []);
 
   /**
@@ -47,7 +51,8 @@ export function useVideoPlayback() {
    */
   const seek = useCallback((time: number) => {
     if (videoRef.current) {
-      videoRef.current.seek(time);
+      // expo-video の currentTime プロパティに直接代入
+      videoRef.current.currentTime = time;
       setState(prev => ({ ...prev, currentTime: time }));
     }
   }, []);
@@ -69,8 +74,11 @@ export function useVideoPlayback() {
    * 再生速度設定
    */
   const setPlaybackRate = useCallback((rate: number) => {
-    videoRef.current?.setRate(rate);
-    setState(prev => ({ ...prev, playbackRate: rate }));
+    if (videoRef.current) {
+      // expo-video の再生速度設定
+      videoRef.current.playbackRate = rate;
+      setState(prev => ({ ...prev, playbackRate: rate }));
+    }
   }, []);
 
   /**

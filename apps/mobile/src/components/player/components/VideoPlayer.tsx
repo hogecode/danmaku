@@ -6,13 +6,16 @@
  */
 
 import React, { useRef, useState, useEffect, useImperativeHandle } from 'react';
-import { View, ActivityIndicator, Text, TouchableOpacity, Dimensions, AppState, LayoutChangeEvent } from 'react-native';
+import { View, ActivityIndicator, Text, Dimensions, LayoutChangeEvent } from 'react-native';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { useVideoPlayback } from '../hooks/useVideoPlayback';
+import CustomVideoControls from './CustomVideoControls';
 import type { PlayerConfig } from '../types';
 
 export interface VideoPlayerRef {
   getLayout: () => { x: number; y: number; width: number; height: number } | null;
+  enterFullscreen: () => Promise<void>;
+  exitFullscreen: () => Promise<void>;
 }
 
 interface VideoPlayerProps {
@@ -20,28 +23,24 @@ interface VideoPlayerProps {
   onReady?: () => void;
   onError?: (error: string) => void;
   onLayoutChange?: (layout: { x: number; y: number; width: number; height: number }) => void;
+  onDanmakuOpacityChange?: (opacity: number) => void;
   videoPlayback?: any;  // useVideoPlayback から外部で注入
+  danmakuAnimation?: any;  // useDanmakuAnimation から外部で注入
 }
 
-const formatTime = (seconds: number): string => {
-  if (!seconds || isNaN(seconds)) return '00:00';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  if (h > 0) {
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  }
-  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-};
-
 export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
-  ({
-    config,
-    onReady,
-    onError,
-    onLayoutChange,
-    videoPlayback: externalVideoPlayback,
-  }, ref) => {
+  (
+    {
+      config,
+      onReady,
+      onError,
+      onLayoutChange,
+      onDanmakuOpacityChange,
+      videoPlayback: externalVideoPlayback,
+      danmakuAnimation,
+    },
+    ref,
+  ) => {
     // ビデオ状態のフック
     const internalVideoPlayback = useVideoPlayback();
     const videoPlayback = externalVideoPlayback || internalVideoPlayback;
@@ -67,17 +66,43 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
       width: number;
       height: number;
     } | null>(null);
+
     const playerRef = useRef<any>(null);
     const videoContainerRef = useRef<View>(null);
-    
+    const videoViewRef = useRef<any>(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isPip, setIsPip] = useState(false);
+
     // expo-video プレイヤー
-    const player = useVideoPlayer(config.video.url);
+    const player = useVideoPlayer(config.video.url, (player) => {
+      player.loop = true;
+      player.play();
+    });
     playerRef.current = player;
 
+    // ★重要: useVideoPlayback フックの videoRef に player を設定
+    useEffect(() => {
+      videoPlayback.videoRef.current = player;
+    }, [player, videoPlayback.videoRef]);
+
     // useImperativeHandle で親コンポーネントから位置情報にアクセス可能に
-    useImperativeHandle(ref, () => ({
-      getLayout: () => videoLayout,
-    }), [videoLayout]);
+    useImperativeHandle(
+      ref,
+      () => ({
+        getLayout: () => videoLayout,
+        enterFullscreen: async () => {
+          if (videoViewRef.current) {
+            await videoViewRef.current.enterFullscreen();
+          }
+        },
+        exitFullscreen: async () => {
+          if (videoViewRef.current) {
+            await videoViewRef.current.exitFullscreen();
+          }
+        },
+      }),
+      [videoLayout],
+    );
 
     // 再生時刻と再生状態のリアルタイム更新（ポーリング方式）
     // expo-video には statusUpdate イベントがないため、定期的に状態を取得
@@ -98,7 +123,7 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
         } catch (e) {
           // ignore
         }
-      }, 10) // High-freq polling;
+      }, 10); // High-freq polling;
 
       return () => {
         clearInterval(interval);
@@ -107,11 +132,24 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
     // 画面リサイズ時にスクリーン幅を更新（自動的に VideoView の layout も更新される）
     useEffect(() => {
-      const subscription = Dimensions.addEventListener('change', ({ window }) => {
-        setScreenWidth(window.width);
-      });
+      const subscription = Dimensions.addEventListener(
+        "change",
+        ({ window }) => {
+          setScreenWidth(window.width);
+        },
+      );
       return () => subscription?.remove();
     }, []);
+
+    // フルスクリーン解除時に screenWidth を正しく更新
+    // TODO: 反映されるまでに多少時間がかかるので見直す
+    // これがないとフルスクリーン解除後に何故か動画が正しい幅で表示されない
+    useEffect(() => {
+      if (!isFullscreen) {
+        const currentWidth = Dimensions.get("window").width;
+        setScreenWidth(currentWidth);
+      }
+    }, [isFullscreen]);
 
     useEffect(() => {
       if (config.video.url) {
@@ -128,11 +166,18 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onLayoutChange?.(layout);
     };
 
-    const handlePlayPause = () => {
-      if (player.playing) {
-        player.pause();
-      } else {
-        player.play();
+    const handlePipToggle = async (enterPip: boolean) => {
+      try {
+        if (enterPip) {
+          await videoViewRef.current?.startPictureInPicture();
+          setIsPip(true);
+        } else {
+          await videoViewRef.current?.stopPictureInPicture();
+          setIsPip(false);
+        }
+      } catch (error) {
+        console.error("PiP toggle error:", error);
+        setIsPip(!isPip);
       }
     };
 
@@ -141,26 +186,62 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
     return (
       <View
         ref={videoContainerRef}
-        style={{ flex: 1, backgroundColor: 'black', alignItems: 'center', justifyContent: 'center' }}
+        style={{
+          flex: 1,
+          backgroundColor: "black",
+          alignItems: "center",
+        }}
       >
         <View
           style={{
-            width: screenWidth,
-            height: videoHeight,
+            width: isFullscreen ? Dimensions.get('window').height : screenWidth,
+            height: isFullscreen ? Dimensions.get('window').width : videoHeight,
             backgroundColor: "black",
-            justifyContent: "center",
             alignItems: "center",
           }}
           onLayout={handleContainerLayout}
         >
+          {/* ビデオビュー */}
           <VideoView
+            ref={videoViewRef}
             player={player}
             style={{
-              width: screenWidth,
-              height: videoHeight,
+              width: isFullscreen ? Dimensions.get('window').height : screenWidth,
+              height: isFullscreen ? Dimensions.get('window').width : videoHeight,
             }}
-            nativeControls={true}
+            nativeControls={isFullscreen}
+            fullscreenOptions={{ enable: false }}
+            allowsPictureInPicture
+            startsPictureInPictureAutomatically={true}
+            onFullscreenEnter={() => {
+              setIsFullscreen(true);
+            }}
+            onFullscreenExit={() => {
+              setIsFullscreen(false);
+            }}
           />
+
+          {/* カスタムプレイヤーコントロール（フルスクリーン時は非表示） */}
+          {!isFullscreen && (
+            <CustomVideoControls
+              videoPlayback={videoPlayback}
+              config={config}
+              onDanmakuOpacityChange={onDanmakuOpacityChange}
+              isFullscreen={isFullscreen}
+              isPip={isPip}
+              danmakuAnimation={danmakuAnimation}
+              onFullscreenToggle={async (enterFullscreen) => {
+                if (enterFullscreen) {
+                  setIsFullscreen(true);
+                  await videoViewRef.current?.enterFullscreen();
+                } else {
+                  setIsFullscreen(false);
+                  await videoViewRef.current?.exitFullscreen();
+                }
+              }}
+              onPipToggle={handlePipToggle}
+            />
+          )}
         </View>
 
         {state.loading && (
@@ -176,5 +257,7 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
         )}
       </View>
     );
-  }
+  },
 );
+
+VideoPlayer.displayName = 'VideoPlayer';
