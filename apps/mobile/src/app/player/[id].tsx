@@ -77,6 +77,7 @@ export default function PlayerScreen() {
         fontSize: FONT_SIZE,
         opacity: OPACITY,
         unlimited: false,
+        maxTracks: 10
       },
       apiBackend: {
         read: ({ success, error }) => {

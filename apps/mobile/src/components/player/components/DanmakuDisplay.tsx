@@ -9,7 +9,9 @@ function getCommentId(danmaku: Danmaku): string {
 
 // DPlayer準拠: コメント表示時間計算
 // 計算式: (screenWidth + textWidth) / アニメーション時間 = 一定速度
-const COMMENT_DISPLAY_DURATION_NORMAL = 6; // 秒（DPlayer: 5.5秒）
+// コメント表示秒数が合わない。。。
+// おおよそ1.5倍に設定すればうまくいくのでそれで対処
+const COMMENT_DISPLAY_DURATION_NORMAL = 8; // 秒（DPlayer: 5.5秒）
 const COMMENT_DISPLAY_DURATION_TOP_BOTTOM = 4; // 秒（DPlayer: 4秒）
 
 function getCommentDuration(type: string, speedRate: number): number {
@@ -276,29 +278,42 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   const finalFontSize = fontSize !== 24 ? fontSize : calculatedFontSize;
   const lineHeight = finalFontSize + 4;
   const maxTracks = calculatedMaxTracks;
-  
-  console.log(
-    '[DanmakuDisplay] Track calculation:',
-    `maxTracks=${maxTracks}, lineHeight=${lineHeight.toFixed(1)}px, fontSize=${finalFontSize.toFixed(1)}px`
-  );
 
   /**
    * 利用可能なトラックを検索する（DPlayer参考）
    * 時間軸でコメントが重ならない位置を見つける
+   * 
+   * ✅ 改善: コメント量が多い場合の分散配置
+   * - 利用可能なトラック（空き）があれば、その中から最初のものを使用
+   * - 全トラック満杯の場合: 最も短く終了するトラックを選択（バランス重視）
    */
   const findAvailableTrack = (commentStartTime: number, commentDuration: number): number => {
-    // 各トラックをチェック
+    // ステップ1: 利用可能なトラック（空きがある）をチェック
     for (let i = 0; i < maxTracks; i++) {
       const track = tracksRef.current[i];
 
-      // TODO: track.endTimeの設定を見直す
       // トラックが存在しないか、前のコメントが終了している場合は利用可能
       if (!track || track.endTime <= commentStartTime) {
         return i;
       }
     }
-    // 全トラック満杯の場合は、最初のトラックをリサイクル
-    return 0;
+
+    // ステップ2: 全トラック満杯の場合
+    // 最も短く終了するトラック（最小の endTime）を選択することで、
+    // コメント表示がバランスよく分散される
+    let minEndTime = Infinity;
+    let minTrackIndex = 0;
+
+    for (let i = 0; i < maxTracks; i++) {
+      const track = tracksRef.current[i];
+      if (track && track.endTime < minEndTime) {
+        minEndTime = track.endTime;
+        minTrackIndex = i;
+      }
+    }
+
+    
+    return minTrackIndex;
   };
 
   /**
@@ -389,11 +404,11 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
       const animationValue = new Animated.Value(0);
 
       const commentStartTime = currentTime;
-      const commentEndTime = commentStartTime + duration;
+      // コメントの終了時間をテキスト幅に基づいて計算
+      const commentEndTime = commentStartTime + duration * estimateTextWidth(dan.text, fontSize)/ screenWidth;
 
       // トラックを割り当て
       const trackIndex = findAvailableTrack(commentStartTime, duration);
-      // TODO: commentEndTimeの計算方法を見直す
       // MEMO: findAvailableTrackよりもupdateTrack関数を見直す
       updateTrack(trackIndex, commentEndTime);
 
@@ -447,7 +462,7 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
           screenWidth={screenWidth}
           displayVideoHeight={displayVideoHeight}
           lineHeight={lineHeight}
-          // ✅ 修正: 計算済みの finalFontSize を使用（maxTracks に基づいて自動調整される）
+          // 計算済みの finalFontSize を使用（maxTracks に基づいて自動調整される）
           fontSize={finalFontSize}
           opacity={opacity}
           speedRate={speedRate}

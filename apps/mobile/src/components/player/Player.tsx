@@ -142,7 +142,6 @@ export const Player: React.FC<PlayerProps> = ({
               opacity={danmakuOpacity}
               visible={danmakuAnimation.visible}
               videoHeight={videoLayout.height}
-              // ✅ 新規: maxTracks を設定から渡す
               maxTracks={config.danmaku.maxTracks}
             />
           </View>
