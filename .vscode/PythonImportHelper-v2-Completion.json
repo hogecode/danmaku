@@ -9,6 +9,15 @@
         "documentation": {}
     },
     {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
         "label": "annotations",
         "importPath": "__future__",
         "description": "__future__",
@@ -97,15 +106,6 @@
         "importPath": "argparse",
         "description": "argparse",
         "detail": "argparse",
-        "documentation": {}
-    },
-    {
-        "label": "json",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "json",
-        "description": "json",
-        "detail": "json",
         "documentation": {}
     },
     {
@@ -462,6 +462,42 @@
         "description": "apps.desktop.ios.Flutter.ephemeral.flutter_lldb_helper",
         "peekOfCode": "def handle_new_rx_page(frame: lldb.SBFrame, bp_loc, extra_args, intern_dict):\n    \"\"\"Intercept NOTIFY_DEBUGGER_ABOUT_RX_PAGES and touch the pages.\"\"\"\n    base = frame.register[\"x0\"].GetValueAsAddress()\n    page_len = frame.register[\"x1\"].GetValueAsUnsigned()\n    # Note: NOTIFY_DEBUGGER_ABOUT_RX_PAGES will check contents of the\n    # first page to see if handled it correctly. This makes diagnosing\n    # misconfiguration (e.g. missing breakpoint) easier.\n    data = bytearray(page_len)\n    data[0:8] = b'IHELPED!'\n    error = lldb.SBError()",
         "detail": "apps.desktop.ios.Flutter.ephemeral.flutter_lldb_helper",
+        "documentation": {}
+    },
+    {
+        "label": "_Known",
+        "kind": 6,
+        "importPath": "apps.mobile.node_modules.flatted.python.flatted",
+        "description": "apps.mobile.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _Known:\n    def __init__(self):\n        self.key = []\n        self.value = []\nclass _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    for i in range(len(value)):\n        yield i",
+        "detail": "apps.mobile.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "_String",
+        "kind": 6,
+        "importPath": "apps.mobile.node_modules.flatted.python.flatted",
+        "description": "apps.mobile.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    for i in range(len(value)):\n        yield i\ndef _object_keys(value):\n    for key in value:\n        yield key\ndef _is_array(value):",
+        "detail": "apps.mobile.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "parse",
+        "kind": 2,
+        "importPath": "apps.mobile.node_modules.flatted.python.flatted",
+        "description": "apps.mobile.node_modules.flatted.python.flatted",
+        "peekOfCode": "def parse(value, *args, **kwargs):\n    json = _json.loads(value, *args, **kwargs)\n    wrapped = []\n    for value in json:\n        wrapped.append(_wrap(value))\n    input = []\n    for value in wrapped:\n        if isinstance(value, _String):\n            input.append(value.value)\n        else:",
+        "detail": "apps.mobile.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "stringify",
+        "kind": 2,
+        "importPath": "apps.mobile.node_modules.flatted.python.flatted",
+        "description": "apps.mobile.node_modules.flatted.python.flatted",
+        "peekOfCode": "def stringify(value, *args, **kwargs):\n    known = _Known()\n    input = []\n    output = []\n    i = int(_index(known, input, value))\n    while i < len(input):\n        output.append(_transform(known, input, input[i]))\n        i += 1\n    return _json.dumps(output, *args, **kwargs)",
+        "detail": "apps.mobile.node_modules.flatted.python.flatted",
         "documentation": {}
     },
     {

@@ -58,6 +58,8 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
       setBuffering,
       setLoading,
       setError,
+      syncPlayerStatus,
+      verifyPlayingState,
     } = videoPlayback;
 
     const [screenWidth, setScreenWidth] = useState(
@@ -135,6 +137,13 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }
       }
     );
+
+    // ✅ expo-video の statusChange イベントで再生状態を同期
+    // このイベントは play()/pause() 実行時や自動イベント時に発火
+    useEventListener(player, 'statusChange', () => {
+      // プレイヤーの実際の状態を state に同期
+      syncPlayerStatus();
+    });
 
     // 画面リサイズ時にスクリーン幅を更新（自動的に VideoView の layout も更新される）
     useEffect(() => {

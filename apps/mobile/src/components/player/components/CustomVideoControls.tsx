@@ -33,10 +33,10 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
   onFullscreenToggle,
   onPipToggle,
   isFullscreen,
-  isPip: externalIsPip,
+  isPip,
   danmakuAnimation,
 }) => {
-  const { state, play, pause, seek } = videoPlayback;
+  const { state, play, pause, seek, verifyPlayingState, getPlayerStatus } = videoPlayback;
 
   const screenWidth = Dimensions.get("window").width;
   const screenHeight = Dimensions.get("window").height;
@@ -44,18 +44,19 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
   const [controlsVisible, setControlsVisible] = useState(true);
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
   const [selectedPlaybackRate, setSelectedPlaybackRate] = useState(1);
-  const [internalIsPip, setInternalIsPip] = useState(false);
   
 
   // TODO: 設定で変更できるようにする
   const BACK_SECONDS = 10;
   const FORWARD_SECONDS = 10;
+  // デバウンス: 再生/停止ボタンの連続押下を防止（ms）
+  const PLAY_PAUSE_DEBOUNCE_MS = 300;
 
-  // 外部から提供された isPip を使用、なければ内部状態を使用
-  const isPip = externalIsPip ?? internalIsPip;
 
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  // デバウンス用: 最後の再生/停止ボタン操作時刻
+  const lastPlayPauseTimeRef = useRef<number>(0);
   
   const playbackRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
@@ -76,10 +77,6 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
   const handlePipPress = async () => {
     try {
       const newPipState = !isPip;
-      // 内部状態を更新（外部から提供されていない場合のみ）
-      if (externalIsPip === undefined) {
-        setInternalIsPip(newPipState);
-      }
       
       if (onPipToggle) {
         await onPipToggle(newPipState);
@@ -88,10 +85,6 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
       resetHideTimer();
     } catch (e) {
       console.error("PiP error:", e);
-      // エラー時は状態をロールバック
-      if (externalIsPip === undefined) {
-        setInternalIsPip(!internalIsPip);
-      }
     }
   };
 
@@ -124,8 +117,49 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
   };
 
   // 再生/一時停止ボタンの処理
+  // ✅ 改善: デバウンス + 状態確認ロジック
   const handlePlayPause = () => {
-    state.playing ? pause() : play();
+    const now = Date.now();
+    
+    // デバウンス: 短期間の連続クリックを防止
+    if (now - lastPlayPauseTimeRef.current < PLAY_PAUSE_DEBOUNCE_MS) {
+      return;
+    }
+    lastPlayPauseTimeRef.current = now;
+
+    // 楽観的に状態を反転
+    const nextPlaying = !state.playing;
+    
+    try {
+      if (nextPlaying) {
+        play();
+      } else {
+        pause();
+      }
+      
+      // 状態が確実に反映されたか確認（非同期バリデーション）
+      // 100ms後に確認して、ズレがあれば修正
+      setTimeout(() => {
+        const isValid = verifyPlayingState(nextPlaying);
+        if (!isValid) {
+          console.warn('[CustomVideoControls] Playing state verification failed, correcting...');
+          // 再度コマンドを送信
+          if (nextPlaying) {
+            play();
+          } else {
+            pause();
+          }
+        }
+      }, 100);
+    } catch (error) {
+      console.error('[CustomVideoControls] handlePlayPause error:', error);
+      // エラー発生時は実際のプレイヤー状態を確認
+      const actual = getPlayerStatus();
+      if (actual !== null && actual !== state.playing) {
+        console.warn('[CustomVideoControls] Recovering from error, actual state:', actual);
+      }
+    }
+    
     resetHideTimer();
   };
 

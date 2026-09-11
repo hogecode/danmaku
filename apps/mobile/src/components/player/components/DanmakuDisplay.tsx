@@ -8,9 +8,8 @@ function getCommentId(danmaku: Danmaku): string {
 }
 
 // DPlayer準拠: コメント表示時間計算
-// normal: 5秒（右から左へスクロール）, top/bottom: 4秒（固定）
 // 計算式: (screenWidth + textWidth) / アニメーション時間 = 一定速度
-const COMMENT_DISPLAY_DURATION_NORMAL = 5; // 秒（DPlayer: 5.5秒）
+const COMMENT_DISPLAY_DURATION_NORMAL = 6; // 秒（DPlayer: 5.5秒）
 const COMMENT_DISPLAY_DURATION_TOP_BOTTOM = 4; // 秒（DPlayer: 4秒）
 
 function getCommentDuration(type: string, speedRate: number): number {
