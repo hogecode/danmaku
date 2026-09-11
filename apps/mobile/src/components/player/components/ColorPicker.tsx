@@ -1,17 +1,26 @@
 /**
  * カラーピッカーコンポーネント
- * reanimated-color-picker を使用
+ * 6種類の色プリセットから選択
  */
 
 import React, { useState } from 'react';
-import { View, Text } from 'react-native';
-import ColorPicker, { HueSlider, SaturationSlider, BrightnessSlider, OpacitySlider } from 'reanimated-color-picker';
-import type { ColorFormatsObject } from 'reanimated-color-picker';
+import { View, Text, TouchableOpacity } from 'react-native';
+import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 
 interface ColorPickerWrapperProps {
   color: string; // HEX カラーコード（#RRGGBB）
   onColorChange: (color: string) => void;
 }
+
+// コメント用の標準色プリセット
+const COLOR_PRESETS = [
+  { name: '白', hex: '#FFFFFF' },
+  { name: '赤', hex: '#FF0000' },
+  { name: '青', hex: '#0000FF' },
+  { name: '黄', hex: '#FFFF00' },
+  { name: '緑', hex: '#00FF00' },
+  { name: 'ピンク', hex: '#FF69B4' },
+];
 
 export const ColorPickerComponent: React.FC<ColorPickerWrapperProps> = ({
   color,
@@ -19,79 +28,58 @@ export const ColorPickerComponent: React.FC<ColorPickerWrapperProps> = ({
 }) => {
   const [displayColor, setDisplayColor] = useState(color);
 
-  // JS スレッドで実行 - 最終色を確定
-  const handleColorComplete = (colors: ColorFormatsObject) => {
-    setDisplayColor(colors.hex);
-    onColorChange(colors.hex);
+  // 色を選択
+  const handleColorSelect = (hex: string) => {
+    setDisplayColor(hex);
+    onColorChange(hex);
   };
 
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
-      {/* カラープレビュー */}
-      <View
+
+      {/* カラープリセット */}
+      <Text
         style={{
-          height: 60,
-          borderRadius: 8,
-          backgroundColor: displayColor,
-          marginBottom: 16,
-          borderWidth: 2,
-          borderColor: '#555',
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
+          color: '#fff',
+          fontSize: 12,
+          fontWeight: '600',
+          marginBottom: 12,
         }}
       >
-        <Text
-          style={{
-            color: displayColor === '#FFFFFF' || displayColor === '#FFFF00' ? '#000' : '#fff',
-            fontSize: 14,
-            fontWeight: 'bold',
-            backgroundColor: 'rgba(0, 0, 0, 0.3)',
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: 4,
-          }}
-        >
-          {displayColor}
-        </Text>
-      </View>
+        色を選択
+      </Text>
 
-      {/* カラーピッカー */}
-      <ColorPicker
-        value={displayColor}
-        onCompleteJS={handleColorComplete}
-        sliderThickness={20}
-        thumbSize={24}
-        thumbShape="circle"
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: 8,
+        }}
       >
-        <View>
-          <Text style={{ fontSize: 12, fontWeight: '600', marginBottom: 8, color: '#fff' }}>
-            Hue
-          </Text>
-          <HueSlider style={{ height: 30, borderRadius: 8 }} />
-        </View>
-
-        <View style={{ marginTop: 12 }}>
-          <Text style={{ fontSize: 12, fontWeight: '600', marginBottom: 8, color: '#fff' }}>
-            Saturation
-          </Text>
-          <SaturationSlider style={{ height: 30, borderRadius: 8 }} />
-        </View>
-
-        <View style={{ marginTop: 12 }}>
-          <Text style={{ fontSize: 12, fontWeight: '600', marginBottom: 8, color: '#fff' }}>
-            Brightness
-          </Text>
-          <BrightnessSlider style={{ height: 30, borderRadius: 8 }} />
-        </View>
-
-        <View style={{ marginTop: 12 }}>
-          <Text style={{ fontSize: 12, fontWeight: '600', marginBottom: 8, color: '#fff' }}>
-            Opacity
-          </Text>
-          <OpacitySlider style={{ height: 30, borderRadius: 8 }} />
-        </View>
-      </ColorPicker>
+        {COLOR_PRESETS.map((preset) => (
+          <TouchableOpacity
+            key={preset.hex}
+            onPress={() => handleColorSelect(preset.hex)}
+            style={{
+              width: '48%',
+              paddingVertical: 12,
+              paddingHorizontal: 8,
+              borderRadius: 8,
+              backgroundColor: preset.hex,
+              borderWidth: 3,
+              borderColor: displayColor === preset.hex ? '#FFF' : 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              gap: 6,
+            }}
+          >
+            {displayColor === preset.hex && (
+              <Icon name="check" size={16} color={preset.hex === '#FFFFFF' || preset.hex === '#FFFF00' ? '#000' : '#fff'} />
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 };
