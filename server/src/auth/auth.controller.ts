@@ -120,7 +120,7 @@ export class AuthController {
   }
 
   /**
-   * クライアントタイプを判定（Flutter vs Web）
+   * クライアントタイプを判定
    * 
    * ⚠️ IMPORTANT: Google OAuth の redirect_uri_mismatch エラーを回避するため、
    * クエリパラメータではなく Authorization ヘッダー (X-Client-Type) で判定

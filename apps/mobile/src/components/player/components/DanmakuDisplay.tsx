@@ -220,6 +220,7 @@ const DanmakuItem = React.memo<DanmakuItemProps>(({
 interface DanmakuDisplayProps {
   danmakuList: Danmaku[];
   currentTime: number;
+  isPlaying: boolean; // ★新規: 再生状態（停止時はアニメーション停止）
   speedRate?: number;
   fontSize?: number;
   opacity?: number;
@@ -240,6 +241,7 @@ interface Track {
 export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   danmakuList,
   currentTime,
+  isPlaying, 
   speedRate = 1,
   fontSize = 24,
   opacity = 1,
@@ -264,6 +266,62 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   
   // 次に表示すべきコメントのインデックス（DPlayerの frame() メソッド参考）
   const danIndexRef = useRef(0);
+
+  // ★新規: 停止時のコメント状態を記録（再開時に復活用）
+  const stoppedAnimatingDanmakusRef = useRef<AnimatingDanmaku[]>([]);
+  const wasPlayingRef = useRef(isPlaying);
+
+  // ★新規: 停止時のアニメーション停止 & 再開時のアニメーション復活
+  useEffect(() => {
+    if (!isPlaying) {
+      // 停止時: 全アニメーションを停止して記録
+      console.log('[DanmakuDisplay] Paused: stopping animations');
+      setAnimatingDanmakus(prev => {
+        // 停止する前のアニメーション一覧を記録
+        stoppedAnimatingDanmakusRef.current = prev;
+        prev.forEach(item => {
+          item.animationValue.stopAnimation(() => {
+            // アニメーション停止完了
+          });
+        });
+        return prev;
+      });
+    } else if (wasPlayingRef.current === false && isPlaying) {
+      // 再開時: 記録されたコメントのアニメーションを再開
+      console.log('[DanmakuDisplay] Resumed: restarting animations');
+      const stoppedDanmakus = stoppedAnimatingDanmakusRef.current;
+      
+      if (stoppedDanmakus.length > 0) {
+        // 各停止していたコメントのアニメーションを再度実行
+        stoppedDanmakus.forEach(item => {
+          // 残りの表示時間を計算
+          const elapsedTime = currentTime - item.displayStartTime;
+          const remainingDuration = Math.max(0, item.duration * 1000 - elapsedTime * 1000);
+          
+          if (remainingDuration > 0) {
+            // アニメーション再開
+            Animated.timing(item.animationValue, {
+              toValue: 1,
+              duration: remainingDuration,
+              easing: Easing.linear,
+              useNativeDriver: true,
+            }).start(() => {
+              // アニメーション終了時にコメントを削除
+              setAnimatingDanmakus(prev => prev.filter(d => d.id !== item.id));
+            });
+          } else {
+            // 残り時間なし → すぐに削除
+            setAnimatingDanmakus(prev => prev.filter(d => d.id !== item.id));
+          }
+        });
+      }
+      
+      // 停止状態フラグをリセット
+      stoppedAnimatingDanmakusRef.current = [];
+    }
+    
+    wasPlayingRef.current = isPlaying;
+  }, [isPlaying, currentTime]);
   
   // ✅ 改善: トラック数主導の計算ロジック
   // 1. maxTracks を先に決定（親から指定するか、デフォルト値を使用）
@@ -378,7 +436,7 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
       
       // シーク時: 状態をリセット
       danIndexRef.current = 0;
-      displayedIdsRef.current.clear();
+      displayedIdsRef.current.clear();  
       setAnimatingDanmakus([]);
       tracksRef.current = [];
     }
@@ -390,11 +448,17 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   /**
    * DPlayer.frame() メソッドの実装
    * 現在時刻に基づいて表示すべきコメントを判定
+   * ★改善: シーク時は±5秒ウィンドウ内のコメントのみ表示
    */
   useEffect(() => {
     if (!visible || danmakuList.length === 0) {
       return;
     }
+
+    // シーク検知
+    const timeDiff = Math.abs(currentTime - prevTimeRef.current);
+    const isSeek = timeDiff > 1; // 1秒以上の差でシーク判定
+    const SEEK_WINDOW = 5; // ±5秒のウィンドウ
 
     // 現在時刻を超えたコメントを収集
     const newDanmakus: Danmaku[] = [];
@@ -402,8 +466,19 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
     let item = danmakuList[danIndexRef.current];
 
     // DPlayer参考: 時間条件を満たすコメントを一度に処理
+    // ★改善: シーク時はウィンドウ内のコメントのみ
     while (item && currentTime >= item.time) {
-      newDanmakus.push(item);
+      // シーク時の場合は±5秒ウィンドウでフィルタリング
+      if (isSeek) {
+        const windowStart = Math.max(0, currentTime - SEEK_WINDOW);
+        const windowEnd = currentTime + SEEK_WINDOW;
+        if (item.time >= windowStart && item.time <= windowEnd) {
+          newDanmakus.push(item);
+        }
+      } else {
+        // 通常時は全て追加
+        newDanmakus.push(item);
+      }
       danIndexRef.current++;
       // 次のコメントを取得
       item = danmakuList[danIndexRef.current];

@@ -5,7 +5,7 @@ Google Drive ビデオプレイヤー + リアルタイムコメント表示
 - **Backend**: NestJS + TypeScript + Drizzle + Redis
 - **Web**: Next.js 16 + React 19 + TypeScript + Tailwind + DPlayer
 - **desktop**: Flutter + Dart + Riverpod + 自作動画プレイヤー
-- mobile: ReactNative
+- **mobile**: ReactNative + 自作動画プレイヤー
 
 ---
 
@@ -27,21 +27,16 @@ Google Drive ビデオプレイヤー + リアルタイムコメント表示
 ## desktop (apps/desktop/desktop/) - Flutter
 
 
-### クリーンアーキテクチャ
-```
-lib/
-├── core/       # テーマ・i18n・定数
-├── data/       # API・ローカルストレージ
-├── domain/     # ビジネスロジック
-└── presentation/ # UI・プロバイダー
-```
+
+---
+
+## mobile (apps/mobile/) - ReactNative
+
+- APIクライアントはopenapi自動生成コードを使用する
+  - fetchやaxiosは禁止
 
 
-## 
-
-## 
-
-
+## コメント形式 
 
 コメントXML形式(ニコ実況形式)
 JSONも同様にコメントデータを表現できる

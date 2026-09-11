@@ -79,9 +79,12 @@ export const Player: React.FC<PlayerProps> = ({
   }, [config.apiBackend]);
 
   // ビデオの再生時刻をダンマク表示に同期
+  // 再生中のみ更新（停止時は displayTime を保持してアニメーション停止）
   useEffect(() => {
-    setDisplayTime(videoPlayback.state.currentTime);
-  }, [videoPlayback.state.currentTime]);
+    if (videoPlayback.state.playing) {
+      setDisplayTime(videoPlayback.state.currentTime);
+    }
+  }, [videoPlayback.state.currentTime, videoPlayback.state.playing]);
 
   // ページ離脱時のクリーンアップ（動画停止 + 状態リセット）
   // NOTE: 空の依存配列でマウント解除時のみ実行
@@ -141,6 +144,7 @@ export const Player: React.FC<PlayerProps> = ({
             <DanmakuDisplay
               danmakuList={danmakuAnimation.danmakuList}
               currentTime={displayTime}
+              isPlaying={videoPlayback.state.playing}
               speedRate={config.danmaku.speedRate}
               fontSize={config.danmaku.fontSize}
               opacity={playerSettings.danmakuOpacity ?? 1}
