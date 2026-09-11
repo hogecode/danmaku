@@ -226,9 +226,7 @@ interface DanmakuDisplayProps {
   opacity?: number;
   visible?: boolean;
   videoHeight?: number;
-  // ✅ 新規: トラック数を親コンポーネントから指定可能
   maxTracks?: number;  // デフォルト: 8
-  // ✅ 新規: デフォルトコメント色
   defaultColor?: string; // #RRGGBB形式
 }
 
