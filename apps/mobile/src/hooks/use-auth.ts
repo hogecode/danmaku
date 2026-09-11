@@ -5,7 +5,6 @@
 import { useCallback } from 'react';
 import { useAuthStore } from '@/stores/auth-store';
 import { authService } from '@/services/auth-service';
-import { tokenStorage } from '@/utils/token-storage';
 import { appLogger } from '@/utils/logger';
 import { UserInfo } from '@/types';
 
@@ -96,14 +95,12 @@ export function useAuth() {
 
         appLogger.info('[useAuth] ==================== トークンとユーザー情報を保存 ====================');
 
-        // トークンを保存
-        await tokenStorage.saveToken(token);
-
-        // 状態を更新
+        // トークンと状態を更新（persist middleware で自動保存）
+        auth.setToken(token);
         auth.setUser(userInfo);
         auth.setIsAuthenticated(true);
 
-        appLogger.info('[useAuth] 🎉 AuthState を更新完了 (isAuthenticated=true)');
+        appLogger.info('[useAuth] 🎉 AuthState を更新完了 (isAuthenticated=true, token=saved)');
       } catch (error) {
         appLogger.error('[useAuth] ⛔ トークン保存失敗', error);
         auth.setError(error instanceof Error ? error.message : String(error));
@@ -125,8 +122,9 @@ export function useAuth() {
       appLogger.info('[useAuth] ログアウト開始');
 
       await authService.logout();
-      await tokenStorage.deleteToken();
 
+      // auth.reset() で state と token を一括削除
+      // persist middleware で自動的にセキュアストレージも削除される
       auth.reset();
 
       appLogger.info('[useAuth] ログアウト完了');

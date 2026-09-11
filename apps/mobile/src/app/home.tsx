@@ -40,8 +40,7 @@ export default function HomeScreen() {
     );
   }
 
-
-
+  // ファイルをタップしたときの処理
   const handleFilePress = (fileId: string, mimeType: string, name: string) => {
     if (FileUtility.isVideo(mimeType)) {
       const currentFolderId = drive.folderStack[drive.folderStack.length - 1];
@@ -51,17 +50,18 @@ export default function HomeScreen() {
     }
   };
 
+  // 戻るボタンを押したときの処理
   const handleBack = () => {
     if (drive.folderStack.length > 1) {
       drive.goBack();
-    } else {
-      auth.logout();
-      router.replace('/login');
     }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-stone-100" edges={['top']}>
+      {/* ヘッダー
+  　　    ←　GoogleDrive　↻ 
+      */}
       <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
         <TouchableOpacity className="w-10 h-10 justify-center items-center" onPress={handleBack}>
           <Text className="text-2xl">←</Text>
@@ -99,6 +99,7 @@ export default function HomeScreen() {
               <Text className="text-2xl mr-3">
                 {FileUtility.isVideo(item.mimeType) ? '🎬' : '📁'}
               </Text>
+              {/* アイコンを表示するようにする */}
               <View className="flex-1">
                 <Text className="text-sm font-medium text-gray-900" numberOfLines={2}>
                   {item.name}

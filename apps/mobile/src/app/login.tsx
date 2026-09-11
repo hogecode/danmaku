@@ -178,10 +178,6 @@ export default function LoginScreen() {
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 }}
       >
         <View className="items-center">
-          <View className="mb-6">
-            <Text className="text-8xl">🎬</Text>
-          </View>
-
           <Text className="text-3xl font-bold mb-2 text-center">Danmaku</Text>
           <Text className="text-sm text-gray-500 mb-8 text-center">
             Google Drive のビデオを再生できます

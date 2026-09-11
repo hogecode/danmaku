@@ -6,7 +6,7 @@
 import { Configuration } from '@/generated';
 import { API_BASE_URL, API_TIMEOUT } from '@/utils/constants';
 import { appLogger } from '@/utils/logger';
-import { tokenStorage } from '@/utils/token-storage';
+import { useAuthStore } from '@/stores/auth-store';
 
 /**
  * カスタム Fetch 関数
@@ -25,7 +25,7 @@ export const createFetchWithAuth = (fetchFn?: typeof fetch) => {
 
     // トークンを取得して付与
     try {
-      const token = await tokenStorage.getToken();
+      const token = useAuthStore.getState().token;
       if (token) {
         finalOptions.headers = {
           ...finalOptions.headers,

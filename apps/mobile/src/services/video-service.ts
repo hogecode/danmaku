@@ -7,7 +7,7 @@ import { API_BASE_URL } from '@/utils/constants';
 import { appLogger } from '@/utils/logger';
 import { AuthApi, PlayerApi } from '@/generated';
 import { createApiConfiguration } from './api-config';
-import { tokenStorage } from '@/utils/token-storage';
+import { useAuthStore } from '@/stores/auth-store';
 
 export class VideoException extends Error {
   constructor(
@@ -51,7 +51,7 @@ export class VideoService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await this.getAccessToken()}`,
+          'Authorization': `Bearer ${this.getAccessToken()}`,
         },
       });
 
@@ -78,8 +78,8 @@ export class VideoService {
    * アクセストークンを取得
    * @private
    */
-  private async getAccessToken(): Promise<string> {
-    const token = await tokenStorage.getToken();
+  private getAccessToken(): string {
+    const token = useAuthStore.getState().token;
     if (!token) {
       throw new VideoException('No access token available');
     }
