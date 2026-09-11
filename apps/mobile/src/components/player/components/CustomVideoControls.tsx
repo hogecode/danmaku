@@ -234,6 +234,9 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
               resetHideTimer();
             }}
             activeOpacity={0.8}
+            // タッチ領域を上下に12px ずつ拡大
+            // hitSlop でタッチ領域を拡大（見た目は変わらない）
+            hitSlop={{ top: 12, bottom: 12, left: 0, right: 0 }}
             style={{
               height: 4,
               backgroundColor: "rgba(255, 255, 255, 0.3)",
