@@ -1,0 +1,23 @@
+DPlayer-master/src/ts/info-panel.ts(4,20): error TS2307: Cannot find module 'mpegts.js' or its corresponding type declarations.
+DPlayer-master/src/ts/info-panel.ts(5,19): error TS2307: Cannot find module 'flv.js' or its corresponding type declarations.
+DPlayer-master/src/ts/info-panel.ts(6,66): error TS2307: Cannot find module 'mpeg2toh264/player' or its corresponding type declarations.
+DPlayer-master/src/ts/info-panel.ts(7,53): error TS2307: Cannot find module 'mpeg2toh264/yadif' or its corresponding type declarations.
+DPlayer-master/src/ts/player.ts(1,28): error TS2307: Cannot find module 'aribb24.js' or its corresponding type declarations.
+DPlayer-master/src/ts/player.ts(25,66): error TS2307: Cannot find module 'mpeg2toh264/player' or its corresponding type declarations.
+DPlayer-master/src/ts/player.ts(584,82): error TS7006: Parameter 'event' implicitly has an 'any' type.
+DPlayer-master/src/ts/player.ts(584,89): error TS7006: Parameter 'data' implicitly has an 'any' type.
+DPlayer-master/src/ts/player.ts(711,99): error TS7006: Parameter 'data' implicitly has an 'any' type.
+DPlayer-master/src/ts/player.ts(739,69): error TS7006: Parameter 'element' implicitly has an 'any' type.
+DPlayer-master/src/ts/player.ts(749,70): error TS7006: Parameter 'event' implicitly has an 'any' type.
+DPlayer-master/src/ts/player.ts(771,70): error TS7006: Parameter 'event' implicitly has an 'any' type.
+DPlayer-master/src/ts/player.ts(918,52): error TS7006: Parameter 'torrent' implicitly has an 'any' type.
+DPlayer-master/src/ts/player.ts(919,66): error TS7006: Parameter 'file' implicitly has an 'any' type.
+DPlayer-master/src/ts/types.ts(1,32): error TS2307: Cannot find module 'hls.js' or its corresponding type declarations.
+DPlayer-master/src/ts/types.ts(2,20): error TS2307: Cannot find module 'mpegts.js' or its corresponding type declarations.
+DPlayer-master/src/ts/types.ts(3,19): error TS2307: Cannot find module 'flv.js' or its corresponding type declarations.
+DPlayer-master/src/ts/types.ts(4,25): error TS2307: Cannot find module 'dashjs' or its corresponding type declarations.
+DPlayer-master/src/ts/types.ts(5,24): error TS2307: Cannot find module 'webtorrent' or its corresponding type declarations.
+DPlayer-master/src/ts/types.ts(6,28): error TS2307: Cannot find module 'aribb24.js' or its corresponding type declarations.
+DPlayer-master/src/ts/types.ts(7,58): error TS2307: Cannot find module 'mpeg2toh264/player' or its corresponding type declarations.
+DPlayer-master/src/ts/types.ts(8,35): error TS2307: Cannot find module 'mpeg2toh264/yadif' or its corresponding type declarations.
+src/components/app-tabs.web.tsx(27,38): error TS2322: Type '"/explore"' is not assignable to type '"/" | RelativePathString | ExternalPathString | "/home" | `/home?${string}` | `/home#${string}` | `/?${string}` | `/#${string}` | "/login" | `/login?${string}` | `/login#${string}` | ... 13 more ... | undefined'.

@@ -250,6 +250,9 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   // DPlayer実装参考: トラック管理（各トラックの終了時間を記録）
   const tracksRef = useRef<Track[]>([]);
   
+  // ✅ 改善: シーク検出用に前回の時刻を記録
+  const prevTimeRef = useRef(currentTime);
+  
   // 既に表示済みのコメントID（二重表示防止）
   const displayedIdsRef = useRef<Set<string>>(new Set());
   
@@ -357,6 +360,28 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   }, [danmakuList]);
 
   /**
+   * シーク検出 + 状態リセット
+   * currentTime が大きく変動した場合（シーク）を検出し、
+   * 表示済みコメント情報をリセットして、再度表示できるようにする
+   */
+  useEffect(() => {
+    // シーク検出: 前回時刻との差が1秒以上
+    const timeDiff = Math.abs(currentTime - prevTimeRef.current);
+    
+    if (timeDiff > 1) {
+      
+      // シーク時: 状態をリセット
+      danIndexRef.current = 0;
+      displayedIdsRef.current.clear();
+      setAnimatingDanmakus([]);
+      tracksRef.current = [];
+    }
+    
+    // 前回時刻を更新
+    prevTimeRef.current = currentTime;
+  }, [currentTime]);
+
+  /**
    * DPlayer.frame() メソッドの実装
    * 現在時刻に基づいて表示すべきコメントを判定
    */
@@ -409,12 +434,10 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
 
       // トラックを割り当て
       const trackIndex = findAvailableTrack(commentStartTime, duration);
-      // MEMO: findAvailableTrackよりもupdateTrack関数を見直す
       updateTrack(trackIndex, commentEndTime);
 
       // アニメーション開始
       // ★DPlayer準拠: 線形イージング（linear）で一定速度を実現
-      // デフォルトのease-outでは最初は遅く、後で早くなるため
       Animated.timing(animationValue, {
         toValue: 1,
         duration: duration * 1000,
