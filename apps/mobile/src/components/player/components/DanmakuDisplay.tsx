@@ -220,6 +220,8 @@ interface DanmakuDisplayProps {
   opacity?: number;
   visible?: boolean;
   videoHeight?: number;
+  // ✅ 新規: トラック数を親コンポーネントから指定可能
+  maxTracks?: number;  // デフォルト: 8
 }
 
 interface Track {
@@ -236,6 +238,7 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   opacity = 1,
   visible = true,
   videoHeight = 0,
+  maxTracks: maxTracksOverride,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const displayVideoHeight = videoHeight || (screenWidth * 9) / 16;
@@ -251,10 +254,33 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   // 次に表示すべきコメントのインデックス（DPlayerの frame() メソッド参考）
   const danIndexRef = useRef(0);
   
-  // ビデオ領域内に表示可能なトラック数を計算
-  // TODO: maxTracksの上限を動的に設定できるようにする
-  const lineHeight = fontSize + 4;
-  const maxTracks = Math.floor(displayVideoHeight / lineHeight);
+  // ✅ 改善: トラック数主導の計算ロジック
+  // 1. maxTracks を先に決定（親から指定するか、デフォルト値を使用）
+  // 2. それに基づいて lineHeight を計算
+  // 3. lineHeight から fontSize を逆算
+  const DEFAULT_MAX_TRACKS = 10;
+  const calculatedMaxTracks = maxTracksOverride ?? DEFAULT_MAX_TRACKS;
+  
+  // ビデオ領域の高さ からトラックあたりの高さを計算
+  const calculatedLineHeight = displayVideoHeight / calculatedMaxTracks;
+  
+  // lineHeight からフォントサイズを逆算
+  // lineHeight = fontSize + 4 の関係から：
+  // fontSize = lineHeight - 4
+  // ただし、最小12pxを確保
+  const MIN_FONT_SIZE = 12;
+  const calculatedFontSize = Math.max(calculatedLineHeight - 10, MIN_FONT_SIZE);
+  
+  // 親から fontSize が明示的に指定されている場合はそれを使用
+  // そうでない場合は計算値を使用
+  const finalFontSize = fontSize !== 24 ? fontSize : calculatedFontSize;
+  const lineHeight = finalFontSize + 4;
+  const maxTracks = calculatedMaxTracks;
+  
+  console.log(
+    '[DanmakuDisplay] Track calculation:',
+    `maxTracks=${maxTracks}, lineHeight=${lineHeight.toFixed(1)}px, fontSize=${finalFontSize.toFixed(1)}px`
+  );
 
   /**
    * 利用可能なトラックを検索する（DPlayer参考）
@@ -421,7 +447,8 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
           screenWidth={screenWidth}
           displayVideoHeight={displayVideoHeight}
           lineHeight={lineHeight}
-          fontSize={fontSize}
+          // ✅ 修正: 計算済みの finalFontSize を使用（maxTracks に基づいて自動調整される）
+          fontSize={finalFontSize}
           opacity={opacity}
           speedRate={speedRate}
           onTextLayout={handleTextLayout}

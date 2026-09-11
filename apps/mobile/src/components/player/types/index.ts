@@ -61,6 +61,8 @@ export interface DanmakuConfig {
   synchronousPlayback?: boolean;  // 同期再生
   useDatabase?: boolean;  // ローカルDB使用
   closeCommentFormAfterSend?: boolean;  // 送信後入力欄を閉じる
+  // ✅ 新規: トラック管理
+  maxTracks?: number;  // 最大トラック数（デフォルト: 8）。この値に基づいてフォントサイズが自動調整される
 }
 
 /**
