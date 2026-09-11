@@ -14,8 +14,8 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/use-auth';
 import { useDrive } from '@/hooks/use-drive';
-import { FOLDER_MIME_TYPE, VIDEO_MIME_TYPES } from '@/utils/constants';
 import { appLogger } from '@/utils/logger';
+import { FileUtility } from '@/utils/FileUtility';
 
 export default function HomeScreen() {
   const auth = useAuth();
@@ -40,25 +40,13 @@ export default function HomeScreen() {
     );
   }
 
-  const isFolder = (mimeType: string) => mimeType === FOLDER_MIME_TYPE;
-  const isVideo = (mimeType: string) =>
-    VIDEO_MIME_TYPES.some((vmt) => mimeType.includes(vmt));
 
-  // ファイルサイズをフォーマットする関数
-  const formatFileSize = (bytes: number | undefined) => {
-    if (!bytes) return '';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-    if (bytes < 1024 * 1024 * 1024)
-      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-  };
 
   const handleFilePress = (fileId: string, mimeType: string, name: string) => {
-    if (isVideo(mimeType)) {
+    if (FileUtility.isVideo(mimeType)) {
       const currentFolderId = drive.folderStack[drive.folderStack.length - 1];
       router.push(`/player/${fileId}?fileName=${encodeURIComponent(name)}&folderId=${currentFolderId}`);
-    } else if (isFolder(mimeType)) {
+    } else if (FileUtility.isFolder(mimeType)) {
       drive.navigateToFolder(fileId);
     }
   };
@@ -109,15 +97,15 @@ export default function HomeScreen() {
               }
             >
               <Text className="text-2xl mr-3">
-                {isVideo(item.mimeType) ? '🎬' : '📁'}
+                {FileUtility.isVideo(item.mimeType) ? '🎬' : '📁'}
               </Text>
               <View className="flex-1">
                 <Text className="text-sm font-medium text-gray-900" numberOfLines={2}>
                   {item.name}
                 </Text>
-                {isVideo(item.mimeType) && item.size && (
+                {FileUtility.isVideo(item.mimeType) && item.size && (
                   <Text className="text-xs text-gray-400 mt-1">
-                    {formatFileSize(item.size)}
+                    {FileUtility.formatFileSize(item.size)}
                   </Text>
                 )}
               </View>
