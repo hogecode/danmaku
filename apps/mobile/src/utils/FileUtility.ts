@@ -8,8 +8,6 @@ import { FOLDER_MIME_TYPE, VIDEO_MIME_TYPES } from '@/utils/constants';
 export class FileUtility {
   /**
    * フォルダかどうかを判定
-   * @param mimeType - MIMEタイプ
-   * @returns フォルダの場合 true
    */
   static isFolder(mimeType: string): boolean {
     return mimeType === FOLDER_MIME_TYPE;
@@ -17,20 +15,31 @@ export class FileUtility {
 
   /**
    * ビデオファイルかどうかを判定
-   * @param mimeType - MIMEタイプ
-   * @returns ビデオファイルの場合 true
    */
   static isVideo(mimeType: string): boolean {
     return VIDEO_MIME_TYPES.some((vmt) => mimeType.includes(vmt));
   }
 
   /**
+   * ファイル名からMIMEタイプを推測
+   */
+  static getMimeType(fileName: string): string {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    const mimeMap: Record<string, string> = {
+      mp4: 'video/mp4',
+      mkv: 'video/x-matroska',
+      mov: 'video/quicktime',
+      avi: 'video/x-msvideo',
+      flv: 'video/x-flv',
+      wmv: 'video/x-ms-wmv',
+      webm: 'video/webm',
+      m3u8: 'application/vnd.apple.mpegurl',
+    };
+    return mimeMap[ext] || 'application/octet-stream';
+  }
+
+  /**
    * ファイルサイズを人間が読める形にフォーマット
-   * @param bytes - ファイルサイズ（バイト）
-   * @returns フォーマットされたサイズ文字列（例：1.23 MB）
-   * @example
-   * FileUtility.formatFileSize(1024) // "1.00 KB"
-   * FileUtility.formatFileSize(1048576) // "1.00 MB"
    */
   static formatFileSize(bytes: number | undefined): string {
     if (!bytes) return '';

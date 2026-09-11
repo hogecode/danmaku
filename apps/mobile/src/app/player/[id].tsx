@@ -15,7 +15,7 @@ import type { PlayerConfig, Danmaku } from '@/components/player';
  */
 export default function PlayerScreen() {
   const video = useVideo();
-  const { id, fileName, folderId } = useLocalSearchParams<{ id: string; fileName?: string; folderId?: string }>();
+  const { id, fileName, folderId, isLocalFile } = useLocalSearchParams<{ id: string; fileName?: string; folderId?: string; isLocalFile?: string }>();
   const [isLoading, setIsLoading] = useState(true);
   
   // プレイヤー設定ストアから動的に設定を取得
@@ -37,11 +37,12 @@ export default function PlayerScreen() {
     // ビデオプレイヤーを初期化
     const initVideo = async () => {
       try {
-        appLogger.info(`[PlayerScreen] Initializing video: ${id}`);
+        appLogger.info(`[PlayerScreen] Initializing video: ${id}, isLocalFile: ${isLocalFile}`);
         await video.initializePlayer({
           videoFileId: id,
           fileName: fileName || 'Unknown',
           folderId: folderId || undefined,
+          isLocalFile: isLocalFile === 'true',
         });
       } catch (error) {
         appLogger.error('[PlayerScreen] Failed to initialize video', error);
@@ -52,7 +53,7 @@ export default function PlayerScreen() {
 
     // NOTE: cleanup は依存配列の無限ループを防ぐため除外
     // ページを離れる時はスタック上のクリーンアップが行われる
-  }, [id, fileName, folderId]); // video を依存配列から除外
+  }, [id, fileName, folderId, isLocalFile]); // video を依存配列から除外
 
   const handlePlayerReady = () => {
     appLogger.info(`[PlayerScreen] Player ready for: ${id}`);

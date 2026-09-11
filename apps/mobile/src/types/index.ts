@@ -31,4 +31,5 @@ export interface VideoPlayerConfig {
   videoFileId: string;
   folderId?: string;
   fileName?: string;
+  isLocalFile?: boolean; // ローカルファイルフラグ
 }

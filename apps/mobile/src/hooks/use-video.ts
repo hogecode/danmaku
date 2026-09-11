@@ -19,16 +19,24 @@ export function useVideo() {
       video.setError(null);
       video.setLoading(true);
 
-      appLogger.info(`[useVideo] プレイヤー初期化中: ${config.fileName}`);
+      appLogger.info(`[useVideo] プレイヤー初期化中: ${config.fileName}, isLocalFile: ${config.isLocalFile}`);
 
-      // ビデオトークンを取得
-      const videoToken = await videoService.getVideoToken();
+      let streamingUrl: string;
 
-      // ストリーミング URL を構築
-      const streamingUrl = videoService.buildStreamingUrl(
-        config.videoFileId,
-        videoToken
-      );
+      // ローカルファイルの場合は URI をそのまま使用
+      if (config.isLocalFile) {
+        streamingUrl = config.videoFileId;
+        appLogger.info(`[useVideo] ローカルファイルURL: ${streamingUrl}`);
+      } else {
+        // ビデオトークンを取得
+        const videoToken = await videoService.getVideoToken();
+
+        // ストリーミング URL を構築
+        streamingUrl = videoService.buildStreamingUrl(
+          config.videoFileId,
+          videoToken
+        );
+      }
 
       // 設定を更新
       const updatedConfig = { ...config, videoUrl: streamingUrl };
@@ -37,7 +45,9 @@ export function useVideo() {
       appLogger.info('[useVideo] プレイヤー初期化完了');
 
       // コメントを読み込む（非同期・エラー無視）
-      loadComments(config.videoFileId, config.folderId);
+      if (!config.isLocalFile) {
+        loadComments(config.videoFileId, config.folderId);
+      }
 
       return updatedConfig;
     } catch (error) {
