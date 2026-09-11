@@ -68,9 +68,11 @@ export class AuthService {
     await this.redis.setex(stateKey, this.STATE_TTL, '1');
     await this.redis.setex(verifierKey, this.STATE_TTL, verifier);
 
-    // OAuth認可リクエスト用のリダイレクトURI（常に ?client=desktop を付ける）
-    // Flutterブラウザはこのパラメータで判定される
-    const redirectUri = `${baseRedirectUri}?client=desktop`;
+    // OAuth認可リクエスト用のリダイレクトURI
+    // ⚠️ Google Cloud Console での登録URIと完全に一致させることが必須
+    // クエリパラメータは付けない（Google が redirect_uri_mismatch エラーを返す）
+    // クライアント判定は Authorization ヘッダー (X-Client-Type) で行う
+    const redirectUri = baseRedirectUri;
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -97,9 +99,8 @@ export class AuthService {
    * OAuthコールバック処理：コードをトークンに交換
    * @param code - Google OAuth 認可コード
    * @param state - state パラメータ
-   * @param isFlutterClient - Flutterクライアントからのリクエストかどうか
    */
-  async handleGoogleCallback(code: string, state: string, isFlutterClient: boolean = false): Promise<UserInfoDto> {
+  async handleGoogleCallback(code: string, state: string): Promise<UserInfoDto> {
     const stateKey = `oauth:state:${state}`;
     const stateExists = await this.redis.get(stateKey);
 
@@ -121,8 +122,14 @@ export class AuthService {
       ]);
 
       // OAuth認可リクエスト時に使用したリダイレクトURIと同じものを使用
+      // ⚠️ initializeLogin と同じく、クエリパラメータなしの baseRedirectUri を使用
       const baseRedirectUri = this.configService.get<string>('GOOGLE_REDIRECT_URI');
-      const redirectUri = `${baseRedirectUri}?client=desktop`;
+      if (!baseRedirectUri) {
+        throw new InternalServerErrorException(
+          'Google OAuth configuration missing',
+        );
+      }
+      const redirectUri = baseRedirectUri;
 
       const tokenData = await this.tokenService.exchangeCodeForToken(
         code,

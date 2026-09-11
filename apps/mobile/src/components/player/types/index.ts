@@ -71,7 +71,7 @@ export interface DanmakuConfig {
 export interface Danmaku {
   time: number;  // 表示開始時刻（秒）
   type: 'normal' | 'top' | 'bottom';  // 流れるコメント/上固定/下固定
-  color: string;  // 色（#RRGGBB）
+  color?: string;  // 色（#RRGGBB）- undefined の場合、DanmakuDisplay の defaultColor を使用
   author: string;  // 投稿者
   text: string;  // テキスト
   size?: 'normal' | 'small' | 'large';  // サイズ

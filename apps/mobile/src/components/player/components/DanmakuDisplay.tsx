@@ -68,6 +68,7 @@ interface DanmakuItemProps {
   fontSize: number;
   opacity: number;
   speedRate: number;
+  defaultColor?: string; // #RRGGBB形式
   onTextLayout?: (id: string, width: number) => void;
 }
 
@@ -80,6 +81,7 @@ const DanmakuItem = React.memo<DanmakuItemProps>(({
   fontSize,
   opacity,
   speedRate,
+  defaultColor = '#FFFFFF',
   onTextLayout,
 }) => {
   const { danmaku, animationValue, trackIndex, actualTextWidth, measurementComplete } = item;
@@ -140,7 +142,7 @@ const DanmakuItem = React.memo<DanmakuItemProps>(({
         <Text
           style={{
             fontSize,
-            color: danmaku.color || '#FFFFFF',
+            color: danmaku.color || defaultColor,
             fontWeight: 'bold',
             opacity,
             textShadowColor: 'rgba(0, 0, 0, 0.8)',
@@ -183,7 +185,7 @@ const DanmakuItem = React.memo<DanmakuItemProps>(({
       <Text
         style={{
           fontSize,
-          color: danmaku.color || '#FFFFFF',
+          color: danmaku.color || defaultColor,
           fontWeight: 'bold',
           opacity,
           textShadowColor: 'rgba(0, 0, 0, 0.8)',
@@ -208,7 +210,8 @@ const DanmakuItem = React.memo<DanmakuItemProps>(({
     prevProps.lineHeight === nextProps.lineHeight &&
     prevProps.fontSize === nextProps.fontSize &&
     prevProps.opacity === nextProps.opacity &&
-    prevProps.speedRate === nextProps.speedRate
+    prevProps.speedRate === nextProps.speedRate &&
+    prevProps.defaultColor === nextProps.defaultColor
   );
 })
 
@@ -224,6 +227,8 @@ interface DanmakuDisplayProps {
   videoHeight?: number;
   // ✅ 新規: トラック数を親コンポーネントから指定可能
   maxTracks?: number;  // デフォルト: 8
+  // ✅ 新規: デフォルトコメント色
+  defaultColor?: string; // #RRGGBB形式
 }
 
 interface Track {
@@ -241,6 +246,7 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   visible = true,
   videoHeight = 0,
   maxTracks: maxTracksOverride,
+  defaultColor = '#FFFFFF',
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const displayVideoHeight = videoHeight || (screenWidth * 9) / 16;
@@ -489,6 +495,7 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
           fontSize={finalFontSize}
           opacity={opacity}
           speedRate={speedRate}
+          defaultColor={defaultColor}
           onTextLayout={handleTextLayout}
         />
       ))}

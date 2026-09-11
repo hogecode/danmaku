@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Player } from '@/components/player';
 import { useVideo } from '@/hooks/use-video';
 import { appLogger } from '@/utils/logger';
+import { usePlayerSettingsStore } from '@/stores/player-settings-store';
 import type { PlayerConfig, Danmaku } from '@/components/player';
 
 /**
@@ -16,6 +17,14 @@ export default function PlayerScreen() {
   const video = useVideo();
   const { id, fileName, folderId } = useLocalSearchParams<{ id: string; fileName?: string; folderId?: string }>();
   const [isLoading, setIsLoading] = useState(true);
+  
+  // プレイヤー設定ストアから動的に設定を取得
+  const { settings, loadSettings } = usePlayerSettingsStore();
+
+  // 設定をロード
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   // ビデオを初期化
   useEffect(() => {
@@ -54,12 +63,13 @@ export default function PlayerScreen() {
     appLogger.error(`[PlayerScreen] Player error: ${error}`);
   };
 
-  // TODO: videoplayer内でユーザーが動的に変更できるようにする
-  const AUTO_PLAY = true;
-  const SPEED_RATE = 1;
-  const FONT_SIZE = 24;
-  const OPACITY = 1;
-
+  // ✅ 設定をストアから動的に取得
+  const AUTO_PLAY = settings.autoPlay;
+  const SPEED_RATE = settings.playbackRate;
+  const FONT_SIZE = settings.danmakuFontSize;
+  const OPACITY = settings.danmakuOpacity;
+  const DEFAULT_COLOR = settings.danmakuColor || '#ffffff';
+  
   // プレイヤー設定を構築
   const playerConfig = useMemo((): PlayerConfig => {
     return {
@@ -77,7 +87,8 @@ export default function PlayerScreen() {
         fontSize: FONT_SIZE,
         opacity: OPACITY,
         unlimited: false,
-        maxTracks: 10
+        maxTracks: 10,
+        defaultColor: DEFAULT_COLOR,
       },
       apiBackend: {
         read: ({ success, error }) => {
@@ -86,8 +97,10 @@ export default function PlayerScreen() {
             if (video.comments && video.comments.length > 0) {
               const danmakus: Danmaku[] = video.comments.map((comment: any) => ({
                 time: parseFloat(comment.vpos) || 0, // vpos は秒単位（浮動小数点）
-                type: 'normal' as const,
-                color: '#ffffff',
+                type: comment.type || 'normal',
+                // ✅ 色を設定しない → DanmakuDisplay の defaultColor を使用
+                // 設定モーダルで色を変更したとき、リアルタイムに反映される
+                // color は省略（undefined）
                 author: comment.user_id || 'anonymous',
                 text: comment.text || '',
               }));
@@ -107,7 +120,7 @@ export default function PlayerScreen() {
         },
       },
     };
-  }, [video.config?.videoUrl, video.comments]);
+  }, [video.config?.videoUrl, video.comments, DEFAULT_COLOR, SPEED_RATE, FONT_SIZE, OPACITY, AUTO_PLAY]);
 
   // エラー状態
   if (video.error) {

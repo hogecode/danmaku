@@ -3,6 +3,7 @@ import { View, TouchableOpacity, Text, Dimensions, Animated } from 'react-native
 import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 import type { PlayerConfig } from '../types';
 import { VideoSettingsModal } from './VideoSettingsModal';
+import { usePlayerSettingsStore } from '@/stores/player-settings-store';
 
 const formatTime = (seconds: number): string => {
   if (!seconds || isNaN(seconds)) return '00:00';
@@ -45,10 +46,42 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
   const [selectedPlaybackRate, setSelectedPlaybackRate] = useState(1);
   
+  // ✅ 設定ストアから動的に取得
+  const { settings, loadSettings } = usePlayerSettingsStore();
+  const BACK_SECONDS = settings.backSeekSeconds;
+  const FORWARD_SECONDS = settings.forwardSeekSeconds;
+  
+  // アイコン名を秒数に応じて動的に決定
+  const getRewindIconName = (seconds: number): string => {
+    switch (seconds) {
+      case 5:
+        return "rewind-5";
+      case 10:
+        return "rewind-10";
+      case 15:
+        return "rewind-15";
+      case 30:
+        return "rewind-30";
+      default:
+        return "rewind-10";
+    }
+  };
 
-  // TODO: 設定で変更できるようにする
-  const BACK_SECONDS = 10;
-  const FORWARD_SECONDS = 10;
+  const getFastForwardIconName = (seconds: number): string => {
+    switch (seconds) {
+      case 5:
+        return "fast-forward-5";
+      case 10:
+        return "fast-forward-10";
+      case 15:
+        return "fast-forward-15";
+      case 30:
+        return "fast-forward-30";
+      default:
+        return "fast-forward-10";
+    }
+  };
+  
   // デバウンス: 再生/停止ボタンの連続押下を防止（ms）
   const PLAY_PAUSE_DEBOUNCE_MS = 300;
 
@@ -182,6 +215,11 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
     resetHideTimer();
   };
 
+  // 設定をロード
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
+
   useEffect(
     () => () => {
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
@@ -295,11 +333,13 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
                 justifyContent: "center",
               }}
             >
-              {/* 10秒戻るボタン 
-              TODO: アイコンをカスタマイズできるようにする
-              */}
+              {/* 戻るボタン - アイコンを秒数に応じて動的に変更 */}
               <TouchableOpacity onPress={handleBackward}>
-                <Icon name="rewind-10" size={28} color="#fff" />
+                <Icon 
+                  name={getRewindIconName(BACK_SECONDS)} 
+                  size={28} 
+                  color="#fff" 
+                />
               </TouchableOpacity>
 
               {/* 再生/一時停止ボタン */}
@@ -321,11 +361,13 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
                 />
               </TouchableOpacity>
 
-              {/* 10秒進むボタン 
-              TODO: アイコンをカスタマイズできるようにする
-              */}
+              {/* 進むボタン - アイコンを秒数に応じて動的に変更 */}
               <TouchableOpacity onPress={handleForward}>
-                <Icon name="fast-forward-10" size={28} color="#fff" />
+                <Icon 
+                  name={getFastForwardIconName(FORWARD_SECONDS)} 
+                  size={28} 
+                  color="#fff" 
+                />
               </TouchableOpacity>
             </View>
 
@@ -384,11 +426,9 @@ export const CustomVideoControls: React.FC<CustomVideoControlsProps> = ({
         visible={settingsModalVisible}
         onClose={handleSettingsClose}
         config={config}
-        onSettingsChange={onSettingsChange}
         playbackRates={playbackRates}
         selectedPlaybackRate={selectedPlaybackRate}
         onPlaybackRateChange={handlePlaybackRateChange}
-        onDanmakuOpacityChange={onDanmakuOpacityChange}
       />
     </>
   );

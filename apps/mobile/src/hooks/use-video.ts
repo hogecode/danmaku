@@ -86,37 +86,6 @@ export function useVideo() {
     }
   }, [video]);
 
-  /**
-   * 現在の再生位置に基づいて表示するコメントを更新
-   */
-  const updateVisibleComments = useCallback(
-    (currentTime: number, duration: number) => {
-      const comments = video.comments;
-
-      // vpos は相対位置（ビデオの先頭からの秒数）で、displayRange を考慮
-      // ここでは簡素化して、現在時刻±3秒の範囲を表示
-      const displayRange = 3;
-      const visibleComments = comments.filter((comment: any) => {
-        const commentTime = comment.vpos;
-        return Math.abs(currentTime - commentTime) <= displayRange;
-      });
-
-      video.setVisibleComments(visibleComments);
-    },
-    [video]
-  );
-
-  /**
-   * 再生時間を更新
-   */
-  const setCurrentTime = useCallback(
-    (time: number) => {
-      video.setCurrentTime(time);
-      // コメント表示を更新
-      updateVisibleComments(time, video.duration);
-    },
-    [video, updateVisibleComments]
-  );
 
   /**
    * クリーンアップ
@@ -130,8 +99,6 @@ export function useVideo() {
     ...video,
     initializePlayer,
     loadComments,
-    updateVisibleComments,
-    setCurrentTime,
     cleanup,
   };
 }

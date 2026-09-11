@@ -25,7 +25,6 @@ interface VideoPlayerProps {
   onReady?: () => void;
   onError?: (error: string) => void;
   onLayoutChange?: (layout: { x: number; y: number; width: number; height: number }) => void;
-  onDanmakuOpacityChange?: (opacity: number) => void;
   videoPlayback?: any;  // useVideoPlayback から外部で注入
   danmakuAnimation?: any;  // useDanmakuAnimation から外部で注入
 }
@@ -37,7 +36,6 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onReady,
       onError,
       onLayoutChange,
-      onDanmakuOpacityChange,
       videoPlayback: externalVideoPlayback,
       danmakuAnimation,
     },
@@ -157,7 +155,6 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
     }, []);
 
     // フルスクリーン解除時に screenWidth を正しく更新
-    // TODO: 反映されるまでに多少時間がかかるので見直す
     // これがないとフルスクリーン解除後に何故か動画が正しい幅で表示されない
     useEffect(() => {
       if (!isFullscreen) {
@@ -264,7 +261,6 @@ export const VideoPlayer = React.forwardRef<VideoPlayerRef, VideoPlayerProps>(
             <CustomVideoControls
               videoPlayback={videoPlayback}
               config={config}
-              onDanmakuOpacityChange={onDanmakuOpacityChange}
               isFullscreen={isFullscreen}
               isPip={isPip}
               danmakuAnimation={danmakuAnimation}

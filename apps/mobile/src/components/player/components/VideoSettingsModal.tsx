@@ -1,39 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, TouchableOpacity, Text, Modal, ScrollView } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import type { PlayerConfig } from "../types";
+import { ColorPickerComponent } from "./ColorPicker";
+import { usePlayerSettingsStore } from "@/stores/player-settings-store";
 
 interface VideoSettingsModalProps {
   visible: boolean;
   onClose: () => void;
   config: PlayerConfig;
-  onSettingsChange?: (settings: any) => void;
   playbackRates: number[];
   selectedPlaybackRate: number;
   onPlaybackRateChange: (rate: number) => void;
-  onDanmakuOpacityChange?: (opacity: number) => void;
 }
 
 export const VideoSettingsModal: React.FC<VideoSettingsModalProps> = ({
   visible,
   onClose,
   config,
-  onSettingsChange,
   playbackRates,
   selectedPlaybackRate,
   onPlaybackRateChange,
-  onDanmakuOpacityChange,
 }) => {
-  const [danmakuOpacity, setDanmakuOpacity] = useState(
-    config.danmaku?.opacity ?? 1,
-  );
+  // Zustand ストアから設定を取得
+  const { settings, loadSettings, setSetting } = usePlayerSettingsStore();
   const [activeTab, setActiveTab] = useState<"video" | "danmaku">("video");
 
-  const handleOpacityChange = (value: number) => {
-    setDanmakuOpacity(value);
-    onSettingsChange?.({ danmakuOpacity: value });
-    onDanmakuOpacityChange?.(value);
-  };
+  // マウント時に設定をロード
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   const COMMENT_OPACITY_STEPS = [0.2, 0.4, 0.6, 0.8, 1];
 
@@ -47,7 +43,6 @@ export const VideoSettingsModal: React.FC<VideoSettingsModalProps> = ({
       {/* モーダルオーバーレイ（背景の半透明レイヤー・クリック時に閉じる） */}
       <TouchableOpacity
         activeOpacity={1}
-        onPress={onClose}
         style={{
           flex: 1,
           backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -61,6 +56,7 @@ export const VideoSettingsModal: React.FC<VideoSettingsModalProps> = ({
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
             paddingBottom: 32,
+            maxHeight: "80%",
           }}
         >
           {/* モーダルヘッダー（タイトル + クローズボタン） */}
@@ -138,9 +134,15 @@ export const VideoSettingsModal: React.FC<VideoSettingsModalProps> = ({
             )}
           </View>
 
-          {/* タブコンテンツ（スクロール可能） */}
+          {/* タブコンテンツ（スクロール可能）
+             TODO: スクロールできない
+          */}
           <ScrollView
-            style={{ paddingHorizontal: 16, paddingTop: 24, maxHeight: 300 }}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingTop: 24,
+              paddingBottom: 24,
+            }}
           >
             {/* 動画設定タブのコンテンツ */}
             {activeTab === "video" && (
@@ -159,7 +161,12 @@ export const VideoSettingsModal: React.FC<VideoSettingsModalProps> = ({
 
                 {/* 再生速度ボタングループ */}
                 <View
-                  style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}
+                  style={{
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 24,
+                  }}
                 >
                   {playbackRates.map((rate) => (
                     <TouchableOpacity
@@ -185,12 +192,152 @@ export const VideoSettingsModal: React.FC<VideoSettingsModalProps> = ({
                     </TouchableOpacity>
                   ))}
                 </View>
+
+                {/* 自動再生セクション */}
+                <View style={{ marginBottom: 24 }}>
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 14,
+                      fontWeight: "bold",
+                      marginBottom: 12,
+                    }}
+                  >
+                    自動再生
+                  </Text>
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    <TouchableOpacity
+                      onPress={() => setSetting("autoPlay", true)}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 4,
+                        backgroundColor: settings.autoPlay ? "#E64F97" : "#333",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                        ON
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => setSetting("autoPlay", false)}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 4,
+                        backgroundColor: !settings.autoPlay
+                          ? "#E64F97"
+                          : "#333",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                        OFF
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* シーク秒数セクション */}
+                <View style={{ marginBottom: 24 }}>
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 14,
+                      fontWeight: "bold",
+                      marginBottom: 12,
+                    }}
+                  >
+                    戻る秒数: {settings.backSeekSeconds}秒
+                  </Text>
+                  <View
+                    style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}
+                  >
+                    {[5, 10, 15, 30].map((value) => (
+                      <TouchableOpacity
+                        key={value}
+                        onPress={() => setSetting("backSeekSeconds", value)}
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          borderRadius: 4,
+                          backgroundColor:
+                            settings.backSeekSeconds === value
+                              ? "#E64F97"
+                              : "#333",
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                          {value}秒
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* 進む秒数セクション */}
+                <View style={{ marginBottom: 24 }}>
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 14,
+                      fontWeight: "bold",
+                      marginBottom: 12,
+                    }}
+                  >
+                    進む秒数: {settings.forwardSeekSeconds}秒
+                  </Text>
+                  <View
+                    style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}
+                  >
+                    {[5, 10, 15, 30].map((value) => (
+                      <TouchableOpacity
+                        key={value}
+                        onPress={() => setSetting("forwardSeekSeconds", value)}
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          borderRadius: 4,
+                          backgroundColor:
+                            settings.forwardSeekSeconds === value
+                              ? "#E64F97"
+                              : "#333",
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                          {value}秒
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
               </View>
             )}
 
             {/* コメント設定タブのコンテンツ */}
             {activeTab === "danmaku" && config.danmaku && (
               <View>
+                {/* コメント色セクション */}
+                <View style={{ marginBottom: 24 }}>
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 14,
+                      fontWeight: "bold",
+                      marginBottom: 12,
+                    }}
+                  >
+                    コメント色
+                  </Text>
+                  <ColorPickerComponent
+                    color={settings.danmakuDefaultColor}
+                    onColorChange={(color) =>
+                      setSetting("danmakuDefaultColor", color)
+                    }
+                  />
+                </View>
+
                 {/* コメント透明度セクションタイトル（現在値表示） */}
                 <Text
                   style={{
@@ -200,7 +347,7 @@ export const VideoSettingsModal: React.FC<VideoSettingsModalProps> = ({
                     marginBottom: 12,
                   }}
                 >
-                  コメント透明度: {Math.round(danmakuOpacity * 100)}%
+                  コメント透明度: {Math.round(settings.danmakuOpacity * 100)}%
                 </Text>
 
                 {/* 透明度調整コントローラー */}
@@ -225,13 +372,13 @@ export const VideoSettingsModal: React.FC<VideoSettingsModalProps> = ({
                     {COMMENT_OPACITY_STEPS.map((value) => (
                       <TouchableOpacity
                         key={value}
-                        onPress={() => handleOpacityChange(value)}
+                        onPress={() => setSetting("danmakuOpacity", value)}
                         style={{
                           paddingHorizontal: 8,
                           paddingVertical: 6,
                           borderRadius: 4,
                           backgroundColor:
-                            Math.abs(danmakuOpacity - value) < 0.01
+                            Math.abs(settings.danmakuOpacity - value) < 0.01
                               ? "#E64F97"
                               : "#555",
                         }}

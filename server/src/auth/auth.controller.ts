@@ -86,20 +86,19 @@ export class AuthController {
 
     try {
       // コールバック処理
-      const isFlutterClient = this._isFlutterClient(request);
+      const isMobileClient = this._isMobileClient(request);
       const userInfo = await this.authService.handleGoogleCallback(
         query.code,
         query.state,
-        isFlutterClient,
       );
 
       // セッションにユーザーID（string）を保存
       (session as any).userId = userInfo.id;
 
-      // Flutter版の場合はディープリンクにリダイレクト
+      // モバイル版の場合はディープリンクにリダイレクト
       // JWT アクセストークンを生成
-      if (isFlutterClient) {
-        this.logger.debug('[AUTH] Redirecting Flutter client to deep link');
+      if (isMobileClient) {
+        this.logger.debug('[AUTH] Redirecting Mobile client to deep link');
         const tokenService = (this.authService as any).tokenService;
         const accessToken = tokenService.generateAccessToken(BigInt(userInfo.id));
         const userData = JSON.stringify(userInfo);
@@ -121,22 +120,38 @@ export class AuthController {
   }
 
   /**
-   * Flutter クライアントかどうかを判定
+   * クライアントタイプを判定（Flutter vs Web）
    * 
-   * ?client=desktop クエリパラメータをチェック（コールバック時）
-   * OAuth認可リクエストでは常にこのパラメータが付与される
+   * ⚠️ IMPORTANT: Google OAuth の redirect_uri_mismatch エラーを回避するため、
+   * クエリパラメータではなく Authorization ヘッダー (X-Client-Type) で判定
+   * 
+   * クライアント判定の優先順位:
+   * 1. X-Client-Type ヘッダー (クライアントが明示的に指定した場合)
+   * 2. User-Agent ヘッダー (モバイルブラウザの場合)
+   * 3. デフォルト: Web クライアント
    */
-  private _isFlutterClient(request: Request): boolean {
-    const query = request.query as any;
-    const isFlutter = query?.client === 'desktop';
-    
-    if (isFlutter) {
-      this.logger.debug('[AUTH] Detected Flutter client via ?client=desktop');
-    } else {
-      this.logger.debug('[AUTH] Detected Web client');
+  private _isMobileClient(request: Request): boolean {
+    // 1. X-Client-Type ヘッダーをチェック（認証サービスから指定）
+    const clientType = request.headers['x-client-type'] as string | undefined;
+    if (clientType === 'flutter' || clientType === 'desktop' || clientType === 'mobile') {
+      this.logger.debug('[AUTH] Detected Mobile client via X-Client-Type header'); // 'flutter', 'desktop', 'mobile' are considered mobile clients
+      return true;
     }
 
-    return isFlutter;
+    // 2. User-Agent からモバイルブラウザを検出
+    const userAgent = request.headers['user-agent']?.toLowerCase() || '';
+    const isMobileUserAgent =
+      /mobile|android|iphone|ipad|windows phone|opera mini|blackberry/i.test(userAgent);
+    
+    if (isMobileUserAgent) {
+      this.logger.debug('[AUTH] Detected mobile user agent');
+      // モバイルブラウザの場合はモバイルクライアントと判定
+      return true;
+    }
+
+    // 3. デフォルト: Web クライアント
+    this.logger.debug('[AUTH] Detected Web client (default)');
+    return false;
   }
 
   /**

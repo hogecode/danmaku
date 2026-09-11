@@ -15,6 +15,7 @@ import { VideoPlayer, type VideoPlayerRef } from './components/VideoPlayer';
 import { DanmakuDisplay } from './components/DanmakuDisplay';
 import { useVideoPlayback } from './hooks/useVideoPlayback';
 import { useDanmakuAnimation } from './hooks/useDanmakuAnimation';
+import { usePlayerSettingsStore } from '@/stores/player-settings-store';
 import type { PlayerConfig, Danmaku } from './types';
 
 interface PlayerProps {
@@ -35,6 +36,11 @@ export const Player: React.FC<PlayerProps> = ({
     unlimited: config.danmaku?.unlimited,
   });
 
+  // プレイヤー設定ストア
+  const { loadSettings } = usePlayerSettingsStore();
+  // Zustand selector で settings を購読（更新を反映）
+  const playerSettings = usePlayerSettingsStore((state) => state.settings);
+
   // VideoPlayer コンポーネントの ref
   const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
@@ -43,9 +49,11 @@ export const Player: React.FC<PlayerProps> = ({
   
   // ビデオプレイヤーのレイアウト情報（画面回転時に自動更新）
   const [videoLayout, setVideoLayout] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
-  
-  // コメント透明度の動的変更
-  const [danmakuOpacity, setDanmakuOpacity] = useState(config.danmaku?.opacity ?? 1);
+
+  // マウント時に設定をロード
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   // 初期化時にレイアウトを取得（フォールバック）
   const screenWidth = Dimensions.get('window').width;
@@ -73,9 +81,6 @@ export const Player: React.FC<PlayerProps> = ({
   // ビデオの再生時刻をダンマク表示に同期
   useEffect(() => {
     setDisplayTime(videoPlayback.state.currentTime);
-    if (videoPlayback.state.currentTime > 0) {
-      //console.log('[Player] currentTime updated:', videoPlayback.state.currentTime);
-    }
   }, [videoPlayback.state.currentTime]);
 
   // ページ離脱時のクリーンアップ（動画停止 + 状態リセット）
@@ -117,7 +122,6 @@ export const Player: React.FC<PlayerProps> = ({
           onReady={onReady}
           onError={onError}
           onLayoutChange={handleVideoLayoutChange}
-          onDanmakuOpacityChange={setDanmakuOpacity}
           videoPlayback={videoPlayback}
           danmakuAnimation={danmakuAnimation}
         />
@@ -139,10 +143,11 @@ export const Player: React.FC<PlayerProps> = ({
               currentTime={displayTime}
               speedRate={config.danmaku.speedRate}
               fontSize={config.danmaku.fontSize}
-              opacity={danmakuOpacity}
+              opacity={playerSettings.danmakuOpacity ?? 1}
               visible={danmakuAnimation.visible}
               videoHeight={videoLayout.height}
               maxTracks={config.danmaku.maxTracks}
+              defaultColor={playerSettings.danmakuDefaultColor ?? '#FFFFFF'}
             />
           </View>
         )}

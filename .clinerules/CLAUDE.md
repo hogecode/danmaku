@@ -5,6 +5,7 @@ Google Drive ビデオプレイヤー + リアルタイムコメント表示
 - **Backend**: NestJS + TypeScript + Drizzle + Redis
 - **Web**: Next.js 16 + React 19 + TypeScript + Tailwind + DPlayer
 - **desktop**: Flutter + Dart + Riverpod + 自作動画プレイヤー
+- mobile: ReactNative
 
 ---
 
@@ -36,7 +37,13 @@ lib/
 ```
 
 
-## コメントXML形式(ニコ実況形式)
+## 
+
+## 
+
+
+
+コメントXML形式(ニコ実況形式)
 JSONも同様にコメントデータを表現できる
 
 ```xml
