@@ -271,18 +271,18 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   const stoppedAnimatingDanmakusRef = useRef<AnimatingDanmaku[]>([]);
   const wasPlayingRef = useRef(isPlaying);
 
+  // ★修正: シーク検出フラグ（useEffect間で情報共有）
+  const isSeekRef = useRef(false);
+
   // ★新規: 停止時のアニメーション停止 & 再開時のアニメーション復活
   useEffect(() => {
     if (!isPlaying) {
       // 停止時: 全アニメーションを停止して記録
       console.log('[DanmakuDisplay] Paused: stopping animations');
       setAnimatingDanmakus(prev => {
-        // 停止する前のアニメーション一覧を記録
         stoppedAnimatingDanmakusRef.current = prev;
         prev.forEach(item => {
-          item.animationValue.stopAnimation(() => {
-            // アニメーション停止完了
-          });
+          item.animationValue.stopAnimation(() => {});
         });
         return prev;
       });
@@ -290,38 +290,29 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
       // 再開時: 記録されたコメントのアニメーションを再開
       console.log('[DanmakuDisplay] Resumed: restarting animations');
       const stoppedDanmakus = stoppedAnimatingDanmakusRef.current;
-      
       if (stoppedDanmakus.length > 0) {
-        // 各停止していたコメントのアニメーションを再度実行
         stoppedDanmakus.forEach(item => {
-          // 残りの表示時間を計算
           const elapsedTime = currentTime - item.displayStartTime;
           const remainingDuration = Math.max(0, item.duration * 1000 - elapsedTime * 1000);
-          
           if (remainingDuration > 0) {
-            // アニメーション再開
             Animated.timing(item.animationValue, {
               toValue: 1,
               duration: remainingDuration,
               easing: Easing.linear,
               useNativeDriver: true,
             }).start(() => {
-              // アニメーション終了時にコメントを削除
               setAnimatingDanmakus(prev => prev.filter(d => d.id !== item.id));
             });
           } else {
-            // 残り時間なし → すぐに削除
             setAnimatingDanmakus(prev => prev.filter(d => d.id !== item.id));
           }
         });
       }
-      
-      // 停止状態フラグをリセット
       stoppedAnimatingDanmakusRef.current = [];
     }
-    
     wasPlayingRef.current = isPlaying;
   }, [isPlaying, currentTime]);
+
   
   // ✅ 改善: トラック数主導の計算ロジック
   // 1. maxTracks を先に決定（親から指定するか、デフォルト値を使用）
@@ -418,8 +409,19 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
   useEffect(() => {
     // 新しい danmakuList が来たら完全にリセット
     console.log('[DanmakuDisplay] danmakuList changed, resetting displayedIds');
-    danIndexRef.current = 0;
-    displayedIdsRef.current.clear();
+    // ★修正: danIndexRef をシーク位置に正確に配置（ウィンドウ外をスキップ）
+       const SEEK_WINDOW = 5;
+       const seekWindowStart = Math.max(0, currentTime - SEEK_WINDOW);
+       let seekIndex = 0;
+       for (let i = 0; i < danmakuList.length; i++) {
+         if (danmakuList[i].time >= seekWindowStart) {
+           seekIndex = i;
+           break;
+         }
+       }
+       danIndexRef.current = seekIndex;
+       // ★修正: displayedIdsRef をクリア（巻き戻し対応）
+       displayedIdsRef.current.clear();
     setAnimatingDanmakus([]);  // 進行中のアニメーションもクリア
   }, [danmakuList]);
 
@@ -433,12 +435,17 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
     const timeDiff = Math.abs(currentTime - prevTimeRef.current);
     
     if (timeDiff > 1) {
+      // ★修正: シーク検出フラグを立てる（次のuseEffectで使用）
+      isSeekRef.current = true;
       
       // シーク時: 状態をリセット
       danIndexRef.current = 0;
       displayedIdsRef.current.clear();  
       setAnimatingDanmakus([]);
       tracksRef.current = [];
+    } else {
+      // シーク以外: フラグをクリア
+      isSeekRef.current = false;
     }
     
     // 前回時刻を更新
@@ -455,9 +462,8 @@ export const DanmakuDisplay: React.FC<DanmakuDisplayProps> = ({
       return;
     }
 
-    // シーク検知
-    const timeDiff = Math.abs(currentTime - prevTimeRef.current);
-    const isSeek = timeDiff > 1; // 1秒以上の差でシーク判定
+    // ★修正: isSeekRef を使用してシーク判定
+    const isSeek = isSeekRef.current;
     const SEEK_WINDOW = 5; // ±5秒のウィンドウ
 
     // 現在時刻を超えたコメントを収集
