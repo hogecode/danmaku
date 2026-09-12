@@ -65,20 +65,25 @@ export class GoogleAuthService implements ProviderAuthService {
 
       const user = await this.userService.upsertUser(googleUser);
 
-      await this.userService.upsertOAuthAccount(
+      // ログイン用 Auth Identity を作成
+      await this.userService.upsertAuthIdentity(
+        user.id,
+        googleUser,
+        ProviderType.GOOGLE,
+      );
+
+      // Drive接続情報を保存（トークン暗号化）
+      await this.userService.upsertDriveConnection(
         user.id,
         googleUser,
         tokenData,
+        ProviderType.GOOGLE,
       );
 
-      return {
-        id: String(user.id),
-        email: user.email,
-        name: user.name || undefined,
-        picture_url: user.picture_url,
-        last_login: user.last_login,
-        drives: [], // ドライブ情報は別途 UserService から取得
-      };
+      // 接続済みドライブ情報を取得
+      const userInfo = await this.userService.getUserInfo(user.id);
+
+      return userInfo;
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;

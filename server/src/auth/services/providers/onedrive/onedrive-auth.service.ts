@@ -9,7 +9,6 @@ import type { Database } from '../../../../database/database.module';
 import axios, { AxiosError } from 'axios';
 import Redis from 'ioredis';
 import { UserService } from '../../user.service';
-import { OAuthAccountService } from '../../user.service';
 import { LoggerService } from '../../../../common/logger/logger.service';
 import { TokenService } from '../../token.service';
 import { GoogleUserInfoDto, UserInfoDto } from '../../../dto';
@@ -30,7 +29,6 @@ export class OnedriveAuthService implements ProviderAuthService {
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
     private readonly userService: UserService,
-    private readonly oauthAccountService: OAuthAccountService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -66,20 +64,25 @@ export class OnedriveAuthService implements ProviderAuthService {
 
       const user = await this.userService.upsertUser(onedriveUser);
 
-      await this.oauthAccountService.upsertOAuthAccount(
+      // ログイン用 Auth Identity を作成
+      await this.userService.upsertAuthIdentity(
+        user.id,
+        onedriveUser,
+        ProviderType.ONEDRIVE,
+      );
+
+      // Drive接続情報を保存（トークン暗号化）
+      await this.userService.upsertDriveConnection(
         user.id,
         onedriveUser,
         tokenData,
+        ProviderType.ONEDRIVE,
       );
 
-      return {
-        id: String(user.id),
-        email: user.email,
-        name: user.name || undefined,
-        picture_url: user.picture_url,
-        last_login: user.last_login,
-        drives: [], // ドライブ情報は別途 UserService から取得
-      };
+      // 接続済みドライブ情報を取得
+      const userInfo = await this.userService.getUserInfo(user.id);
+
+      return userInfo;
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;

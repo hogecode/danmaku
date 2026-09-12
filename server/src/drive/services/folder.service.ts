@@ -6,7 +6,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import type { Database } from '../../database/database.module';
-import { oauthAccounts } from '../../database';
+import { driveConnections } from '../../database';
 import { eq, and } from 'drizzle-orm';
 import Redis from 'ioredis';
 import {
@@ -18,6 +18,7 @@ import {
 import { FileItemDto, FolderListDto } from '../dto';
 import { TokenService } from '../../auth/services';
 import { GoogleDriveProvider, OnedriveProvider } from '../providers';
+import { EncryptionService } from '../../common/encryption/encryption.service';
 
 @Injectable()
 export class FolderService {
@@ -27,6 +28,7 @@ export class FolderService {
     private readonly tokenService: TokenService,
     private readonly googleDriveProvider: GoogleDriveProvider,
     private readonly onedriveProvider: OnedriveProvider,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   /**
@@ -38,15 +40,16 @@ export class FolderService {
     folderId: string = 'root',
   ): Promise<FolderListDto> {
     // 接続情報を取得
-    const connection = await this.db.query.oauthAccounts.findFirst({
+    const connection = await this.db.query.driveConnections.findFirst({
       where: and(
-        eq(oauthAccounts.id, connectionId),
-        eq(oauthAccounts.user_id, userId),
+        eq(driveConnections.id, connectionId),
+        eq(driveConnections.user_id, userId),
+        eq(driveConnections.is_active, true),
       ),
     });
 
     if (!connection) {
-      throw new UnauthorizedException('Drive connection not found');
+      throw new UnauthorizedException('Drive connection not found or inactive');
     }
 
     // キャッシュキーを生成（プロバイダー情報を含める）
@@ -71,6 +74,7 @@ export class FolderService {
     const accessToken = await this.tokenService.getValidAccessToken(
       userId,
       connection.provider_name,
+      connectionId,
     );
 
     let result: FolderListDto;
@@ -108,18 +112,24 @@ export class FolderService {
     }
 
     // 接続情報を取得
-    const connection = await this.db.query.oauthAccounts.findFirst({
+    const connection = await this.db.query.driveConnections.findFirst({
       where: and(
-        eq(oauthAccounts.id, connectionId),
-        eq(oauthAccounts.user_id, userId),
+        eq(driveConnections.id, connectionId),
+        eq(driveConnections.user_id, userId),
+        eq(driveConnections.is_active, true),
       ),
     });
 
     if (!connection) {
-      throw new UnauthorizedException('Drive connection not found');
+      throw new UnauthorizedException('Drive connection not found or inactive');
     }
 
-    const accessToken = connection.access_token;
+    // 有効なアクセストークンを取得（自動リフレッシュ対応）
+    const accessToken = await this.tokenService.getValidAccessToken(
+      userId,
+      connection.provider_name,
+      connectionId,
+    );
     if (!accessToken) {
       throw new UnauthorizedException('Access token not available');
     }

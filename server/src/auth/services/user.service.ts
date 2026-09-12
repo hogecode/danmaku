@@ -5,12 +5,13 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import type { Database } from '../../database/database.module';
-import { users, oauthAccounts } from '../../database';
+import { users, authIdentities, driveConnections } from '../../database';
 import { and, eq } from 'drizzle-orm';
 import { UserInfoDto, GoogleUserInfoDto, DriveConnectionDto } from '../dto';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { ProviderType } from 'src/drive/constants';
 import { TokenService } from './token.service';
+import { EncryptionService } from 'src/common/encryption/encryption.service';
 
 /**
  * ユーザー管理サービス
@@ -20,7 +21,8 @@ export class UserService {
   constructor(
     @Inject('DATABASE_CONNECTION') private readonly db: Database,
     private readonly tokenService: TokenService,
-    private readonly Logger: LoggerService
+    private readonly Logger: LoggerService,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   /**
@@ -37,17 +39,20 @@ export class UserService {
     }
 
     // 接続済みドライブ情報を取得
-    const oauthConnections = await this.db.query.oauthAccounts.findMany({
-      where: eq(oauthAccounts.user_id, userId),
+    const driveConns = await this.db.query.driveConnections.findMany({
+      where: and(
+        eq(driveConnections.user_id, userId),
+        eq(driveConnections.is_active, true),
+      ),
     });
 
     // DriveConnectionDto に変換
-    const drives: DriveConnectionDto[] = oauthConnections.map((oauth) => ({
-      id: String(oauth.id),
-      provider: oauth.provider_name,
-      account: oauth.provider_email || 'unknown',
-      status: this.getConnectionStatus(oauth),
-      connected_at: oauth.created_at,
+    const drives: DriveConnectionDto[] = driveConns.map((conn) => ({
+      id: String(conn.id),
+      provider: conn.provider_name,
+      account: conn.provider_account_email || conn.provider_account_id,
+      status: this.getConnectionStatus(conn),
+      connected_at: conn.created_at,
     }));
 
     return {
@@ -61,26 +66,31 @@ export class UserService {
   }
 
   /**
-   * OAuth接続の状態を判定
+   * Drive接続の状態を判定
    */
   private getConnectionStatus(
-    oauth: any,
+    conn: any,
   ): 'connected' | 'expired' | 'revoked' | 'error' {
+    // is_active がfalseの場合は revoked
+    if (!conn.is_active) {
+      return 'revoked';
+    }
+
     // access_token が無い場合は revoked
-    if (!oauth.access_token) {
+    if (!conn.access_token_encrypted) {
       return 'revoked';
     }
 
     // トークンが期限切れの場合は expired
     if (
-      oauth.access_token_expires_at &&
-      new Date(oauth.access_token_expires_at) < new Date()
+      conn.access_token_expires_at &&
+      new Date(conn.access_token_expires_at) < new Date()
     ) {
       return 'expired';
     }
 
     // refresh_token がない場合は不安定
-    if (!oauth.refresh_token && oauth.access_token_expires_at) {
+    if (!conn.refresh_token_encrypted && conn.access_token_expires_at) {
       return 'expired';
     }
 
@@ -132,9 +142,49 @@ export class UserService {
   }
   
   /**
-   * OAuth アカウント情報を保存
+   * ログイン用 Auth Identity を作成・更新
    */
-  async upsertOAuthAccount(
+  async upsertAuthIdentity(
+    userId: bigint,
+    userInfo: any,
+    provider: string = ProviderType.GOOGLE
+  ) {
+    const now = new Date();
+    this.Logger.debug(`${provider} login identity:`, userInfo);
+
+    const existingIdentity = await this.db.query.authIdentities.findFirst({
+      where: and(
+        eq(authIdentities.user_id, userId),
+        eq(authIdentities.provider_name, provider)
+      ),
+    });
+
+    if (existingIdentity) {
+      await this.db
+        .update(authIdentities)
+        .set({
+          provider_user_id: userInfo.sub,
+          provider_email: userInfo.email,
+          updated_at: now,
+        })
+        .where(eq(authIdentities.id, existingIdentity.id));
+    } else {
+      await this.db.insert(authIdentities).values({
+        user_id: userId,
+        provider_name: provider,
+        provider_user_id: userInfo.sub,
+        provider_email: userInfo.email,
+        is_primary: true,
+        created_at: now,
+        updated_at: now,
+      });
+    }
+  }
+
+  /**
+   * Drive 接続情報を保存（トークン暗号化）
+   */
+  async upsertDriveConnection(
     userId: bigint,
     userInfo: any,
     tokenData: any,
@@ -148,38 +198,52 @@ export class UserService {
       : null;
 
     const now = new Date();
-    this.Logger.debug(`${provider} user:`, userInfo);
+    this.Logger.debug(`${provider} drive connection:`, userInfo);
 
-    const existingOAuth = await this.db.query.oauthAccounts.findFirst({
+    // プロバイダー側のアカウントID（Google の場合はメールアドレス）
+    const providerAccountId = userInfo.email || userInfo.sub;
+
+    // トークンを暗号化
+    const accessTokenEncrypted = this.encryptionService.encrypt(
+      tokenData.access_token
+    );
+    const refreshTokenEncrypted = tokenData.refresh_token
+      ? this.encryptionService.encrypt(tokenData.refresh_token)
+      : null;
+
+    const existingConnection = await this.db.query.driveConnections.findFirst({
       where: and(
-        eq(oauthAccounts.user_id, userId),
-        eq(oauthAccounts.provider_name, provider)
+        eq(driveConnections.user_id, userId),
+        eq(driveConnections.provider_name, provider),
+        eq(driveConnections.provider_account_id, providerAccountId)
       ),
     });
 
-    if (existingOAuth) {
+    if (existingConnection) {
       await this.db
-        .update(oauthAccounts)
+        .update(driveConnections)
         .set({
-          provider_user_id: userInfo.sub,
-          provider_email: userInfo.email,
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token || existingOAuth.refresh_token,
+          access_token_encrypted: accessTokenEncrypted,
+          refresh_token_encrypted: refreshTokenEncrypted || existingConnection.refresh_token_encrypted,
           access_token_expires_at: accessTokenExpiresAt,
           refresh_token_expires_at: refreshTokenExpiresAt,
+          is_active: true,
+          last_accessed_at: now,
           updated_at: now,
         })
-        .where(eq(oauthAccounts.id, existingOAuth.id));
+        .where(eq(driveConnections.id, existingConnection.id));
     } else {
-      await this.db.insert(oauthAccounts).values({
+      await this.db.insert(driveConnections).values({
         user_id: userId,
         provider_name: provider,
-        provider_user_id: userInfo.sub,
-        provider_email: userInfo.email,
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
+        provider_account_id: providerAccountId,
+        provider_account_email: userInfo.email,
+        access_token_encrypted: accessTokenEncrypted,
+        refresh_token_encrypted: refreshTokenEncrypted,
+        scopes: JSON.stringify(tokenData.scopes || ['drive.readonly']),
         access_token_expires_at: accessTokenExpiresAt,
         refresh_token_expires_at: refreshTokenExpiresAt,
+        is_active: true,
         created_at: now,
         updated_at: now,
       });
@@ -187,16 +251,23 @@ export class UserService {
   }
 
   /**
-   * ログアウト処理（全プロバイダーのトークンを無効化）
+   * ログアウト処理（全Driveトークンを無効化）
    */
   async logout(userId: bigint): Promise<void> {
-    const oauths = await this.db.query.oauthAccounts.findMany({
-      where: eq(oauthAccounts.user_id, userId),
+    const connections = await this.db.query.driveConnections.findMany({
+      where: eq(driveConnections.user_id, userId),
     });
 
-    for (const oauth of oauths) {
-      if (oauth.access_token) {
-        await this.tokenService.revokeToken(oauth.access_token, oauth.provider_name);
+    for (const conn of connections) {
+      if (conn.access_token_encrypted) {
+        try {
+          const accessToken = this.encryptionService.decrypt(
+            conn.access_token_encrypted
+          );
+          await this.tokenService.revokeToken(accessToken, conn.provider_name);
+        } catch (error) {
+          this.Logger.warn(`Failed to revoke token for ${conn.provider_name}:`, error);
+        }
       }
     }
   }

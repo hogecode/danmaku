@@ -7,13 +7,14 @@ import {
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import type { Database } from '../database/database.module';
-import { oauthAccounts } from '../database';
+import { driveConnections } from '../database';
 import { eq, and } from 'drizzle-orm';
 import { CommentDto, DPlayerCommentDto } from './dto';
 import { XmlParser } from './utils/xml-parser';
 import { CommentConverter } from './utils/comment-converter';
 import { TokenService } from '../auth/services';
 import { LoggerService } from '../common/logger/logger.service';
+import { EncryptionService } from '../common/encryption/encryption.service';
 import { ProviderType } from '../drive/constants';
 import {
   PlayerCommonConstants,
@@ -47,6 +48,7 @@ export class PlayerService {
     private readonly commentConverter: CommentConverter,
     private readonly tokenService: TokenService,
     private readonly logger: LoggerService,
+    private readonly encryptionService: EncryptionService,
   ) {
     // プロバイダーをインスタンス化
     this.googleProvider = new GooglePlayerProvider();
@@ -74,15 +76,16 @@ export class PlayerService {
     userId: bigint,
     connectionId: bigint,
   ): Promise<{ provider: PlayerProvider; providerName: string }> {
-    const connection = await this.db.query.oauthAccounts.findFirst({
+    const connection = await this.db.query.driveConnections.findFirst({
       where: and(
-        eq(oauthAccounts.id, connectionId),
-        eq(oauthAccounts.user_id, userId),
+        eq(driveConnections.id, connectionId),
+        eq(driveConnections.user_id, userId),
+        eq(driveConnections.is_active, true),
       ),
     });
 
     if (!connection) {
-      throw new NotFoundException('Drive connection not found');
+      throw new NotFoundException('Drive connection not found or inactive');
     }
 
     const provider = this.getProvider(connection.provider_name);
@@ -104,6 +107,7 @@ export class PlayerService {
     const accessToken = await this.tokenService.getValidAccessToken(
       userId,
       providerName,
+      connectionId,
     );
     return provider.getVideoStream(accessToken, videoFileId);
   }
@@ -123,6 +127,7 @@ export class PlayerService {
     const accessToken = await this.tokenService.getValidAccessToken(
       userId,
       providerName,
+      connectionId,
     );
     return provider.getVideoMetadata(accessToken, videoFileId);
   }
@@ -134,29 +139,12 @@ export class PlayerService {
     userId: bigint,
     videoFileId: string,
     folderId: string,
-    connectionId?: bigint,
+    connectionId: bigint,
   ): Promise<CommentDto[]> {
     try {
       this.logger.debug(
         `[PlayerService] Getting comments for videoFileId: ${videoFileId}, folderId: ${folderId}`,
       );
-
-      // 1. 動画ファイル情報を取得
-      // connectionId がない場合は、ユーザーのデフォルト接続を使用（Google Drive）
-      if (!connectionId) {
-        // Google Drive のデフォルト接続を検索
-        const defaultConnection = await this.db.query.oauthAccounts.findFirst({
-          where: and(
-            eq(oauthAccounts.user_id, userId),
-            eq(oauthAccounts.provider_name, ProviderType.GOOGLE),
-          ),
-        });
-        if (defaultConnection) {
-          connectionId = defaultConnection.id;
-        } else {
-          throw new NotFoundException('No Google Drive connection found');
-        }
-      }
 
       const videoFile = await this.getVideoMetadata(userId, connectionId, videoFileId);
       this.logger.debug(
@@ -428,6 +416,7 @@ export class PlayerService {
       const accessToken = await this.tokenService.getValidAccessToken(
         userId,
         providerName,
+        connectionId,
       );
       this.logger.debug(
         `✅ Access token obtained (preview: ${accessToken.substring(0, 30)}...)`,

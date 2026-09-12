@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Database } from '../../database/database.module';
-import { oauthAccounts } from '../../database';
+import { driveConnections } from '../../database';
 import { eq, and } from 'drizzle-orm';
 import { GoogleTokenDto } from '../dto';
 import * as jwt from 'jsonwebtoken';
@@ -14,6 +14,7 @@ import type { StringValue } from 'ms';
 import { ProviderType } from '../../drive/constants';
 import { GoogleTokenService } from './providers/google/google-token.service';
 import { OnedriveTokenService } from './providers/onedrive/onedrive-token.service';
+import { EncryptionService } from '../../common/encryption/encryption.service';
 
 /**
  * マルチプロバイダー OAuth トークン管理（共通＆ルーティング層）
@@ -25,6 +26,7 @@ export class TokenService {
     private readonly configService: ConfigService,
     private readonly googleTokenService: GoogleTokenService,
     private readonly onedriveTokenService: OnedriveTokenService,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   // OAuth プロバイダーを抽象化してOAuth 認可URLを生成するメソッド
@@ -67,26 +69,39 @@ export class TokenService {
   async refreshAccessToken(
     userId: bigint,
     providerName: string,
+    connectionId?: bigint,
   ): Promise<GoogleTokenDto> {
-    const oauth = await this.db.query.oauthAccounts.findFirst({
-      where: and(
-        eq(oauthAccounts.user_id, userId),
-        eq(oauthAccounts.provider_name, providerName),
-      ),
-    });
+    // connectionId がある場合は特定の Drive 接続、ない場合は最初の接続を使う
+    let conn;
+    if (connectionId) {
+      conn = await this.db.query.driveConnections.findFirst({
+        where: and(
+          eq(driveConnections.id, connectionId),
+          eq(driveConnections.user_id, userId),
+          eq(driveConnections.provider_name, providerName),
+        ),
+      });
+    } else {
+      conn = await this.db.query.driveConnections.findFirst({
+        where: and(
+          eq(driveConnections.user_id, userId),
+          eq(driveConnections.provider_name, providerName),
+        ),
+      });
+    }
 
-    if (!oauth || !oauth.refresh_token) {
+    if (!conn || !conn.refresh_token_encrypted) {
       throw new InternalServerErrorException('Refresh token not found');
     }
 
+    const refreshToken = this.encryptionService.decrypt(
+      conn.refresh_token_encrypted
+    );
+
     if (providerName === ProviderType.GOOGLE) {
-      return await this.googleTokenService.refreshAccessToken(
-        oauth.refresh_token,
-      );
+      return await this.googleTokenService.refreshAccessToken(refreshToken);
     } else if (providerName === ProviderType.ONEDRIVE) {
-      return await this.onedriveTokenService.refreshAccessToken(
-        oauth.refresh_token,
-      );
+      return await this.onedriveTokenService.refreshAccessToken(refreshToken);
     }
 
     throw new InternalServerErrorException(
@@ -123,27 +138,49 @@ export class TokenService {
   async getValidAccessToken(
     userId: bigint,
     providerName: string = 'google',
+    connectionId?: bigint,
   ): Promise<string> {
-    const oauthAccount = await this.db.query.oauthAccounts.findFirst({
-      where: and(
-        eq(oauthAccounts.user_id, userId),
-        eq(oauthAccounts.provider_name, providerName),
-      ),
-    });
+    // connectionId がある場合は特定の Drive 接続、ない場合は最初の接続を使う
+    let conn;
+    if (connectionId) {
+      conn = await this.db.query.driveConnections.findFirst({
+        where: and(
+          eq(driveConnections.id, connectionId),
+          eq(driveConnections.user_id, userId),
+          eq(driveConnections.provider_name, providerName),
+        ),
+      });
+    } else {
+      conn = await this.db.query.driveConnections.findFirst({
+        where: and(
+          eq(driveConnections.user_id, userId),
+          eq(driveConnections.provider_name, providerName),
+        ),
+      });
+    }
 
-    if (!oauthAccount?.access_token) {
+    if (!conn?.access_token_encrypted) {
       throw new InternalServerErrorException('Auth info not found');
     }
 
+    // トークンを復号
+    const accessToken = this.encryptionService.decrypt(
+      conn.access_token_encrypted
+    );
+
     if (
-      oauthAccount.access_token_expires_at &&
-      this.isTokenExpiringSoon(oauthAccount.access_token_expires_at)
+      conn.access_token_expires_at &&
+      this.isTokenExpiringSoon(conn.access_token_expires_at)
     ) {
-      const newToken = await this.refreshAccessToken(userId, providerName);
+      const newToken = await this.refreshAccessToken(
+        userId,
+        providerName,
+        connectionId
+      );
       return newToken.access_token;
     }
 
-    return oauthAccount.access_token;
+    return accessToken;
   }
   
   // JWT アクセストークンを生成するメソッド

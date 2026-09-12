@@ -6,10 +6,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Database } from '../../database/database.module';
-import { oauthAccounts } from '../../database';
+import { driveConnections } from '../../database';
 import { eq, and } from 'drizzle-orm';
 import { DriveConnectionDto } from '../../auth/dto';
 import { TokenService } from '../../auth/services/token.service';
+import { EncryptionService } from '../../common/encryption/encryption.service';
 import Redis from 'ioredis';
 import { ProviderType } from '../constants';
 import { LoggerService } from '../../common/logger/logger.service';
@@ -21,37 +22,44 @@ export class DriveConnectionService {
     @Inject('REDIS_CLIENT') private redis: Redis,
     private configService: ConfigService,
     private tokenService: TokenService,
+    private encryptionService: EncryptionService,
     private readonly logger: LoggerService,
   ) {}
 
   // 接続済みドライブ一覧を取得
-  // TODO: statusの確認方法を見直し
   async listConnections(userId: bigint): Promise<DriveConnectionDto[]> {
-    const conns = await this.db.query.oauthAccounts.findMany({
-      where: eq(oauthAccounts.user_id, userId),
+    const conns = await this.db.query.driveConnections.findMany({
+      where: eq(driveConnections.user_id, userId),
     });
     return conns.map((c) => ({
       id: String(c.id),
       provider: c.provider_name,
-      account: c.provider_email || '',
-      status: c.access_token ? 'connected' : 'revoked',
+      account: c.provider_account_email || '',
+      status: c.is_active ? 'connected' : 'revoked',
       connected_at: c.created_at,
     }));
   }
 
   async deleteConnection(userId: bigint, connectionId: bigint): Promise<void> {
-    const c = await this.db.query.oauthAccounts.findFirst({
+    const c = await this.db.query.driveConnections.findFirst({
       where: and(
-        eq(oauthAccounts.id, connectionId),
-        eq(oauthAccounts.user_id, userId),
+        eq(driveConnections.id, connectionId),
+        eq(driveConnections.user_id, userId),
       ),
     });
     if (!c) throw new UnauthorizedException();
-    if (c.access_token)
+    
+    // トークンが存在する場合は revoke を試みる
+    if (c.access_token_encrypted) {
       try {
-        await this.tokenService.revokeToken(c.access_token);
+        // 暗号化されたトークンを復号化
+        const decryptedToken = this.encryptionService.decrypt(c.access_token_encrypted);
+        // プロバイダー名を指定してトークンを取り消す
+        await this.tokenService.revokeToken(decryptedToken, c.provider_name);
       } catch (e) {
         this.logger.error('Failed to revoke token', e);
+        // revoke に失敗してもレコード削除は続行
       }
+    }
   }
 }

@@ -1,10 +1,11 @@
 import { Injectable, Inject, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import type { Database } from '../../database/database.module';
-import { oauthAccounts } from '../../database';
+import { driveConnections } from '../../database';
 import { eq, and } from 'drizzle-orm';
 import { TokenService } from '../../auth/services/token.service';
 import type { DriveProvider, DriveListResponse } from '../providers';
 import { GoogleDriveProvider, OnedriveProvider } from '../providers';
+import { EncryptionService } from '../../common/encryption/encryption.service';
 
 /**
  * Drive Service
@@ -23,6 +24,7 @@ export class DriveService {
     private tokenService: TokenService,
     private googleDriveProvider: GoogleDriveProvider,
     private onedriveProvider: OnedriveProvider,
+    private encryptionService: EncryptionService,
   ) {
     // 利用可能なプロバイダーを登録
     this.providers.set('google', googleDriveProvider);
@@ -36,12 +38,16 @@ export class DriveService {
     userId: bigint,
     connectionId: bigint,
   ): Promise<{ provider: DriveProvider; accessToken: string; providerName: string }> {
-    const connection = await this.db.query.oauthAccounts.findFirst({
-      where: and(eq(oauthAccounts.id, connectionId), eq(oauthAccounts.user_id, userId)),
+    const connection = await this.db.query.driveConnections.findFirst({
+      where: and(
+        eq(driveConnections.id, connectionId),
+        eq(driveConnections.user_id, userId),
+        eq(driveConnections.is_active, true),
+      ),
     });
 
     if (!connection) {
-      throw new UnauthorizedException('Connection not found');
+      throw new UnauthorizedException('Connection not found or inactive');
     }
 
     const provider = this.providers.get(connection.provider_name);
@@ -50,7 +56,11 @@ export class DriveService {
     }
 
     // アクセストークンを取得（リフレッシュ処理含む）
-    const accessToken = await this.tokenService.getValidAccessToken(userId, connection.provider_name);
+    const accessToken = await this.tokenService.getValidAccessToken(
+      userId,
+      connection.provider_name,
+      connectionId,
+    );
 
     return { provider, accessToken, providerName: connection.provider_name };
   }
