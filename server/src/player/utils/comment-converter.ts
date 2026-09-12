@@ -4,9 +4,6 @@ import { DPlayerCommentDto } from '../dto/dplayer-comment.dto';
 
 /**
  * ニコニコ実況形式 CommentDto を DPlayer 互換形式に変換
- * 
- * @see Go実装参考: chatXMLToApiComment
- * @see DPlayer形式: https://dplayer.js.org/
  */
 @Injectable()
 export class CommentConverter {
