@@ -1,5 +1,7 @@
 /**
- * Google OAuth ログイン画面
+ * OAuth ログイン画面
+ * ✅ sessionId ベースの認証フロー対応
+ * マルチプロバイダー対応（OneDrive, Google Drive など）
  */
 
 import React, { useEffect, useState } from 'react';
@@ -24,12 +26,37 @@ if (Platform.OS === 'web') {
   WebBrowser.maybeCompleteAuthSession();
 }
 
+// プロバイダーの定義
+interface Provider {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+}
+
 export default function LoginScreen() {
   const auth = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
 
-  // Deep link リスナー（バックグラウンドから戻ってきた場合に対応）
+  // プロバイダーリスト
+  const providers: Provider[] = [
+    {
+      id: 'onedrive',
+      name: 'OneDrive',
+      icon: '☁️',
+      description: 'Microsoft OneDrive',
+    },
+    {
+      id: 'google',
+      name: 'Google Drive',
+      icon: '📁',
+      description: 'Google Drive',
+    },
+  ];
+
+  // ✅ Deep link リスナー（バックグラウンドから戻ってきた場合に対応）
   useEffect(() => {
     const handleDeepLink = ({ url }: { url: string }) => {
       appLogger.info(`[LoginScreen] Deep link 受信: ${url}`);
@@ -40,22 +67,27 @@ export default function LoginScreen() {
 
       if (queryParams) {
         // Backend から送信されるパラメータ:
-        // - token: JWT アクセストークン
+        // ✅ sessionId: Express Session ID
         // - user: ユーザー情報（JSON 文字列）
-        const token = queryParams.token as string | undefined;
+        const sessionId = queryParams.sessionId as string | undefined;
         const userParam = queryParams.user as string | undefined;
 
         appLogger.info(
-          `[LoginScreen] Deep link パラメータ: token=${!!token}, user=${!!userParam}`
+          `[LoginScreen] Deep link パラメータ: sessionId=${!!sessionId}, user=${!!userParam}`
         );
 
-        if (token && userParam) {
+        if (sessionId && userParam) {
           try {
             const user = JSON.parse(userParam);
-            appLogger.info(`[LoginScreen] ユーザー情報パース成功: id=${user.id}, name=${user.name}`);
-            
-            auth.saveTokenAndSetUser(user, token).then(() => {
-              appLogger.info('[LoginScreen] Deep link からトークン保存成功、ホーム画面に遷移');
+            appLogger.info(
+              `[LoginScreen] ユーザー情報パース成功: id=${user.id}, name=${user.name}`
+            );
+
+            // ✅ sessionId とユーザー情報を保存
+            auth.saveSessionAndSetUser(user, sessionId).then(() => {
+              appLogger.info(
+                '[LoginScreen] Deep link から sessionId 保存成功、ホーム画面に遷移'
+              );
               router.replace('/');
             });
           } catch (e) {
@@ -63,8 +95,8 @@ export default function LoginScreen() {
             setError('認証情報が正しくありません');
           }
         } else {
-          appLogger.warning('[LoginScreen] トークンまたはユーザー情報がありません', {
-            token,
+          appLogger.warning('[LoginScreen] sessionId またはユーザー情報がありません', {
+            sessionId,
             userParam,
           });
         }
@@ -87,15 +119,17 @@ export default function LoginScreen() {
     return () => subscription.remove();
   }, [auth]);
 
-  // ログインボタンを押したときの処理
-  const handleLogin = async () => {
+  // ✅ ログインボタンを押したときの処理
+  const handleLogin = async (providerId: string) => {
     try {
       setError(null);
       setIsLoggingIn(true);
+      setSelectedProvider(providerId);
 
-      appLogger.info('[LoginScreen] ログイン開始');
+      appLogger.info(`[LoginScreen] ログイン開始 (provider=${providerId})`);
 
-      const loginResult = await auth.login();
+      // ✅ プロバイダーを指定してログイン
+      const loginResult = await auth.login(providerId);
       appLogger.info('[LoginScreen] OAuth URL 取得成功');
 
       const authorizeUrl = loginResult.authorizeUrl;
@@ -120,7 +154,7 @@ export default function LoginScreen() {
       if (result.type === 'success') {
         appLogger.info('[LoginScreen] ブラウザセッション成功');
 
-        // WebBrowser が成功した場合、URL からトークンを抽出
+        // WebBrowser が成功した場合、URL から sessionId を抽出
         if ('url' in result && result.url) {
           appLogger.info(`[LoginScreen] Redirect URL 受信: ${result.url}`);
           const parsed = Linking.parse(result.url);
@@ -128,27 +162,34 @@ export default function LoginScreen() {
 
           if (queryParams) {
             // Backend から送信されるパラメータ:
-            // - token: JWT アクセストークン
+            // ✅ sessionId: Express Session ID
             // - user: ユーザー情報（JSON 文字列）
-            const token = queryParams.token as string | undefined;
+            const sessionId = queryParams.sessionId as string | undefined;
             const userParam = queryParams.user as string | undefined;
 
-            appLogger.info(`[LoginScreen] クエリパラメータ: token=${!!token}, user=${!!userParam}`);
+            appLogger.info(
+              `[LoginScreen] クエリパラメータ: sessionId=${!!sessionId}, user=${!!userParam}`
+            );
 
-            if (token && userParam) {
+            if (sessionId && userParam) {
               try {
                 const user = JSON.parse(userParam);
-                appLogger.info(`[LoginScreen] ユーザー情報パース成功: id=${user.id}, name=${user.name}`);
-                await auth.saveTokenAndSetUser(user, token);
-                appLogger.info('[LoginScreen] トークン保存成功、ホーム画面に遷移');
+                appLogger.info(
+                  `[LoginScreen] ユーザー情報パース成功: id=${user.id}, name=${user.name}`
+                );
+                // ✅ sessionId とユーザー情報を保存
+                await auth.saveSessionAndSetUser(user, sessionId);
+                appLogger.info(
+                  '[LoginScreen] sessionId 保存成功、ホーム画面に遷移'
+                );
                 router.replace('/');
               } catch (e) {
                 appLogger.error('[LoginScreen] ユーザー情報のパース失敗', e);
                 setError('認証情報が正しくありません');
               }
             } else {
-              appLogger.warning('[LoginScreen] トークンまたはユーザー情報がありません', {
-                token,
+              appLogger.warning('[LoginScreen] sessionId またはユーザー情報がありません', {
+                sessionId,
                 userParam,
               });
               setError('認証情報を取得できませんでした');
@@ -168,6 +209,7 @@ export default function LoginScreen() {
       );
     } finally {
       setIsLoggingIn(false);
+      setSelectedProvider(null);
     }
   };
 
@@ -180,7 +222,7 @@ export default function LoginScreen() {
         <View className="items-center">
           <Text className="text-3xl font-bold mb-2 text-center">Danmaku</Text>
           <Text className="text-sm text-gray-500 mb-8 text-center">
-            Google Drive のビデオを再生できます
+            クラウドストレージのビデオを再生
           </Text>
 
           {error && (
@@ -189,22 +231,38 @@ export default function LoginScreen() {
             </View>
           )}
 
-          <TouchableOpacity
-            className={`rounded-lg py-3 px-8 flex-row items-center gap-2 mb-8 ${
-              isLoggingIn || auth.loading ? 'bg-blue-300' : 'bg-blue-500'
-            }`}
-            onPress={handleLogin}
-            disabled={isLoggingIn || auth.loading}
-          >
-            {isLoggingIn || auth.loading ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <>
-                <Text className="text-lg">🔐</Text>
-                <Text className="text-white text-base font-semibold">Googleログイン</Text>
-              </>
-            )}
-          </TouchableOpacity>
+          {/* ✅ プロバイダー選択ボタン */}
+          <View className="w-full gap-3">
+            {providers.map((provider) => (
+              <TouchableOpacity
+                key={provider.id}
+                className={`rounded-lg py-4 px-6 flex-row items-center gap-3 ${
+                  selectedProvider === provider.id && (isLoggingIn || auth.loading)
+                    ? 'bg-blue-300'
+                    : 'bg-blue-500'
+                }`}
+                onPress={() => handleLogin(provider.id)}
+                disabled={isLoggingIn || auth.loading}
+              >
+                {selectedProvider === provider.id && (isLoggingIn || auth.loading) ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <>
+                    <Text className="text-2xl">{provider.icon}</Text>
+                    <View className="flex-1">
+                      <Text className="text-white text-base font-semibold">
+                        {provider.name}
+                      </Text>
+                      <Text className="text-blue-100 text-xs">
+                        {provider.description}
+                      </Text>
+                    </View>
+                    <Text className="text-white">→</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -141,7 +141,7 @@ export class VideoService {
       });
 
       appLogger.info('VideoService: ストリーミング成功');
-      return response.response;
+      return response.raw;
     } catch (error) {
       appLogger.error('VideoService: ストリーミング失敗', error);
       throw new VideoException('Failed to stream video', (error as any)?.status);

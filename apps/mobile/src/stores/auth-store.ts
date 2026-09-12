@@ -1,6 +1,6 @@
 /**
  * 認証状態管理（Zustand）
- * Flutter の AuthProvider を TypeScript に適応
+ * ✅ sessionId ベースの認証フロー
  * 
  * persist middleware でセキュアストレージに永続化
  * アプリ再起動時に自動復元される
@@ -10,20 +10,20 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { PersistStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
-import { UserInfo } from '@/types';
+import { UserInfoDto } from '@/generated';
 import { appLogger } from '@/utils/logger';
 
 export interface AuthState {
   // 状態
-  user: UserInfo | null;
-  token: string | null; // JWT アクセストークン
+  user: UserInfoDto | null;
+  sessionId: string | null; // ✅ sessionId（Express Session ID）
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
 
   // アクション
-  setUser: (user: UserInfo | null) => void;
-  setToken: (token: string | null) => void;
+  setUser: (user: UserInfoDto | null) => void;
+  setSessionId: (sessionId: string | null) => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -69,14 +69,14 @@ const secureStorage: PersistStorage<AuthState> = {
   },
 };
 
-type PersistedAuthState = Pick<AuthState, 'user' | 'token' | 'isAuthenticated'>;
+type PersistedAuthState = Pick<AuthState, 'user' | 'sessionId' | 'isAuthenticated'>;
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       // 初期状態
       user: null,
-      token: null,
+      sessionId: null,
       isAuthenticated: false,
       loading: false,
       error: null,
@@ -87,9 +87,9 @@ export const useAuthStore = create<AuthState>()(
         set({ user });
       },
 
-      setToken: (token) => {
-        appLogger.debug(`AuthStore: トークンを設定 (length: ${token?.length || 0})`);
-        set({ token });
+      setSessionId: (sessionId) => {
+        appLogger.debug(`AuthStore: sessionId を設定 (length: ${sessionId?.length || 0})`);
+        set({ sessionId });
       },
 
       setIsAuthenticated: (isAuthenticated) => {
@@ -112,7 +112,7 @@ export const useAuthStore = create<AuthState>()(
         appLogger.info('AuthStore: リセット');
         set({
           user: null,
-          token: null,
+          sessionId: null,
           isAuthenticated: false,
           loading: false,
           error: null,
@@ -126,7 +126,7 @@ export const useAuthStore = create<AuthState>()(
       // loading と error は永続化しない（実行時のみ）
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
+        sessionId: state.sessionId,
         isAuthenticated: state.isAuthenticated,
       }) as PersistedAuthState,
     }

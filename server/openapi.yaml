@@ -72,6 +72,7 @@ paths:
         例: GET /api/auth/callback/onedrive
 
         DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+        モバイルクライアントにはセッション ID を DeepLink で返す
       tags:
         - Auth
   /api/auth/me:
@@ -420,10 +421,10 @@ components:
           type: string
         status:
           enum:
+            - error
             - connected
             - expired
             - revoked
-            - error
           type: string
         connected_at:
           format: date-time

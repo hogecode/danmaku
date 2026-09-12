@@ -58,6 +58,7 @@ export class AuthController {
    * 例: GET /api/auth/callback/onedrive
    * 
    * DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+   * モバイルクライアントにはセッション ID を DeepLink で返す
    */
   @Get('callback/:provider')
   async callbackWithProvider(
@@ -98,12 +99,16 @@ export class AuthController {
       // クライアントタイプを検出
       const clientType = this.authService.detectClientType(request);
 
+      // ✅ Express Session ID を取得（Redis に保存されている）
+      const sessionId = session.id;
+
       // コールバック後のレスポンスを準備
       // モバイルの場合はDeep Link を使用し、Webの場合はリダイレクト URL を使用する
       const callbackResponse = this.authService.createRedirectURL(
         userInfo,
         provider,
         clientType,
+        sessionId, // ✅ sessionId を追加
       );
 
       // ディープリンク URL またはリダイレクト URL でリダイレクト

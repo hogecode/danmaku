@@ -37,7 +37,10 @@ export class AuthService {
 
   /**
    * プロバイダー別 OAuth コールバック処理
-   * state/verifier を検証後、認可コードからアクセストークンを取得し、ユーザー情報を取得してDBに保存する
+   * 認可コードからアクセストークンを取得し、ユーザー情報を取得してDBに保存する
+   * 
+   * ✅ state/verifier の検証はプロバイダーサービスに委譲
+   * （重複削除を防ぐため）
    */
   async handleProviderCallback(
     provider: string,
@@ -46,27 +49,8 @@ export class AuthService {
   ): Promise<UserInfoDto> {
     this.logger.debug(`[AUTH] Handle callback for provider: ${provider}`);
 
-    // state/verifier を検証
-    const stateKey = `oauth:state:${provider}:${state}`;
-    const verifierKey = `oauth:verifier:${provider}:${state}`;
-
-    const stateExists = await this.redis.get(stateKey);
-    if (!stateExists) {
-      throw new BadRequestException('Invalid or expired state parameter');
-    }
-
-    const verifier = await this.redis.get(verifierKey);
-    if (!verifier) {
-      throw new BadRequestException('Code verifier not found');
-    }
-
-    // state と verifier を削除
-    await Promise.all([
-      this.redis.del(stateKey),
-      this.redis.del(verifierKey),
-    ]);
-
     // 認可コードからアクセストークンを取得し、ユーザー情報を取得してDBに保存する
+    // ✅ state/verifier の検証はプロバイダーサービスで実施
     if (provider === 'google' || provider === ProviderType.GOOGLE) {
       return await this.googleAuthService.handleCallback(code, state);
     } else if (provider === 'onedrive' || provider === ProviderType.ONEDRIVE) {
@@ -113,28 +97,27 @@ export class AuthService {
   /**
    * コールバック後のレスポンス情報を準備
    * ディープリンク URL または リダイレクト URL を生成
+   * sessionId をモバイルクライアントに返す
    */
   createRedirectURL(
     userInfo: UserInfoDto,
     provider: string,
     clientType: 'mobile' | 'web',
+    sessionId?: string,
   ): { type: 'deeplink' | 'redirect'; url: string; accessToken?: string } {
     if (clientType === 'mobile') {
       this.logger.debug(
         `[AUTH] Preparing Mobile client response (${provider})`,
       );
-      const accessToken = this.tokenService.generateAccessToken(
-        BigInt(userInfo.id),
-      );
       const userData = JSON.stringify(userInfo);
-      const deepLinkUrl = `danmaku://auth/callback?user=${encodeURIComponent(userData)}&token=${encodeURIComponent(accessToken)}`;
-      this.logger.debug('[AUTH] Access token generated', {
-        tokenLength: accessToken.length,
+      // ✅ sessionId を DeepLink に含める
+      const deepLinkUrl = `danmaku://auth/callback?sessionId=${encodeURIComponent(sessionId || '')}&user=${encodeURIComponent(userData)}`;
+      this.logger.debug('[AUTH] DeepLink generated with sessionId', {
+        sessionId: sessionId?.substring(0, 10) + '...',
       });
       return {
         type: 'deeplink',
         url: deepLinkUrl,
-        accessToken,
       };
     }
 

@@ -9,7 +9,13 @@ import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
 
 /**
- * セッション + JWT の両方に対応した認証ガード
+ * セッション + JWT + sessionId の複数認証方式に対応したガード
+ * 
+ * 認証優先順序：
+ * 1. Express Session（Cookie）
+ * 2. X-Session-Id ヘッダー（モバイルアプリ用）
+ * 3. JWT（Authorization ヘッダー）
+ * 4. JWT（URL クエリパラメータ - 動画ストリーミング用）
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -18,7 +24,17 @@ export class AuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
 
-    // 1. express-session で設定された userId が存在するかチェック
+    // 1. Express Session で設定された userId が存在するかチェック
+    // ✅ X-Session-Id ヘッダーからセッション ID を取得
+    const sessionIdFromHeader = request.headers['x-session-id'] as string | undefined;
+    if (sessionIdFromHeader && (request.session as any)?.userId) {
+      // 既にセッションが確立している場合
+      return true;
+    }
+
+    // Redis から sessionId で userId を検索する場合は以下の処理
+    // ただし Express Session の場合、session.id と Redis のキーが一致するため
+    // session.userId が設定されていれば十分
     if ((request.session as any)?.userId) {
       return true;
     }

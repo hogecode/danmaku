@@ -18,7 +18,7 @@ export class GoogleTokenService implements ProviderTokenService {
   private readonly tokenUrl = 'https://oauth2.googleapis.com/token';
   private readonly revokeUrl = 'https://oauth2.googleapis.com/revoke';
   private readonly authUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
-  private readonly STATE_TTL = 600;
+  private readonly STATE_TTL = 3600; // ✅ 10分 → 1時間に延長
 
   constructor(
     @Inject('REDIS_CLIENT') private readonly redis: Redis,

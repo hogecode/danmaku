@@ -1,6 +1,6 @@
 /**
  * OpenAPI クライアント設定ヘルパー
- * トークン自動付与とエラーハンドリング
+ * ✅ sessionId を自動付与し、エラーハンドリングを行う
  */
 
 import { Configuration } from '@/generated';
@@ -10,10 +10,10 @@ import { useAuthStore } from '@/stores/auth-store';
 
 /**
  * カスタム Fetch 関数
- * トークンを自動的に付与し、エラーハンドリングを行う
- * @param token - ドライブ固有のアクセストークン（省略時は auth-store から取得）
+ * ✅ sessionId を X-Session-Id ヘッダーで自動付与
+ * @param sessionId - セッション ID（省略時は auth-store から取得）
  */
-export const createFetchWithAuth = (token?: string, fetchFn?: typeof fetch) => {
+export const createFetchWithAuth = (sessionId?: string, fetchFn?: typeof fetch) => {
   return async (url: string, options?: RequestInit): Promise<Response> => {
     const finalOptions: RequestInit = {
       ...options,
@@ -24,20 +24,21 @@ export const createFetchWithAuth = (token?: string, fetchFn?: typeof fetch) => {
       },
     };
 
-    // トークンを取得して付与
+    // ✅ sessionId を取得して付与
     try {
-      // 引数で指定されたトークンを優先、なければ auth-store から取得
-      const accessToken = token || useAuthStore.getState().token;
-      if (accessToken) {
+      // 引数で指定された sessionId を優先、なければ auth-store から取得
+      const currentSessionId = sessionId || useAuthStore.getState().sessionId;
+      if (currentSessionId) {
         finalOptions.headers = {
           ...finalOptions.headers,
-          Authorization: `Bearer ${accessToken}`,
+          'X-Session-Id': currentSessionId,
         };
+        appLogger.debug(`[API] Using session ID: ${currentSessionId.substring(0, 8)}...`);
       } else {
-        appLogger.warning('No token available for API request');
+        appLogger.warning('No session ID available for API request');
       }
     } catch (error) {
-      appLogger.error('Failed to get token for API request', error);
+      appLogger.error('Failed to get session ID for API request', error);
     }
 
     // タイムアウト実装
@@ -74,11 +75,12 @@ export const createFetchWithAuth = (token?: string, fetchFn?: typeof fetch) => {
 
 /**
  * OpenAPI Configuration を作成
- * @param token - ドライブ固有のアクセストークン（オプション）
+ * ✅ sessionId を付与
+ * @param sessionId - セッション ID（オプション）
  */
-export const createApiConfiguration = (token?: string): Configuration => {
+export const createApiConfiguration = (sessionId?: string): Configuration => {
   return new Configuration({
     basePath: API_BASE_URL,
-    fetchApi: createFetchWithAuth(token),
+    fetchApi: createFetchWithAuth(sessionId),
   });
 };

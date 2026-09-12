@@ -21,7 +21,7 @@ export class OnedriveTokenService implements ProviderTokenService {
     'https://login.microsoftonline.com/common/oauth2/v2.0/token';
   private readonly authUrl =
     'https://login.microsoftonline.com/common/oauth2/v2.0/authorize';
-  private readonly STATE_TTL = 600;
+  private readonly STATE_TTL = 3600; //  1時間に延長
 
   constructor(
     @Inject('REDIS_CLIENT') private readonly redis: Redis,

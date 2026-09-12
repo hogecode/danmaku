@@ -13,15 +13,16 @@ export function useAuth() {
 
   /**
    * ログイン処理
+   * ✅ プロバイダーを指定して OAuth フロー開始
    */
-  const login = useCallback(async () => {
+  const login = useCallback(async (provider: string = 'onedrive') => {
     try {
       auth.setError(null);
       auth.setLoading(true);
 
-      appLogger.info('[useAuth] ログイン開始');
+      appLogger.info(`[useAuth] ログイン開始 (provider=${provider})`);
 
-      const result = await authService.login();
+      const result = await authService.login(provider);
 
       appLogger.info('[useAuth] OAuth URL 取得成功');
       return result;
@@ -85,24 +86,24 @@ export function useAuth() {
   }, [auth]);
 
   /**
-   * トークンとユーザー情報を保存（Deep link 経由）
+   * ✅ sessionId とユーザー情報を保存（Deep link 経由）
    */
-  const saveTokenAndSetUser = useCallback(
-    async (userInfo: UserInfo, token: string) => {
+  const saveSessionAndSetUser = useCallback(
+    async (userInfo: any, sessionId: string) => {
       try {
         auth.setLoading(true);
         auth.setError(null);
 
-        appLogger.info('[useAuth] ==================== トークンとユーザー情報を保存 ====================');
+        appLogger.info('[useAuth] ==================== sessionId とユーザー情報を保存 ====================');
 
-        // トークンと状態を更新（persist middleware で自動保存）
-        auth.setToken(token);
+        // sessionId と状態を更新（persist middleware で自動保存）
+        auth.setSessionId(sessionId);
         auth.setUser(userInfo);
         auth.setIsAuthenticated(true);
 
-        appLogger.info('[useAuth] 🎉 AuthState を更新完了 (isAuthenticated=true, token=saved)');
+        appLogger.info('[useAuth] 🎉 AuthState を更新完了 (isAuthenticated=true, sessionId=saved)');
       } catch (error) {
-        appLogger.error('[useAuth] ⛔ トークン保存失敗', error);
+        appLogger.error('[useAuth] ⛔ sessionId 保存失敗', error);
         auth.setError(error instanceof Error ? error.message : String(error));
         throw error;
       } finally {
@@ -121,9 +122,7 @@ export function useAuth() {
 
       appLogger.info('[useAuth] ログアウト開始');
 
-      await authService.logout();
-
-      // auth.reset() で state と token を一括削除
+      // auth.reset() で state と sessionId を一括削除
       // persist middleware で自動的にセキュアストレージも削除される
       auth.reset();
 
@@ -144,7 +143,7 @@ export function useAuth() {
     login,
     completeOAuth,
     fetchUserInfo,
-    saveTokenAndSetUser,
+    saveSessionAndSetUser,
     logout,
   };
 }

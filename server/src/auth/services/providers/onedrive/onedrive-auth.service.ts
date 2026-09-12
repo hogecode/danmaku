@@ -37,10 +37,33 @@ export class OnedriveAuthService implements ProviderAuthService {
    */
   async handleCallback(code: string, state: string): Promise<UserInfoDto> {
     const verifierKey = `oauth:verifier:onedrive:${state}`;
+    const stateKey = `oauth:state:onedrive:${state}`;
+
+    // ✅ デバッグ情報：state と verifier の確認
     const verifier = await this.redis.get(verifierKey);
+    const stateExists = await this.redis.exists(stateKey);
+
+    this.logger.debug('[ONEDRIVE_AUTH] Callback state check', {
+      state,
+      verifierKey,
+      verifierExists: !!verifier,
+      stateExists: stateExists === 1,
+    });
 
     if (!verifier) {
+      this.logger.error('[ONEDRIVE_AUTH] Code verifier not found for state', {
+        state,
+        verifierKey,
+      });
       throw new BadRequestException('Code verifier not found');
+    }
+
+    if (stateExists !== 1) {
+      this.logger.error('[ONEDRIVE_AUTH] State validation failed', {
+        state,
+        stateKey,
+      });
+      throw new BadRequestException('Invalid or expired state');
     }
 
     try {
@@ -82,8 +105,25 @@ export class OnedriveAuthService implements ProviderAuthService {
       // 接続済みドライブ情報を取得
       const userInfo = await this.userService.getUserInfo(user.id);
 
+      // ✅ OAuth フロー完了後、Redis キーを削除（再利用防止）
+      await Promise.all([
+        this.redis.del(verifierKey),
+        this.redis.del(stateKey),
+      ]);
+
+      this.logger.info('[ONEDRIVE_AUTH] Callback success', {
+        userId: user.id,
+        state,
+      });
+
       return userInfo;
     } catch (error) {
+      // ✅ エラー時も Redis キーを削除
+      await Promise.all([
+        this.redis.del(verifierKey),
+        this.redis.del(stateKey),
+      ]);
+
       if (error instanceof BadRequestException) {
         throw error;
       }
