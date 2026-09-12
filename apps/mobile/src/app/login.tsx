@@ -18,6 +18,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/use-auth';
+import { useDrivesStore } from '@/stores/drives-store';
 import { appLogger } from '@/utils/logger';
 import { DEEP_LINK_AUTH_CALLBACK } from '@/utils/constants';
 
@@ -36,9 +37,37 @@ interface Provider {
 
 export default function LoginScreen() {
   const auth = useAuth();
+  const { setDrives } = useDrivesStore();
   const [error, setError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+
+  // ✅ Deep Link からのユーザー情報を処理
+  const handleUserInfoFromDeepLink = (userInfo: any, sessionId: string) => {
+    try {
+      // 🔧 ユーザー情報をログ出力（デバッグ用）
+      appLogger.info(`[LoginScreen] ユーザー情報（完全）: id=${userInfo.id}, name=${userInfo.name}, email=${userInfo.email}`);
+
+      // ✅ ドライブ情報を抽出して drives-store に初期化
+      if (userInfo.drives && Array.isArray(userInfo.drives) && userInfo.drives.length > 0) {
+        appLogger.info(`[LoginScreen] ドライブ情報を抽出: count=${userInfo.drives.length}`);
+        setDrives(userInfo.drives);
+      } else {
+        appLogger.warning('[LoginScreen] ドライブ情報が含まれていません');
+      }
+
+      // ✅ その他のフィールド（picture_url など）
+      if (userInfo.picture_url) {
+        appLogger.debug(`[LoginScreen] プロフィール画像: ${userInfo.picture_url}`);
+      }
+
+      if (userInfo.last_login) {
+        appLogger.debug(`[LoginScreen] 最終ログイン: ${userInfo.last_login}`);
+      }
+    } catch (error) {
+      appLogger.error('[LoginScreen] ユーザー情報処理エラー', error);
+    }
+  };
 
   // プロバイダーリスト
   const providers: Provider[] = [
@@ -83,6 +112,9 @@ export default function LoginScreen() {
               `[LoginScreen] ユーザー情報パース成功: id=${user.id}, name=${user.name}`
             );
 
+            // ✅ ユーザー情報（drives など）を処理
+            handleUserInfoFromDeepLink(user, sessionId);
+
             // ✅ sessionId とユーザー情報を保存
             auth.saveSessionAndSetUser(user, sessionId).then(() => {
               appLogger.info(
@@ -95,10 +127,8 @@ export default function LoginScreen() {
             setError('認証情報が正しくありません');
           }
         } else {
-          appLogger.warning('[LoginScreen] sessionId またはユーザー情報がありません', {
-            sessionId,
-            userParam,
-          });
+          appLogger.warning('[LoginScreen] sessionId またはユーザー情報がありません');
+          appLogger.debug(`sessionId=${sessionId}, userParam=${userParam}`);
         }
       }
     };
@@ -177,6 +207,10 @@ export default function LoginScreen() {
                 appLogger.info(
                   `[LoginScreen] ユーザー情報パース成功: id=${user.id}, name=${user.name}`
                 );
+
+                // ✅ ユーザー情報（drives など）を処理
+                handleUserInfoFromDeepLink(user, sessionId);
+
                 // ✅ sessionId とユーザー情報を保存
                 await auth.saveSessionAndSetUser(user, sessionId);
                 appLogger.info(
@@ -188,10 +222,8 @@ export default function LoginScreen() {
                 setError('認証情報が正しくありません');
               }
             } else {
-              appLogger.warning('[LoginScreen] sessionId またはユーザー情報がありません', {
-                sessionId,
-                userParam,
-              });
+              appLogger.warning('[LoginScreen] sessionId またはユーザー情報がありません');
+              appLogger.debug(`sessionId=${sessionId}, userParam=${userParam}`);
               setError('認証情報を取得できませんでした');
             }
           }

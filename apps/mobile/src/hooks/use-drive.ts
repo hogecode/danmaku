@@ -1,46 +1,52 @@
 /**
- * Google Drive カスタムフック
- * drive-auth-store から Google Drive のトークンを取得して使用
+ * ドライブ管理カスタムフック
+ * ✅ マルチプロバイダー対応
+ * ✅ connectionId を drives-store から取得
+ * ✅ API 呼び出しに connectionId を付与
  */
 
 import { useCallback, useMemo } from 'react';
 import { useDriveStore } from '@/stores/drive-store';
-import { useDriveAuthStore } from '@/stores/drive-auth-store';
-import { createDriveService } from '@/services/drive-service';
+import { useDrivesStore } from '@/stores/drives-store';
+import { driveService } from '@/services/drive-service';
 import { appLogger } from '@/utils/logger';
 
 export function useDrive() {
   const drive = useDriveStore();
-  const driveAuth = useDriveAuthStore();
+  
+  // ✅ drives-store から connectionId を取得
+  const { selectedConnectionId } = useDrivesStore();
 
-  // Google Drive のトークンを取得
-  const gdriveToken = useMemo(
-    () => driveAuth.sessions['gdrive']?.user ? 'gdrive_token' : undefined,
-    [driveAuth.sessions]
-  );
-
-  // ドライブサービスをトークンとともにインスタンス化
-  const driveService = useMemo(
-    () => createDriveService(gdriveToken),
-    [gdriveToken]
-  );
+  // ✅ connectionId が必須であることを確認
+  const validateConnectionId = useCallback(() => {
+    if (!selectedConnectionId) {
+      const error = new Error('No drive selected. Please select a drive from the network screen.');
+      appLogger.error('[useDrive] connectionId が見つかりません', error);
+      throw error;
+    }
+    return selectedConnectionId;
+  }, [selectedConnectionId]);
 
   /**
    * フォルダ内のファイル一覧を読み込む
+   * ✅ connectionId を付与
    */
   const loadFolder = useCallback(async (folderId?: string) => {
     try {
       drive.setError(null);
       drive.setLoading(true);
 
+      // ✅ connectionId を検証
+      const connectionId = validateConnectionId();
       const currentFolderId = folderId || drive.getCurrentFolderId();
-      appLogger.info(`[useDrive] フォルダを読み込み中... (folderId=${currentFolderId})`);
+      
+      appLogger.info(`[useDrive] フォルダを読み込み中... (connectionId=${connectionId}, folderId=${currentFolderId})`);
 
-      const files = await driveService.listFolder(currentFolderId);
+      // ✅ connectionId を付与して API 呼び出し
+      const result = await driveService.listFolder(connectionId, currentFolderId);
+      drive.setFiles(result.items);
 
-      drive.setFiles(files);
-
-      appLogger.info(`[useDrive] フォルダ読み込み完了: ${files.length} 個`);
+      appLogger.info(`[useDrive] フォルダ読み込み完了: ${result.items?.length || 0} 個`);
     } catch (error) {
       appLogger.error('[useDrive] フォルダ読み込み失敗', error);
       drive.setError(error instanceof Error ? error.message : String(error));
@@ -48,7 +54,7 @@ export function useDrive() {
     } finally {
       drive.setLoading(false);
     }
-  }, [drive]);
+  }, [drive, validateConnectionId]);
 
   /**
    * フォルダに移動
@@ -102,6 +108,7 @@ export function useDrive() {
 
   /**
    * 検索を実行
+   * ✅ connectionId を付与
    */
   const search = useCallback(async (query: string) => {
     try {
@@ -113,14 +120,16 @@ export function useDrive() {
       drive.setError(null);
       drive.setLoading(true);
 
+      // ✅ connectionId を検証
+      const connectionId = validateConnectionId();
       const currentFolderId = drive.getCurrentFolderId();
-      appLogger.info(`[useDrive] 検索実行中: query=${query}`);
+      appLogger.info(`[useDrive] 検索実行中: connectionId=${connectionId}, query=${query}`);
 
-      const files = await driveService.search(currentFolderId, query);
+      // ✅ connectionId を付与して API 呼び出し
+      const result = await driveService.search(connectionId, currentFolderId, query);
+      drive.setFiles(result.items);
 
-      drive.setFiles(files);
-
-      appLogger.info(`[useDrive] 検索完了: ${files.length} 件`);
+      appLogger.info(`[useDrive] 検索完了: ${result.items?.length || 0} 件`);
     } catch (error) {
       appLogger.error('[useDrive] 検索失敗', error);
       drive.setError(error instanceof Error ? error.message : String(error));
@@ -128,10 +137,14 @@ export function useDrive() {
     } finally {
       drive.setLoading(false);
     }
-  }, [drive]);
+  }, [drive, validateConnectionId]);
 
   return {
     ...drive,
+    
+    // ✅ drives-store から取得
+    selectedConnectionId,
+    // API 関数
     loadFolder,
     navigateToFolder,
     goBack,

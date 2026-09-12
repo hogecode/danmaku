@@ -1,118 +1,152 @@
+/**
+ * ネットワーク画面
+ * ✅ 接続済みドライブの一覧表示
+ * ✅ ドライブ選択機能
+ * ✅ connectionId の管理
+ */
+
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { useDriveAuth } from '@/hooks/use-drive-auth';
+import { useDrives } from '@/hooks/use-drives';
 import { Sidebar } from '@/components/Sidebar';
 import { appLogger } from '@/utils/logger';
-import type { DriveType, DriveOption } from '@/types/drive';
 
-const DRIVE_OPTIONS: DriveOption[] = [
-  { type: 'gdrive', name: 'Google Drive', icon: '📁', description: 'Google Drive', available: true },
-  { type: 'onedrive', name: 'OneDrive', icon: '☁️', description: 'OneDrive', available: false },
-];
+// ✅ プロバイダーアイコンマッピング
+const PROVIDER_ICONS: Record<string, string> = {
+  google: '📁',
+  onedrive: '☁️',
+  dropbox: '💼',
+};
 
 export default function NetworkScreen() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loadingDrive, setLoadingDrive] = useState<DriveType | null>(null);
-  const driveAuth = useDriveAuth();
+  const { drives, selectedDrive, selectDrive, isLoading } = useDrives();
 
-  const handleSelectDrive = async (driveType: DriveType) => {
-    try {
-      setLoadingDrive(driveType);
-      appLogger.info(`[NetworkScreen] ${driveType} 選択`);
-      
-      const routePath = driveType === 'gdrive' ? '/gdrive' : '/onedrive';
-      
-      if (driveAuth.isAuthenticated(driveType)) {
-        router.push(routePath);
-        setLoadingDrive(null);
-        return;
-      }
-      
-      driveAuth.loginDrive(driveType);
-      router.push(routePath);
-    } catch (e) {
-      appLogger.error(`[NetworkScreen] エラー`, e);
-      driveAuth.setSessionError(driveType, (e as Error)?.message || 'エラー');
-    } finally {
-      setLoadingDrive(null);
-    }
+  const handleSelectDrive = (connectionId: string) => {
+    appLogger.info(
+      `[NetworkScreen] Drive selected ${JSON.stringify({
+        connectionId,
+        provider: drives.find((d) => d.id === connectionId)?.provider,
+      })}`,
+    );
+    selectDrive(connectionId);
+    // ✅ 選択後はホーム画面へ（ドライブの内容を表示）
+    router.push('/');
   };
 
-  const handleSwitchDrive = (driveType: DriveType) => {
-    driveAuth.setCurrentDriveType(driveType);
-    const routePath = driveType === 'gdrive' ? '/gdrive' : '/onedrive';
-    router.push(routePath);
-  };
-
-  const handleDisconnect = (driveType: DriveType) => {
-    driveAuth.logoutDriveAuth(driveType);
-  };
-
-  const authenticatedDrives = driveAuth.authenticatedDrives;
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-stone-100 justify-center items-center">
+        <ActivityIndicator size="large" color="#1976d2" />
+        <Text className="text-gray-600 mt-4">ドライブを読み込み中...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-stone-100" edges={['top']}>
+      {/* ヘッダー */}
       <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
         <TouchableOpacity onPress={() => setSidebarOpen(true)} className="w-10 h-10 justify-center items-center">
           <Text className="text-2xl">☰</Text>
         </TouchableOpacity>
-        <Text className="flex-1 text-lg font-semibold text-center">ネットワーク</Text>
+        <Text className="flex-1 text-lg font-semibold text-center">接続先</Text>
         <View className="w-10" />
       </View>
 
+      {/* コンテンツ */}
       <ScrollView className="flex-1 px-4 py-6">
-        {authenticatedDrives.length > 0 && (
+        {drives.length === 0 ? (
+          <View className="flex-1 justify-center items-center py-12">
+            <Text className="text-xl font-semibold text-gray-900 mb-2">ドライブが接続されていません</Text>
+            <Text className="text-sm text-gray-600 text-center">
+              設定画面からドライブを接続してください
+            </Text>
+          </View>
+        ) : (
           <>
-            <Text className="text-lg font-bold text-gray-900 mb-4">接続済み</Text>
-            {authenticatedDrives.map((driveType) => {
-              const option = DRIVE_OPTIONS.find((o) => o.type === driveType);
-              const session = driveAuth.sessions[driveType];
-              return (
-                <View key={driveType} className="bg-white rounded-lg p-4 mb-4 shadow-sm">
-                  <View className="flex-row items-center justify-between mb-2">
-                    <View className="flex-row items-center flex-1">
-                      <Text className="text-3xl mr-3">{option?.icon}</Text>
-                      <View className="flex-1">
-                        <Text className="text-base font-semibold text-gray-900">{option?.name}</Text>
-                        {session?.user && <Text className="text-xs text-gray-500 mt-1">{session.user.name}</Text>}
-                      </View>
+            <Text className="text-lg font-bold text-gray-900 mb-4">接続済みドライブ</Text>
+
+            {/* ✅ ドライブ一覧 */}
+            {drives.map((drive) => (
+              <TouchableOpacity
+                key={drive.id}
+                onPress={() => handleSelectDrive(drive.id)}
+                className={`rounded-lg p-4 mb-3 flex-row items-center border-2 ${
+                  selectedDrive?.id === drive.id
+                    ? 'bg-blue-50 border-blue-500'
+                    : 'bg-white border-gray-200'
+                }`}
+              >
+                {/* アイコン */}
+                <Text className="text-3xl mr-3">
+                  {PROVIDER_ICONS[drive.provider] || '📁'}
+                </Text>
+
+                {/* ドライブ情報 */}
+                <View className="flex-1">
+                  <View className="flex-row items-center gap-2 mb-1">
+                    <Text className="text-base font-semibold text-gray-900">
+                      {drive.provider.toUpperCase()}
+                    </Text>
+                    {/* ✅ ステータスバッジ */}
+                    <View
+                      className={`px-2 py-1 rounded-full ${
+                        drive.status === 'connected'
+                          ? 'bg-green-100'
+                          : drive.status === 'expired'
+                          ? 'bg-yellow-100'
+                          : 'bg-red-100'
+                      }`}
+                    >
+                      <Text
+                        className={`text-xs font-semibold ${
+                          drive.status === 'connected'
+                            ? 'text-green-700'
+                            : drive.status === 'expired'
+                            ? 'text-yellow-700'
+                            : 'text-red-700'
+                        }`}
+                      >
+                        {drive.status === 'connected'
+                          ? '接続中'
+                          : drive.status === 'expired'
+                          ? '再認証必要'
+                          : 'エラー'}
+                      </Text>
                     </View>
-                    <View className="w-2 h-2 rounded-full bg-green-500" />
                   </View>
-                  <View className="flex-row gap-2">
-                    <TouchableOpacity onPress={() => handleSwitchDrive(driveType)} className="flex-1 bg-blue-500 rounded-lg py-2">
-                      <Text className="text-white font-semibold text-center text-sm">開く</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDisconnect(driveType)} className="flex-1 bg-red-100 rounded-lg py-2">
-                      <Text className="text-red-600 font-semibold text-center text-sm">切断</Text>
-                    </TouchableOpacity>
-                  </View>
+                  <Text className="text-sm text-gray-600">{drive.account}</Text>
+                  <Text className="text-xs text-gray-400 mt-1">
+                    接続日時: {new Date(drive.connectedAt).toLocaleDateString('ja-JP')}
+                  </Text>
                 </View>
-              );
-            })}
-            <View className="my-4 h-px bg-gray-200" />
+
+                {/* チェックマーク */}
+                {selectedDrive?.id === drive.id && (
+                  <Text className="text-2xl text-blue-500 ml-2">✓</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+
+            {/* ✅ 選択中のドライブ情報 */}
+            {selectedDrive && (
+              <View className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <Text className="text-sm font-semibold text-blue-900 mb-2">
+                  現在選択中:
+                </Text>
+                <Text className="text-base text-blue-800">
+                  {selectedDrive.account} ({selectedDrive.provider})
+                </Text>
+                <Text className="text-xs text-blue-600 mt-2">
+                  ID: {selectedDrive.id}
+                </Text>
+              </View>
+            )}
           </>
         )}
-
-        <Text className="text-lg font-bold text-gray-900 mb-4">{authenticatedDrives.length > 0 ? '他のドライブ' : 'ドライブ'}</Text>
-
-        {DRIVE_OPTIONS.filter((o) => !authenticatedDrives.includes(o.type)).map((option) => (
-          <TouchableOpacity
-            key={option.type}
-            onPress={() => handleSelectDrive(option.type)}
-            disabled={loadingDrive !== null || !option.available}
-            className={`rounded-lg p-4 mb-3 flex-row items-center ${option.available ? 'bg-white shadow-sm' : 'bg-gray-100 opacity-50'}`}
-          >
-            <Text className="text-3xl mr-3">{option.icon}</Text>
-            <View className="flex-1">
-              <Text className="text-base font-semibold text-gray-900">{option.name}</Text>
-              <Text className="text-xs text-gray-500 mt-1">{option.description}</Text>
-            </View>
-            {loadingDrive === option.type ? <ActivityIndicator size="small" color="#1976d2" /> : <Text className="text-lg text-gray-300">›</Text>}
-          </TouchableOpacity>
-        ))}
       </ScrollView>
 
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />

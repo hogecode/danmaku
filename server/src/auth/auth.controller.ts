@@ -11,8 +11,10 @@ import {
   BadRequestException,
   HttpCode,
   Param,
+  Inject,
 } from '@nestjs/common';
 import type { Express, Request, Response } from 'express';
+import Redis from 'ioredis';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 import { TokenService } from './services/token.service';
@@ -36,6 +38,7 @@ export class AuthController {
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
     private readonly logger: LoggerService,
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
   ) {}
 
   /**
@@ -96,11 +99,49 @@ export class AuthController {
 
       (session as any).userId = userInfo.id;
 
+      // ✅ Express Session ID を取得
+      const sessionId = session.id;
+      if (!sessionId) {
+        throw new Error('Session ID not found');
+      }
+
+      // ✅ Express Session Store に保存
+      await new Promise<void>((resolve, reject) => {
+        const sessionWithSave = session as Express.Session & {
+          save(callback: (err: Error | null) => void): void;
+        };
+
+        sessionWithSave.save((err: Error | null) => {
+          if (err) {
+            this.logger.error('[AUTH] Failed to save session', err);
+            reject(err);
+          } else {
+            this.logger.debug('[AUTH] Session saved successfully', {
+              sessionId: sessionId.substring(0, 10) + '...',
+              userId: userInfo.id,
+            });
+            resolve();
+          }
+        });
+      });
+
+      // ✅ さらに Redis に直接キャッシュ（モバイルアプリ用）
+      // モバイルアプリが新しい Express Session を生成してもこのキーでアクセス可能
+      // キー形式: auth:session:<sessionId>
+      const TTL_SECONDS = 7 * 24 * 60 * 60; // 7 日間
+      await this.redis.setex(
+        `auth:session:${sessionId}`,
+        TTL_SECONDS,
+        JSON.stringify({ userId: userInfo.id, provider }),
+      );
+      this.logger.debug('[AUTH] Session cached in Redis with custom key', {
+        sessionId: sessionId.substring(0, 10) + '...',
+        userId: userInfo.id,
+        redisKey: `auth:session:${sessionId}`,
+      });
+
       // クライアントタイプを検出
       const clientType = this.authService.detectClientType(request);
-
-      // ✅ Express Session ID を取得（Redis に保存されている）
-      const sessionId = session.id;
 
       // コールバック後のレスポンスを準備
       // モバイルの場合はDeep Link を使用し、Webの場合はリダイレクト URL を使用する

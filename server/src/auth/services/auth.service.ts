@@ -38,9 +38,6 @@ export class AuthService {
   /**
    * プロバイダー別 OAuth コールバック処理
    * 認可コードからアクセストークンを取得し、ユーザー情報を取得してDBに保存する
-   * 
-   * ✅ state/verifier の検証はプロバイダーサービスに委譲
-   * （重複削除を防ぐため）
    */
   async handleProviderCallback(
     provider: string,
