@@ -4,10 +4,10 @@ import {
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
+import Redis from 'ioredis';
 import type { Database } from '../../database/database.module';
 import { driveConnections } from '../../database';
 import { eq, and } from 'drizzle-orm';
-import { OAuthStateService } from '../../common/oauth/oauth-state.service';
 import { EncryptionService } from '../../common/encryption/encryption.service';
 import { LoggerService } from '../../common/logger/logger.service';
 import { GoogleTokenService } from '../../auth/services/providers/google/google-token.service';
@@ -22,7 +22,7 @@ import { ProviderType } from '../constants';
 export class DriveConnectionOAuthService {
   constructor(
     @Inject('DATABASE_CONNECTION') private db: Database,
-    private oauthStateService: OAuthStateService,
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
     private encryptionService: EncryptionService,
     private googleTokenService: GoogleTokenService,
     private onedriveTokenService: OnedriveTokenService,
@@ -42,11 +42,6 @@ export class DriveConnectionOAuthService {
 
     if (provider === ProviderType.GOOGLE) {
       const result = await this.googleTokenService.generateAuthorizationUrl(userId);
-      
-      // TokenService がすでに state と verifier を Redis に保存するため
-      // OAuthStateService での上書きは不要
-      // ※ TODO: 後で state 管理を統一する
-      
       return {
         authorize_url: result.authorize_url,
         state: result.state,
@@ -54,7 +49,6 @@ export class DriveConnectionOAuthService {
       };
     } else if (provider === ProviderType.ONEDRIVE) {
       const result = await this.onedriveTokenService.generateAuthorizationUrl(userId);
-      
       return {
         authorize_url: result.authorize_url,
         state: result.state,
@@ -78,32 +72,37 @@ export class DriveConnectionOAuthService {
       `[DriveConnectionOAuthService] Handling Drive connection callback for provider: ${provider}`,
     );
 
-    const oauthState = await this.oauthStateService.getAndValidateState(state);
-    
-    if (oauthState.purpose !== 'drive_connection') {
-      throw new BadRequestException(
-        `Invalid purpose: expected 'drive_connection', got '${oauthState.purpose}'`,
-      );
+    // Redis から state と verifier を取得（TokenService で保存されている）
+    const stateKey = `oauth:state:${provider}:${state}`;
+    const verifierKey = `oauth:verifier:${provider}:${state}`;
+    const userIdKey = `oauth:userid:${provider}:${state}`;
+
+    const stateExists = await this.redis.get(stateKey);
+    if (!stateExists) {
+      throw new BadRequestException('Invalid or expired state parameter');
     }
 
-    if (oauthState.provider !== provider) {
-      throw new BadRequestException(`Provider mismatch: ${oauthState.provider} vs ${provider}`);
+    const verifier = await this.redis.get(verifierKey);
+    if (!verifier) {
+      throw new BadRequestException('Code verifier not found');
     }
 
-    if (!oauthState.userId || oauthState.userId !== userId) {
+    const storedUserId = await this.redis.get(userIdKey);
+    if (!storedUserId || BigInt(storedUserId) !== userId) {
       throw new UnauthorizedException('User ID mismatch or not found in state');
     }
 
-    await this.oauthStateService.deleteState(state);
+    // state と verifier を削除
+    await Promise.all([
+      this.redis.del(stateKey),
+      this.redis.del(verifierKey),
+      this.redis.del(userIdKey),
+    ]);
 
     try {
+      const redirectUri = this.getRedirectUri(provider);
+      
       if (provider === ProviderType.GOOGLE) {
-        const verifier = oauthState.codeVerifier;
-        if (!verifier) {
-          throw new BadRequestException('Code verifier not found');
-        }
-        
-        const redirectUri = this.getRedirectUri(provider);
         const tokenResponse = await this.googleTokenService.exchangeCodeForToken(
           code,
           verifier,
@@ -121,12 +120,6 @@ export class DriveConnectionOAuthService {
           connectionId: connectionId.toString(),
         };
       } else if (provider === ProviderType.ONEDRIVE) {
-        const verifier = oauthState.codeVerifier;
-        if (!verifier) {
-          throw new BadRequestException('Code verifier not found');
-        }
-        
-        const redirectUri = this.getRedirectUri(provider);
         const tokenResponse = await this.onedriveTokenService.exchangeCodeForToken(
           code,
           verifier,
@@ -165,9 +158,24 @@ export class DriveConnectionOAuthService {
       ? this.encryptionService.encrypt(tokenResponse.refresh_token)
       : null;
 
-    // TODO: drizzle-orm の upsert or insert/update を使用
-    // 現在は insert のみサポート
-    this.logger.debug(`[DriveConnectionOAuthService] Created/Updated Drive connection for user: ${userId}`);
+    // 既存レコードをチェック
+    const existing = await this.db.query.driveConnections.findFirst({
+      where: and(
+        eq(driveConnections.user_id, userId),
+        eq(driveConnections.provider_name, provider),
+      ),
+    });
+
+    if (existing) {
+      // 更新
+      // TODO: drizzle-orm の update メソッドを実装
+      this.logger.debug(`[DriveConnectionOAuthService] Updated Drive connection for user: ${userId}`);
+      return existing.id;
+    }
+
+    // 新規作成
+    // TODO: drizzle-orm の insert メソッドを実装
+    this.logger.debug(`[DriveConnectionOAuthService] Created new Drive connection for user: ${userId}`);
     
     // 仮のconnectionId返却
     return BigInt(1);
