@@ -16,7 +16,7 @@ import type { Express } from 'express';
 import { PlayerService } from './player.service';
 import { TokenService } from '../auth/services/token.service';
 import { AuthGuard } from '../auth/guards';
-import { DPlayerCommentListDto } from './dto';
+import { DPlayerCommentListDto, GenerateVideoTokenResponseDto } from './dto';
 import { PlayerCommonConstants } from './constants';
 import { LoggerService } from '../common/logger/logger.service';
 
@@ -181,7 +181,7 @@ export class PlayerController {
   @HttpCode(200)
   async generateVideoToken(
     @Session() session: Express.Session,
-  ): Promise<{ token: string }> {
+  ): Promise<GenerateVideoTokenResponseDto> {
     const userId = (session as any).userId;
     if (!userId) {
       throw new BadRequestException('User ID not found in session');

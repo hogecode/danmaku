@@ -22,20 +22,9 @@ import {
     FolderListDtoToJSON,
 } from '../models/index';
 
-export interface FolderControllerListFolderRequest {
-    connectionId: string;
-    folderId?: string;
-}
-
 export interface FolderControllerListFolderByConnectionRequest {
     connectionId: string;
     folderId?: string;
-}
-
-export interface FolderControllerSearchRequest {
-    connectionId: string;
-    folderId: string;
-    query: string;
 }
 
 export interface FolderControllerSearchByConnectionRequest {
@@ -48,58 +37,6 @@ export interface FolderControllerSearchByConnectionRequest {
  * 
  */
 export class FolderApi extends runtime.BaseAPI {
-
-    /**
-     * Creates request options for folderControllerListFolder without sending the request
-     */
-    async folderControllerListFolderRequestOpts(requestParameters: FolderControllerListFolderRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['connectionId'] == null) {
-            throw new runtime.RequiredError(
-                'connectionId',
-                'Required parameter "connectionId" was null or undefined when calling folderControllerListFolder().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters['folderId'] != null) {
-            queryParameters['folderId'] = requestParameters['folderId'];
-        }
-
-        if (requestParameters['connectionId'] != null) {
-            queryParameters['connectionId'] = requestParameters['connectionId'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/drive/list`;
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * GET /api/drive/list フォルダ内容を取得
-     */
-    async folderControllerListFolderRaw(requestParameters: FolderControllerListFolderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FolderListDto>> {
-        const requestOptions = await this.folderControllerListFolderRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => FolderListDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * GET /api/drive/list フォルダ内容を取得
-     */
-    async folderControllerListFolder(requestParameters: FolderControllerListFolderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FolderListDto> {
-        const response = await this.folderControllerListFolderRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
 
     /**
      * Creates request options for folderControllerListFolderByConnection without sending the request
@@ -147,76 +84,6 @@ export class FolderApi extends runtime.BaseAPI {
      */
     async folderControllerListFolderByConnection(requestParameters: FolderControllerListFolderByConnectionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FolderListDto> {
         const response = await this.folderControllerListFolderByConnectionRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for folderControllerSearch without sending the request
-     */
-    async folderControllerSearchRequestOpts(requestParameters: FolderControllerSearchRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['connectionId'] == null) {
-            throw new runtime.RequiredError(
-                'connectionId',
-                'Required parameter "connectionId" was null or undefined when calling folderControllerSearch().'
-            );
-        }
-
-        if (requestParameters['folderId'] == null) {
-            throw new runtime.RequiredError(
-                'folderId',
-                'Required parameter "folderId" was null or undefined when calling folderControllerSearch().'
-            );
-        }
-
-        if (requestParameters['query'] == null) {
-            throw new runtime.RequiredError(
-                'query',
-                'Required parameter "query" was null or undefined when calling folderControllerSearch().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters['connectionId'] != null) {
-            queryParameters['connectionId'] = requestParameters['connectionId'];
-        }
-
-        if (requestParameters['folderId'] != null) {
-            queryParameters['folderId'] = requestParameters['folderId'];
-        }
-
-        if (requestParameters['query'] != null) {
-            queryParameters['query'] = requestParameters['query'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/drive/search`;
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * GET /api/drive/search フォルダ内でキーワード検索
-     */
-    async folderControllerSearchRaw(requestParameters: FolderControllerSearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FolderListDto>> {
-        const requestOptions = await this.folderControllerSearchRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => FolderListDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * GET /api/drive/search フォルダ内でキーワード検索
-     */
-    async folderControllerSearch(requestParameters: FolderControllerSearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FolderListDto> {
-        const response = await this.folderControllerSearchRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -270,7 +137,7 @@ export class FolderApi extends runtime.BaseAPI {
     }
 
     /**
-     * GET /api/drive/connections/:connectionId/search 特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
+     * GET /api/drive/connections/:connectionId/search  特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
      */
     async folderControllerSearchByConnectionRaw(requestParameters: FolderControllerSearchByConnectionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FolderListDto>> {
         const requestOptions = await this.folderControllerSearchByConnectionRequestOpts(requestParameters);
@@ -280,7 +147,7 @@ export class FolderApi extends runtime.BaseAPI {
     }
 
     /**
-     * GET /api/drive/connections/:connectionId/search 特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
+     * GET /api/drive/connections/:connectionId/search  特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
      */
     async folderControllerSearchByConnection(requestParameters: FolderControllerSearchByConnectionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FolderListDto> {
         const response = await this.folderControllerSearchByConnectionRaw(requestParameters, initOverrides);

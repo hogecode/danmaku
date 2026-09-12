@@ -45,10 +45,8 @@ export class FolderController {
 
   /**
    * GET /api/drive/connections/:connectionId/search
+   * 
    * 特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
-   * @param connectionId - ドライブ接続ID
-   * @param folderId - 検索対象フォルダID
-   * @param query - 検索キーワード
    */
   @Get('connections/:connectionId/search')
   async searchByConnection(

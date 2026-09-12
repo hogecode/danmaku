@@ -3,6 +3,7 @@ import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { DriveProvider, DriveListResponse } from '../drive.provider.interface';
 import { FileItemDto } from '../../dto';
+import { GoogleDriveConstants } from '../../constants/google/google-drive.constants';
 
 /**
  * Google Drive プロバイダー実装
@@ -11,6 +12,7 @@ import { FileItemDto } from '../../dto';
 export class GoogleDriveProvider implements DriveProvider {
   /**
    * フォルダ内のファイル・フォルダを一覧取得
+   * ✅ フォルダと動画ファイルのみを取得
    */
   async listFiles(
     accessToken: string,
@@ -20,10 +22,14 @@ export class GoogleDriveProvider implements DriveProvider {
     const client = new OAuth2Client();
     client.setCredentials({ access_token: accessToken });
 
+    // ✅ フォルダと動画ファイルのみをフィルタリング
+    const filterQuery = GoogleDriveConstants.getFilterQuery();
+    const query = `'${folderId}' in parents and trashed=false and (${filterQuery})`;
+
     const response = await google
       .drive({ version: 'v3', auth: client })
       .files.list({
-        q: `'${folderId}' in parents and trashed=false`,
+        q: query,
         spaces: 'drive',
         fields:
           'files(id,name,mimeType,size,modifiedTime,webViewLink,thumbnailLink),nextPageToken',
@@ -48,6 +54,7 @@ export class GoogleDriveProvider implements DriveProvider {
 
   /**
    * フォルダ内でキーワード検索
+   * ✅ フォルダと動画ファイルのみを取得
    */
   async searchFiles(
     accessToken: string,
@@ -58,10 +65,14 @@ export class GoogleDriveProvider implements DriveProvider {
     const client = new OAuth2Client();
     client.setCredentials({ access_token: accessToken });
 
+    // ✅ フォルダと動画ファイルのみをフィルタリング
+    const filterQuery = GoogleDriveConstants.getFilterQuery();
+    const q = `'${folderId}' in parents and trashed=false and (${filterQuery}) and (name contains '${query}' or fullText contains '${query}')`;
+
     const response = await google
       .drive({ version: 'v3', auth: client })
       .files.list({
-        q: `'${folderId}' in parents and trashed=false and (name contains '${query}' or fullText contains '${query}')`,
+        q,
         spaces: 'drive',
         fields:
           'files(id,name,mimeType,size,modifiedTime,webViewLink,thumbnailLink),nextPageToken',

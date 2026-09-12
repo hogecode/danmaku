@@ -227,6 +227,7 @@ paths:
                 $ref: '#/components/schemas/FolderListDto'
       summary: |-
         GET /api/drive/connections/:connectionId/search
+
         特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
       tags:
         - Folder

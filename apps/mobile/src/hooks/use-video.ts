@@ -4,12 +4,14 @@
 
 import { useCallback } from 'react';
 import { useVideoStore } from '@/stores/video-store';
+import { useDrivesStore } from '@/stores/drives-store';
 import { videoService } from '@/services/video-service';
 import { appLogger } from '@/utils/logger';
 import { VideoPlayerConfig } from '@/types';
 
 export function useVideo() {
   const video = useVideoStore();
+  const { selectedConnectionId } = useDrivesStore();
 
   /**
    * プレイヤー設定を初期化
@@ -28,13 +30,19 @@ export function useVideo() {
         streamingUrl = config.videoFileId;
         appLogger.info(`[useVideo] ローカルファイルURL: ${streamingUrl}`);
       } else {
+        // ✅ selectedConnectionId を取得
+        if (!selectedConnectionId) {
+          throw new Error('ドライブが選択されていません');
+        }
+
         // ビデオトークンを取得
         const videoToken = await videoService.getVideoToken();
 
-        // ストリーミング URL を構築
+        // ✅ ストリーミング URL を構築（connectionId, fileId, token を渡す）
         streamingUrl = videoService.buildStreamingUrl(
+          selectedConnectionId,
           config.videoFileId,
-          videoToken
+          videoToken ? `token=${videoToken}` : ''
         );
       }
 
@@ -45,8 +53,8 @@ export function useVideo() {
       appLogger.info('[useVideo] プレイヤー初期化完了');
 
       // コメントを読み込む（非同期・エラー無視）
-      if (!config.isLocalFile) {
-        loadComments(config.videoFileId, config.folderId);
+      if (!config.isLocalFile && selectedConnectionId) {
+        loadComments(config.videoFileId, selectedConnectionId, config.folderId);
       }
 
       return updatedConfig;
@@ -57,18 +65,18 @@ export function useVideo() {
     } finally {
       video.setLoading(false);
     }
-  }, [video]);
+  }, [video, selectedConnectionId]);
 
   /**
    * 弾幕を読み込む
    */
-  const loadComments = useCallback(async (fileId: string, folderId?: string) => {
+  const loadComments = useCallback(async (fileId: string, connectionId: string, folderId?: string) => {
     try {
       video.setCommentsLoading(true);
       appLogger.info(`[useVideo] コメント読み込み中: ${fileId}`);
 
-      // DPlayer 互換形式でコメントを取得
-      const response = await videoService.getComments(fileId, folderId || 'root');
+      // ✅ connectionId を渡してコメントを取得
+      const response = await videoService.getComments(fileId, connectionId, folderId || 'root');
 
       // comments は DPlayer 形式：{ time, type, size, color, author, text }
       const comments = response.comments || [];

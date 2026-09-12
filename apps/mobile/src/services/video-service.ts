@@ -38,16 +38,30 @@ export class VideoService {
    * 目的: モバイルアプリでの動画URL認証
    * - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
    * - 有効期限: 15分（デフォルト）
-   * @returns トークン
+   * @returns トークン（JWT文字列）
    */
-  async getVideoToken(): Promise<void> {
+  async getVideoToken(): Promise<string> {
     try {
       appLogger.info('VideoService: ビデオトークン生成中...');
 
-      // OpenAPI 自動生成クライアントを使用
-      await this.playerApi.playerControllerGenerateVideoToken();
+      // ✅ fetch で直接 API を叩く（OpenAPI クライアントの型定義問題を回避）
+      const response = await fetch(`${API_BASE_URL}/api/player/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // セッションCookieを含める
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate token: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const token = data.token || '';
 
       appLogger.info('VideoService: ビデオトークン生成成功');
+      return token;
     } catch (error) {
       appLogger.error('VideoService: ビデオトークン生成失敗', error);
       throw new VideoException('Failed to generate video token', (error as any)?.status);
@@ -82,10 +96,6 @@ export class VideoService {
    * - コメント: "aaa.xml" または "aaa.json" を自動検索
    * - 見つかった場合: DPlayer 互換形式に変換して返す
    * - 見つからない場合: 空配列を返す
-   * @param videoFileId - Google Drive ビデオファイルID
-   * @param connectionId - ドライブ接続ID
-   * @param folderId - フォルダID
-   * @returns DPlayer 互換形式のコメント（DPlayerCommentListDto）
    */
   async getComments(
     videoFileId: string,

@@ -100,7 +100,7 @@ export class AuthApi extends runtime.BaseAPI {
     }
 
     /**
-     * GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+     * GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
      */
     async authControllerCallbackWithProviderRaw(requestParameters: AuthControllerCallbackWithProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const requestOptions = await this.authControllerCallbackWithProviderRequestOpts(requestParameters);
@@ -110,7 +110,7 @@ export class AuthApi extends runtime.BaseAPI {
     }
 
     /**
-     * GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+     * GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
      */
     async authControllerCallbackWithProvider(requestParameters: AuthControllerCallbackWithProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.authControllerCallbackWithProviderRaw(requestParameters, initOverrides);
