@@ -40,7 +40,6 @@ export class AuthController {
     private readonly userService: UserService,
     private readonly oauthAccountService: OAuthAccountService,
     private readonly tokenService: TokenService,
-    private readonly configService: ConfigService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -56,12 +55,15 @@ export class AuthController {
   async loginWithProvider(
     @Param('provider') provider: string,
   ): Promise<LoginResponseDto> {
-    return await this.authService.initializeLogin(provider);
+    return await this.tokenService.generateAuthorizationUrl(provider);
   }
 
+  
   /**
    * GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック
    * 例: GET /api/auth/callback/onedrive
+   * 
+   * DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
    */
   @Get('callback/:provider')
   async callbackWithProvider(
@@ -90,6 +92,7 @@ export class AuthController {
     }
 
     try {
+      // 認可コードからアクセストークンを取得し、ユーザー情報を取得してDBに保存する
       const userInfo = await this.authService.handleProviderCallback(
         provider,
         query.code,
@@ -102,7 +105,7 @@ export class AuthController {
       const clientType = this.authService.detectClientType(request);
 
       // コールバック後のレスポンスを準備
-      const callbackResponse = this.authService.prepareCallbackResponse(
+      const callbackResponse = this.authService.createRedirectURL(
         userInfo,
         provider,
         clientType,

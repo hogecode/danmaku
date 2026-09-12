@@ -81,18 +81,6 @@ export class OAuthAccountService {
   }
 
   /**
-   * 有効なアクセストークンを取得
-   * トークンが期限切れの場合は自動的にリフレッシュして返す
-   *
-   * @param userId - ユーザーID
-   * @param provider - プロバイダー名
-   * @returns 有効なアクセストークン
-   */
-  async getValidAccessToken(userId: bigint, provider: string = ProviderType.GOOGLE): Promise<string> {
-    return await this.tokenService.getValidAccessToken(userId, provider);
-  }
-
-  /**
    * ログアウト処理（全プロバイダーのトークンを無効化）
    */
   async logout(userId: bigint): Promise<void> {
