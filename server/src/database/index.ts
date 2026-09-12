@@ -10,5 +10,3 @@ export * from './content.schema';
 // History & Audit schemas
 export * from './history.schema';
 
-// Nicovideo schemas
-export * from './nicovideo.schema';

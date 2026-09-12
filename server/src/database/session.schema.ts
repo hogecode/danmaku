@@ -11,28 +11,6 @@ import {
 } from 'drizzle-orm/pg-core';
 import { users } from './auth.schema';
 
-// User Sessions
-export const userSessions = pgTable('user_sessions', {
-  id: bigserial('id', { mode: 'bigint' }).primaryKey(),
-  user_id: bigserial('user_id', { mode: 'bigint' }).notNull(),
-  device_type: varchar('device_type', { length: 50 }).notNull(),
-  device_name: varchar('device_name', { length: 255 }),
-  ip_address: varchar('ip_address', { length: 45 }),
-  user_agent: text('user_agent'),
-  last_activity: timestamp('last_activity', { withTimezone: true }).defaultNow().notNull(),
-  is_active: boolean('is_active').default(true),
-  created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  expires_at: timestamp('expires_at', { withTimezone: true }).notNull(),
-}, (t) => ({
-  userIdFk: foreignKey({ columns: [t.user_id], foreignColumns: [users.id] }).onDelete('cascade'),
-  userIdIdx: index('idx_user_sessions_user_id').on(t.user_id),
-  lastActivityIdx: index('idx_user_sessions_last_activity').on(t.last_activity),
-}));
-
-export type UserSession = typeof userSessions.$inferSelect;
-export type NewUserSession = typeof userSessions.$inferInsert;
-
-
 // User Settings
 export const userSettings = pgTable('user_settings', {
   id: bigserial('id', { mode: 'bigint' }).primaryKey(),
