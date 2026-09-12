@@ -140,6 +140,7 @@ export class PlayerController {
   async getComments(
     @Param('videoFileId') videoFileId: string,
     @Query('folderId') folderId: string,
+    @Query('connectionId') connectionId: string,
     @Session() session: Express.Session & { userId?: string },
   ): Promise<DPlayerCommentListDto> {
     if (!session.userId) {
@@ -150,11 +151,16 @@ export class PlayerController {
       throw new BadRequestException('videoFileId parameter is required');
     }
 
+    if (!connectionId || connectionId.trim().length === 0) {
+      throw new BadRequestException('connectionId parameter is required');
+    }
+
     // ✅ DPlayer 互換形式で取得
     const comments = await this.playerService.getCommentsByVideoIdForDPlayer(
       BigInt(session.userId),
       videoFileId,
       folderId,
+      BigInt(connectionId),
     );
 
     return {

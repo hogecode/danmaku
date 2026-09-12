@@ -195,12 +195,14 @@ export class PlayerService {
    * @param userId - ユーザーID
    * @param videoFileId - 動画ファイルID
    * @param folderId - 動画ファイルが存在するフォルダID
+   * @param connectionId - ドライブ接続ID
    * @returns DPlayer 互換コメント配列
    */
   async getCommentsByVideoIdForDPlayer(
     userId: bigint,
     videoFileId: string,
     folderId: string,
+    connectionId: bigint,
   ): Promise<DPlayerCommentDto[]> {
     try {
       // ✅ CommentDto 形式でコメントを取得
@@ -208,6 +210,7 @@ export class PlayerService {
         userId,
         videoFileId,
         folderId,
+        connectionId,
       );
 
       // ✅ DPlayer 互換形式に変換
