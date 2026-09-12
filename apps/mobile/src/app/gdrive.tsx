@@ -2,7 +2,7 @@
  * ホーム画面（Google Drive ファイル一覧）
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,14 +12,16 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '@/hooks/use-auth';
-import { useDrive } from '@/hooks/use-drive';
-import { appLogger } from '@/utils/logger';
-import { FileUtility } from '@/utils/FileUtility';
+import { useAuth } from '../hooks/use-auth';
+import { useDrive } from '../hooks/use-drive';
+import { appLogger } from '../utils/logger';
+import { FileUtility } from '../utils/FileUtility';
+import { Sidebar } from '../components/Sidebar';
 
 export default function HomeScreen() {
   const auth = useAuth();
   const drive = useDrive();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!auth.isAuthenticated) {
@@ -63,8 +65,11 @@ export default function HomeScreen() {
   　　    ←　GoogleDrive　↻ 
       */}
       <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-        <TouchableOpacity className="w-10 h-10 justify-center items-center" onPress={handleBack}>
-          <Text className="text-2xl">←</Text>
+        <TouchableOpacity
+          onPress={() => setSidebarOpen(true)}
+          className="w-10 h-10 justify-center items-center"
+        >
+          <Text className="text-2xl">☰</Text>
         </TouchableOpacity>
         <Text className="flex-1 text-lg font-semibold text-center">Google Drive</Text>
         <TouchableOpacity
@@ -121,6 +126,8 @@ export default function HomeScreen() {
           <Text className="text-red-900 text-xs">{drive.error}</Text>
         </View>
       )}
+
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
     </SafeAreaView>
   );
 }

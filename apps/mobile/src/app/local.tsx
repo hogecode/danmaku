@@ -8,11 +8,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Directory, File } from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
-import { useAuth } from '@/hooks/use-auth';
-import { FileUtility } from '@/utils/FileUtility';
-import { appLogger } from '@/utils/logger';
+import { useAuth } from '../hooks/use-auth';
+import { FileUtility } from '../utils/FileUtility';
+import { appLogger } from '../utils/logger';
+import { Sidebar } from '../components/Sidebar';
 
 interface LocalFile {
   id: string;
@@ -27,6 +27,7 @@ export default function LocalScreen() {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleOpenFolder = async () => {
     try {
@@ -153,10 +154,10 @@ export default function LocalScreen() {
     <SafeAreaView className="flex-1 bg-stone-100" edges={['top']}>
       <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
         <TouchableOpacity
+          onPress={() => setSidebarOpen(true)}
           className="w-10 h-10 justify-center items-center"
-          onPress={handleBack}
         >
-          <Text className="text-2xl">←</Text>
+          <Text className="text-2xl">☰</Text>
         </TouchableOpacity>
         <Text className="flex-1 text-lg font-semibold text-center">
           ローカルファイル
@@ -227,6 +228,8 @@ export default function LocalScreen() {
           </TouchableOpacity>
         </View>
       )}
+
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
     </SafeAreaView>
   );
 }
