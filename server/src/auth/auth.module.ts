@@ -5,7 +5,6 @@ import {
   AuthService,
   TokenService,
   UserService,
-  OAuthAccountService,
 } from './services';
 import {
   GoogleAuthService,
@@ -33,7 +32,6 @@ import { LoggerModule } from '../common/logger/logger.module';
     OnedriveTokenService,
     TokenService,
     UserService,
-    OAuthAccountService,
     GoogleAuthService,
     OnedriveAuthService,
     AuthService,
@@ -42,7 +40,6 @@ import { LoggerModule } from '../common/logger/logger.module';
     AuthService,
     TokenService,
     UserService,
-    OAuthAccountService,
     GoogleAuthService,
     OnedriveAuthService,
     GoogleTokenService,

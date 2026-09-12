@@ -15,17 +15,13 @@ import {
 import type { Express, Request, Response } from 'express';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
-import { OAuthAccountService } from './services/oauth-account.service';
 import { TokenService } from './services/token.service';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitGuard, AuthGuard } from './guards';
 import {
-  LoginRequestDto,
   LoginResponseDto,
   CallbackQueryDto,
-  CallbackResponseDto,
   UserInfoDto,
-  RefreshTokenResponseDto,
 } from './dto';
 import { LoggerService } from '../common/logger/logger.service';
 import { ProviderType } from '../drive/constants';
@@ -38,14 +34,12 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly oauthAccountService: OAuthAccountService,
     private readonly tokenService: TokenService,
     private readonly logger: LoggerService,
   ) {}
 
   /**
    * POST /api/auth/login/:provider - プロバイダー別ログイン開始
-   * 例: POST /api/auth/login/onedrive
    *
    * 認可URLを生成して返す
    */
@@ -53,7 +47,7 @@ export class AuthController {
   @UseGuards(RateLimitGuard)
   @HttpCode(200)
   async loginWithProvider(
-    @Param('provider') provider: string,
+    @Param('provider') provider: ProviderType,
   ): Promise<LoginResponseDto> {
     return await this.tokenService.generateAuthorizationUrl(provider);
   }
@@ -67,7 +61,7 @@ export class AuthController {
    */
   @Get('callback/:provider')
   async callbackWithProvider(
-    @Param('provider') provider: string,
+    @Param('provider') provider: ProviderType,
     @Query() query: CallbackQueryDto,
     @Session() session: Express.Session,
     @Req() request: Request,
@@ -105,6 +99,7 @@ export class AuthController {
       const clientType = this.authService.detectClientType(request);
 
       // コールバック後のレスポンスを準備
+      // モバイルの場合はDeep Link を使用し、Webの場合はリダイレクト URL を使用する
       const callbackResponse = this.authService.createRedirectURL(
         userInfo,
         provider,
@@ -121,6 +116,7 @@ export class AuthController {
     }
   }
 
+
   /**
    * GET /api/auth/me - ユーザー情報取得
    */
@@ -136,6 +132,7 @@ export class AuthController {
     return await this.userService.getUserInfo(BigInt(userId));
   }
 
+  
   /**
    * POST /api/auth/logout - ログアウト
    */
@@ -152,7 +149,7 @@ export class AuthController {
 
     // 全てのログインサービスからログアウト
     // TODO: ログアウトロジックを見直す
-    await this.oauthAccountService.logout(BigInt(userId));
+    await this.userService.logout(BigInt(userId));
 
     // セッションを破棄（Express Session API）
     (session as any).destroy?.(() => {});

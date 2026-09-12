@@ -36,7 +36,6 @@ export class PKCEUtil {
 
   /**
    * PKCE code_verifier と code_challenge を生成
-   * @returns PKCE ペア
    */
   static generatePKCE(): PKCEPair {
     let verifier = '';
@@ -56,7 +55,6 @@ export class PKCEUtil {
 
   /**
    * State パラメータを生成（CSRF対策）
-   * @returns State トークン
    */
   static generateState(): string {
     let state = '';
@@ -72,7 +70,6 @@ export class PKCEUtil {
    * State パラメータを検証（CSRF対策）
    * @param sessionState セッションに保存されたstate
    * @param receivedState リクエストパラメータのstate
-   * @throws Error if states do not match
    */
   static validateState(sessionState: string, receivedState: string): void {
     if (sessionState !== receivedState) {
@@ -82,8 +79,6 @@ export class PKCEUtil {
 
   /**
    * Verifier の長さを検証（RFC 7636）
-   * @param verifier code_verifier
-   * @throws Error if verifier length is invalid
    */
   static validateVerifier(verifier: string): void {
     if (

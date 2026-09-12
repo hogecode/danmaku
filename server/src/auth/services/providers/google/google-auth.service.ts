@@ -9,7 +9,6 @@ import type { Database } from '../../../../database/database.module';
 import axios, { AxiosError } from 'axios';
 import Redis from 'ioredis';
 import { UserService } from '../../user.service';
-import { OAuthAccountService } from '../../oauth-account.service';
 import { LoggerService } from '../../../../common/logger/logger.service';
 import { TokenService } from '../../token.service';
 import { GoogleUserInfoDto, UserInfoDto } from '../../../dto';
@@ -30,7 +29,6 @@ export class GoogleAuthService implements ProviderAuthService {
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
     private readonly userService: UserService,
-    private readonly oauthAccountService: OAuthAccountService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -67,7 +65,7 @@ export class GoogleAuthService implements ProviderAuthService {
 
       const user = await this.userService.upsertUser(googleUser);
 
-      await this.oauthAccountService.upsertOAuthAccount(
+      await this.userService.upsertOAuthAccount(
         user.id,
         googleUser,
         tokenData,

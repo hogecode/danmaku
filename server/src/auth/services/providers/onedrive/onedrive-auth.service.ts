@@ -9,7 +9,7 @@ import type { Database } from '../../../../database/database.module';
 import axios, { AxiosError } from 'axios';
 import Redis from 'ioredis';
 import { UserService } from '../../user.service';
-import { OAuthAccountService } from '../../oauth-account.service';
+import { OAuthAccountService } from '../../user.service';
 import { LoggerService } from '../../../../common/logger/logger.service';
 import { TokenService } from '../../token.service';
 import { GoogleUserInfoDto, UserInfoDto } from '../../../dto';
