@@ -1,13 +1,12 @@
 /**
- * ビデオサービス
+ * ビデオ・プレイヤーサービス
  * OpenAPI 自動生成クライアントを使用
  */
 
 import { API_BASE_URL } from '@/utils/constants';
 import { appLogger } from '@/utils/logger';
-import { AuthApi, PlayerApi } from '@/generated';
+import { PlayerApi, DPlayerCommentListDto } from '@/generated';
 import { createApiConfiguration } from './api-config';
-import { useAuthStore } from '@/stores/auth-store';
 
 export class VideoException extends Error {
   constructor(
@@ -19,14 +18,12 @@ export class VideoException extends Error {
 }
 
 export class VideoService {
-  private authApi: AuthApi;
   private playerApi: PlayerApi;
 
   constructor() {
     try {
       // OpenAPI Configuration を設定
       const config = createApiConfiguration();
-      this.authApi = new AuthApi(config);
       this.playerApi = new PlayerApi(config);
       appLogger.info('VideoService: 初期化完了');
     } catch (error) {
@@ -36,67 +33,43 @@ export class VideoService {
   }
 
   /**
-   * ビデオトークンを生成
-   * POST /api/auth/video-token
+   * ビデオストリーミング用トークンを生成
+   * POST /api/player/token
+   * 目的: モバイルアプリでの動画URL認証
+   * - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
+   * - 有効期限: 15分（デフォルト）
    * @returns トークン
    */
-  async getVideoToken(): Promise<string> {
+  async getVideoToken(): Promise<void> {
     try {
-      appLogger.info('VideoService: ビデオトークン取得中...');
+      appLogger.info('VideoService: ビデオトークン生成中...');
 
-      // OpenAPI クライアントの型定義が不完全なため、
-      // 直接 fetch を使用してトークンを取得
-      const config = createApiConfiguration();
-      const response = await fetch(`${config.basePath}/api/auth/video-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.getAccessToken()}`,
-        },
-      });
+      // OpenAPI 自動生成クライアントを使用
+      await this.playerApi.playerControllerGenerateVideoToken();
 
-      if (!response.ok) {
-        throw new VideoException(`Failed to get video token: ${response.statusText}`, response.status);
-      }
-
-      const data = await response.json();
-      const token = data.token as string;
-
-      if (!token) {
-        throw new VideoException('No token in response');
-      }
-
-      appLogger.info(`VideoService: ビデオトークン取得成功 (token length: ${token.length})`);
-      return token;
+      appLogger.info('VideoService: ビデオトークン生成成功');
     } catch (error) {
-      appLogger.error('VideoService: ビデオトークン取得失敗', error);
+      appLogger.error('VideoService: ビデオトークン生成失敗', error);
       throw new VideoException('Failed to generate video token', (error as any)?.status);
     }
   }
 
   /**
-   * アクセストークンを取得
-   * @private
-   */
-  private getAccessToken(): string {
-    const token = useAuthStore.getState().token;
-    if (!token) {
-      throw new VideoException('No access token available');
-    }
-    return token;
-  }
-
-  /**
    * ストリーミング URL を構築
-   * @param fileId Google Drive ファイルID
-   * @param videoToken ビデオトークン
+   * @param connectionId - ドライブ接続ID
+   * @param fileId - Google Drive ファイルID
+   * @param range - HTTP Range ヘッダー値
    * @returns ストリーミング URL
    */
-  buildStreamingUrl(fileId: string, videoToken: string): string {
+  buildStreamingUrl(
+    connectionId: string,
+    fileId: string,
+    range: string = ''
+  ): string {
     const baseUrl = API_BASE_URL;
-    const url = `${baseUrl}/api/player/stream/${fileId}?token=${encodeURIComponent(
-      videoToken
-    )}`;
+    const url = `${baseUrl}/api/player/stream/${connectionId}/${fileId}${
+      range ? `?range=${encodeURIComponent(range)}` : ''
+    }`;
     appLogger.debug(`VideoService: ストリーミングURL構築: ${url}`);
     return url;
   }
@@ -104,25 +77,74 @@ export class VideoService {
   /**
    * DPlayer 互換形式でコメントを取得
    * GET /api/player/comments/{videoFileId}
-   * @param videoFileId Google Drive ビデオファイルID
-   * @param folderId フォルダID
-   * @returns DPlayer 互換形式のコメント
+   * コメントファイルの自動検出:
+   * - 動画: "aaa.mp4"
+   * - コメント: "aaa.xml" または "aaa.json" を自動検索
+   * - 見つかった場合: DPlayer 互換形式に変換して返す
+   * - 見つからない場合: 空配列を返す
+   * @param videoFileId - Google Drive ビデオファイルID
+   * @param connectionId - ドライブ接続ID
+   * @param folderId - フォルダID
+   * @returns DPlayer 互換形式のコメント（DPlayerCommentListDto）
    */
-  async getComments(videoFileId: string, folderId: string = 'root'): Promise<any> {
+  async getComments(
+    videoFileId: string,
+    connectionId: string,
+    folderId: string = 'root'
+  ): Promise<DPlayerCommentListDto> {
     try {
-      appLogger.info(`VideoService: コメント取得中 (videoFileId=${videoFileId})`);
+      appLogger.info(
+        `VideoService: コメント取得中 (videoFileId=${videoFileId}, connectionId=${connectionId})`
+      );
 
       const response = await this.playerApi.playerControllerGetComments({
         videoFileId,
+        connectionId,
         folderId,
       });
 
-      appLogger.info(`VideoService: コメント取得成功`);
+      appLogger.info(
+        `VideoService: コメント取得成功 (${response?.comments?.length || 0} 件)`
+      );
       return response;
     } catch (error) {
       appLogger.warning(`VideoService: コメント取得失敗（続行）`, error);
       // コメント取得失敗は致命的ではない
+      // 空配列で初期化したオブジェクトを返す
       return { comments: [] };
+    }
+  }
+
+  /**
+   * ビデオをストリーミング
+   * GET /api/player/stream/:connectionId/:fileId
+   * Range ヘッダーでバイト範囲を指定可能（HTTP 206 Partial Content 対応）
+   * @param connectionId - ドライブ接続ID
+   * @param fileId - ファイルID
+   * @param range - HTTP Range ヘッダー値（例: "bytes=0-1023"）
+   * @returns ストリーミングレスポンス
+   */
+  async streamVideo(
+    connectionId: string,
+    fileId: string,
+    range: string
+  ): Promise<Response> {
+    try {
+      appLogger.info(
+        `VideoService: ストリーミング開始 (connectionId=${connectionId}, fileId=${fileId})`
+      );
+
+      const response = await this.playerApi.playerControllerStreamVideoRaw({
+        connectionId,
+        fileId,
+        range,
+      });
+
+      appLogger.info('VideoService: ストリーミング成功');
+      return response.response;
+    } catch (error) {
+      appLogger.error('VideoService: ストリーミング失敗', error);
+      throw new VideoException('Failed to stream video', (error as any)?.status);
     }
   }
 }

@@ -1,11 +1,12 @@
 /**
- * Google Drive サービス
+ * フォルダ・ドライブサービス
  * OpenAPI 自動生成クライアントを使用
+ * マルチプロバイダー対応（connectionId が必須）
  */
 
 import { appLogger } from '@/utils/logger';
-import { FileItemDto } from '@/types';
-import { GDriveApi } from '@/generated';
+import { FileItemDto, FolderListDto } from '@/generated';
+import { FolderApi } from '@/generated';
 import { createApiConfiguration } from './api-config';
 
 export class DriveException extends Error {
@@ -18,7 +19,7 @@ export class DriveException extends Error {
 }
 
 export class DriveService {
-  private gdriveApi: GDriveApi;
+  private folderApi: FolderApi;
   private token?: string;
 
   constructor(token?: string) {
@@ -26,7 +27,7 @@ export class DriveService {
       this.token = token;
       // OpenAPI Configuration を設定（ドライブ固有のトークンを渡す）
       const config = createApiConfiguration(token);
-      this.gdriveApi = new GDriveApi(config);
+      this.folderApi = new FolderApi(config);
       appLogger.info('DriveService: 初期化完了');
     } catch (error) {
       appLogger.error('DriveService: 初期化失敗', error);
@@ -35,23 +36,31 @@ export class DriveService {
   }
 
   /**
-   * Google Drive フォルダ内のファイル一覧を取得
-   * GET /api/gdrive/list
-   * @param folderId フォルダID（デフォルト: 'root'）
-   * @returns FileItemDto のリスト
+   * フォルダ内のファイル一覧を取得
+   * GET /api/drive/list
+   * @param connectionId - ドライブ接続ID（マルチプロバイダー対応）
+   * @param folderId - フォルダID（デフォルト: 'root'）
+   * @returns FolderListDto（FileItemDto[] を含む）
    */
-  async listFolder(folderId: string = 'root'): Promise<FileItemDto[]> {
+  async listFolder(
+    connectionId: string,
+    folderId: string = 'root'
+  ): Promise<FolderListDto> {
     try {
-      appLogger.info(`DriveService: フォルダ一覧を取得中 (folderId=${folderId})`);
+      appLogger.info(
+        `DriveService: フォルダ一覧を取得中 (connectionId=${connectionId}, folderId=${folderId})`
+      );
 
-      const response = await this.gdriveApi.gDriveControllerListFolder({
+      const response = await this.folderApi.folderControllerListFolder({
+        connectionId,
         folderId,
       });
 
-      const items = response?.items || [];
-      appLogger.info(`DriveService: フォルダ一覧取得成功: ${items.length} 個`);
+      appLogger.info(
+        `DriveService: フォルダ一覧取得成功: ${response?.items?.length || 0} 個`
+      );
 
-      return items;
+      return response;
     } catch (error) {
       appLogger.error('DriveService: フォルダ一覧取得失敗', error);
       throw new DriveException('Failed to list folder', (error as any)?.status);
@@ -59,30 +68,112 @@ export class DriveService {
   }
 
   /**
-   * Google Drive でキーワード検索
-   * GET /api/gdrive/search
-   * @param folderId 検索対象フォルダID
-   * @param query 検索キーワード
-   * @returns FileItemDto のリスト
+   * 特定の接続からフォルダ内容を取得（マルチプロバイダー対応）
+   * GET /api/drive/connections/:connectionId/files
+   * @param connectionId - ドライブ接続ID
+   * @param folderId - フォルダID（オプション）
+   * @returns FolderListDto（FileItemDto[] を含む）
    */
-  async search(folderId: string, query: string): Promise<FileItemDto[]> {
+  async listFolderByConnection(
+    connectionId: string,
+    folderId?: string
+  ): Promise<FolderListDto> {
     try {
       appLogger.info(
-        `DriveService: 検索実行中 (folderId=${folderId}, query=${query})`
+        `DriveService: 接続別フォルダ一覧を取得中 (connectionId=${connectionId}, folderId=${folderId})`
       );
 
-      const response = await this.gdriveApi.gDriveControllerSearch({
+      const response = await this.folderApi.folderControllerListFolderByConnection(
+        {
+          connectionId,
+          folderId,
+        }
+      );
+
+      appLogger.info(
+        `DriveService: 接続別フォルダ一覧取得成功: ${response?.items?.length || 0} 個`
+      );
+
+      return response;
+    } catch (error) {
+      appLogger.error('DriveService: 接続別フォルダ一覧取得失敗', error);
+      throw new DriveException(
+        'Failed to list folder by connection',
+        (error as any)?.status
+      );
+    }
+  }
+
+  /**
+   * キーワード検索
+   * GET /api/drive/search
+   * @param connectionId - ドライブ接続ID
+   * @param folderId - 検索対象フォルダID
+   * @param query - 検索キーワード
+   * @returns FolderListDto（FileItemDto[] を含む）
+   */
+  async search(
+    connectionId: string,
+    folderId: string,
+    query: string
+  ): Promise<FolderListDto> {
+    try {
+      appLogger.info(
+        `DriveService: 検索実行中 (connectionId=${connectionId}, folderId=${folderId}, query=${query})`
+      );
+
+      const response = await this.folderApi.folderControllerSearch({
+        connectionId,
         folderId,
         query,
       });
 
-      const items = response?.items || [];
-      appLogger.info(`DriveService: 検索完了: ${items.length} 件`);
+      appLogger.info(
+        `DriveService: 検索完了: ${response?.items?.length || 0} 件`
+      );
 
-      return items;
+      return response;
     } catch (error) {
       appLogger.error('DriveService: 検索失敗', error);
       throw new DriveException('Search failed', (error as any)?.status);
+    }
+  }
+
+  /**
+   * 接続別検索
+   * GET /api/drive/connections/:connectionId/search
+   * @param connectionId - ドライブ接続ID
+   * @param folderId - 検索対象フォルダID
+   * @param query - 検索キーワード
+   * @returns FolderListDto（FileItemDto[] を含む）
+   */
+  async searchByConnection(
+    connectionId: string,
+    folderId: string,
+    query: string
+  ): Promise<FolderListDto> {
+    try {
+      appLogger.info(
+        `DriveService: 接続別検索実行中 (connectionId=${connectionId}, folderId=${folderId}, query=${query})`
+      );
+
+      const response = await this.folderApi.folderControllerSearchByConnection({
+        connectionId,
+        folderId,
+        query,
+      });
+
+      appLogger.info(
+        `DriveService: 接続別検索完了: ${response?.items?.length || 0} 件`
+      );
+
+      return response;
+    } catch (error) {
+      appLogger.error('DriveService: 接続別検索失敗', error);
+      throw new DriveException(
+        'Search by connection failed',
+        (error as any)?.status
+      );
     }
   }
 }

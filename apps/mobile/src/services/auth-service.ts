@@ -4,7 +4,7 @@
  */
 
 import { appLogger } from '@/utils/logger';
-import { LoginResponse, UserInfo } from '@/types';
+import { LoginResponseDto, UserInfoDto } from '@/generated';
 import { AuthApi } from '@/generated';
 import { createApiConfiguration } from './api-config';
 
@@ -34,17 +34,20 @@ export class AuthService {
 
   /**
    * ログイン処理（OAuth URL 取得）
-   * POST /api/auth/login
+   * POST /api/auth/login/:provider
+   * @param provider - プロバイダー名 ('onedrive', 'google', etc.)
    * @returns {authorize_url, state, expires_in}
    */
-  async login(): Promise<LoginResponse> {
+  async login(provider: string): Promise<LoginResponseDto> {
     try {
-      appLogger.info('AuthService: ログイン開始');
+      appLogger.info(`AuthService: ログイン開始 (provider=${provider})`);
 
-      const response = await this.authApi.authControllerLogin();
+      const response = await this.authApi.authControllerLoginWithProvider({
+        provider,
+      });
 
       appLogger.info('AuthService: ログイン成功');
-      return response as unknown as LoginResponse;
+      return response;
     } catch (error) {
       // エラーの詳細をログに出力
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -59,18 +62,59 @@ export class AuthService {
   }
 
   /**
+   * OAuth コールバック処理
+   * GET /api/auth/callback/:provider
+   * @param provider - プロバイダー名
+   * @param code - OAuth 認可コード
+   * @param state - CSRF トークン
+   * @param error - エラーコード（オプション）
+   * @param errorDescription - エラー説明（オプション）
+   */
+  async handleCallback(
+    provider: string,
+    code: string,
+    state: string,
+    error?: string,
+    errorDescription?: string
+  ): Promise<void> {
+    try {
+      appLogger.info(
+        `AuthService: OAuth コールバック処理中 (provider=${provider})`
+      );
+
+      await this.authApi.authControllerCallbackWithProvider({
+        provider,
+        code,
+        state,
+        error,
+        errorDescription,
+      });
+
+      appLogger.info('AuthService: OAuth コールバック処理完了');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorStatus = (error as any)?.status || (error as any)?.response?.status;
+      appLogger.error('AuthService: OAuth コールバック処理失敗', {
+        message: errorMsg,
+        status: errorStatus,
+      });
+      throw new AuthException(`Callback handling failed: ${errorMsg}`, errorStatus);
+    }
+  }
+
+  /**
    * ユーザー情報取得
    * GET /api/auth/me
    * @returns {id, name, email, picture_url, ...}
    */
-  async getUserInfo(): Promise<UserInfo> {
+  async getUserInfo(): Promise<UserInfoDto> {
     try {
       appLogger.info('AuthService: ユーザー情報取得開始');
 
       const response = await this.authApi.authControllerGetUserInfo();
 
       appLogger.info('AuthService: ユーザー情報取得成功');
-      return response as unknown as UserInfo;
+      return response;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       const errorStatus = (error as any)?.status || (error as any)?.response?.status;
@@ -79,28 +123,6 @@ export class AuthService {
         status: errorStatus,
       });
       throw new AuthException(`Get user info failed: ${errorMsg}`, errorStatus);
-    }
-  }
-
-  /**
-   * ログアウト
-   * POST /api/auth/logout
-   */
-  async logout(): Promise<void> {
-    try {
-      appLogger.info('AuthService: ログアウト開始');
-
-      await this.authApi.authControllerLogout();
-
-      appLogger.info('AuthService: ログアウト完了');
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      const errorStatus = (error as any)?.status || (error as any)?.response?.status;
-      appLogger.error('AuthService: ログアウト失敗', {
-        message: errorMsg,
-        status: errorStatus,
-      });
-      throw new AuthException(`Logout failed: ${errorMsg}`, errorStatus);
     }
   }
 }
