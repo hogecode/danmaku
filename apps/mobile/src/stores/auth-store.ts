@@ -1,6 +1,6 @@
 /**
  * 認証状態管理（Zustand）
- * ✅ sessionId ベースの認証フロー
+ * sessionId ベースの認証フロー
  * 
  * persist middleware でセキュアストレージに永続化
  * アプリ再起動時に自動復元される
@@ -16,11 +16,11 @@ import { appLogger } from '@/utils/logger';
 export interface AuthState {
   // 状態
   user: UserInfoDto | null;
-  sessionId: string | null; // ✅ sessionId（Express Session ID）
+  sessionId: string | null; // sessionId（Express Session ID）
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
-  hydrated: boolean; // ✅ hydration 完了フラグ
+  hydrated: boolean; // hydration 完了フラグ
 
   // アクション
   setUser: (user: UserInfoDto | null) => void;
@@ -165,10 +165,8 @@ export const useAuthStore = create<AuthState>()(
       onRehydrateStorage: () => (state) => {
         if (state && state.user) {
           appLogger.info('[AuthStore] rehydration 開始');
-          appLogger.debug('[AuthStore] 復元前:', JSON.stringify(state.user));
           // ✅ setUser を通して、確実にマッピングを実行
           state.setUser(state.user);
-          appLogger.debug('[AuthStore] 復元後 pictureUrl:', state.user.pictureUrl);
         }
         state?.setHydrated(true);
       },

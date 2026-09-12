@@ -121,22 +121,33 @@ export function useAuth() {
 
   /**
    * ログアウト
+   * 1. サーバーの /api/auth/logout を呼ぶ
+   * 2. ローカル状態をリセット
    */
   const logout = useCallback(async () => {
     try {
       auth.setLoading(true);
+      auth.setError(null);
 
       appLogger.info('[useAuth] ログアウト開始');
 
-      // auth.reset() で state と sessionId を一括削除
-      // persist middleware で自動的にセキュアストレージも削除される
+      // ✅ Step 1: サーバーにログアウトリクエストを送信
+      try {
+        await authService.logout();
+        appLogger.info('[useAuth] サーバーログアウト成功');
+      } catch (error) {
+        // サーバーでのログアウト失敗をログするが、ローカルリセットは続行
+        appLogger.warning('[useAuth] サーバーログアウト失敗（ローカルリセットは実行）', error);
+      }
+
+      // ✅ Step 2: ローカル状態をリセット（セキュアストレージから削除）
       auth.reset();
 
-      appLogger.info('[useAuth] ログアウト完了');
+      appLogger.info('[useAuth] ✅ ログアウト完了（サーバー＋ローカル）');
     } catch (error) {
-      appLogger.error('[useAuth] ログアウト失敗', error);
+      appLogger.error('[useAuth] ⛔ ログアウト処理中にエラー', error);
       auth.setError(error instanceof Error ? error.message : String(error));
-      // ログアウトエラーでも状態はリセット
+      // ログアウトエラーでも状態はリセット（セッション情報を確実に削除）
       auth.reset();
       throw error;
     } finally {

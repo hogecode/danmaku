@@ -125,6 +125,30 @@ export class AuthService {
       throw new AuthException(`Get user info failed: ${errorMsg}`, errorStatus);
     }
   }
+
+  /**
+   * ログアウト処理
+   * POST /api/auth/logout
+   * セッションを削除し、ユーザー認証をクリア
+   */
+  async logout(): Promise<void> {
+    try {
+      appLogger.info('AuthService: ログアウト開始');
+
+      await this.authApi.authControllerLogout();
+
+      appLogger.info('AuthService: ログアウト成功');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorStatus = (error as any)?.status || (error as any)?.response?.status;
+      appLogger.error('AuthService: ログアウト失敗', {
+        message: errorMsg,
+        status: errorStatus,
+      });
+      // ログアウト失敗でもエラーを投げる（呼び出し側で処理）
+      throw new AuthException(`Logout failed: ${errorMsg}`, errorStatus);
+    }
+  }
 }
 
 export const authService = new AuthService();

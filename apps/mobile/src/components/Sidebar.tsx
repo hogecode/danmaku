@@ -35,18 +35,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const auth = useAuth();
 
-  // デバッグログ
-  React.useEffect(() => {
-    appLogger.info('========== [Sidebar] ユーザー情報 ==========');
-    appLogger.info(`[Sidebar] hydrated: ${(auth as any).hydrated}`);
-    if (auth.user) {
-      appLogger.info(`[Sidebar] ユーザー名: ${auth.user.name}`);
-      appLogger.info(`[Sidebar] pictureUrl: ${auth.user.pictureUrl}`);
-      appLogger.info(`[Sidebar] pictureUrl タイプ: ${typeof auth.user.pictureUrl}`);
-    } 
-    appLogger.info('==========================================');
-  }, [auth.user, (auth as any).hydrated]);
-
   const handleNavPress = (path: NavPath) => {
     appLogger.info(`[Sidebar] ${path} へ遷移`);
     router.replace(path as any);
