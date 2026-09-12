@@ -5,11 +5,14 @@
  * ✅ AsyncStorage に自動保存
  */
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DriveConnectionDto, DriveConnectionDtoFromJSON } from '@/generated/models';
-import { appLogger } from '@/utils/logger';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  DriveConnectionDto,
+  DriveConnectionDtoFromJSON,
+} from "@/generated/models";
+import { appLogger } from "@/utils/logger";
 
 interface DrivesState {
   // ✅ ドライブ接続情報
@@ -30,12 +33,13 @@ export const useDrivesStore = create<DrivesState>()(
       selectedConnectionId: null,
 
       setDrives: (drives: DriveConnectionDto[]) => {
-        appLogger.info(`[DrivesStore] Setting drives: count=${drives.length}, providers=${drives.map((d) => d.provider).join(', ')}`);\n        // ✅ drives をマッピング（connected_at → connectedAt）
+        appLogger.info(
+          `[DrivesStore] Setting drives: count=${drives.length}, providers=${drives.map((d) => d.provider).join(", ")}`,
+        );
+        // ✅ drives をマッピング（connected_at → connectedAt）
         const mappedDrives = drives.map((drive) => {
           if ((drive as any).connected_at && !drive.connectedAt) {
-            appLogger.debug(`[DrivesStore] マッピング前 connected_at: ${(drive as any).connected_at}`);
             const mapped = DriveConnectionDtoFromJSON(drive);
-            appLogger.debug(`[DrivesStore] マッピング後 connectedAt: ${mapped.connectedAt}`);
             return mapped;
           }
           return drive;
@@ -47,18 +51,24 @@ export const useDrivesStore = create<DrivesState>()(
         const { selectedConnectionId } = get();
         if (!selectedConnectionId && drives.length > 0) {
           set({ selectedConnectionId: drives[0].id });
-          appLogger.info(`[DrivesStore] Auto-selected first drive: id=${drives[0].id}, provider=${drives[0].provider}`);
+          appLogger.info(
+            `[DrivesStore] Auto-selected first drive: id=${drives[0].id}, provider=${drives[0].provider}`,
+          );
         }
       },
 
       selectDrive: (connectionId: string) => {
         const drive = get().drives.find((d) => d.id === connectionId);
         if (!drive) {
-          appLogger.error(`[DrivesStore] Drive not found: connectionId=${connectionId}`);
+          appLogger.error(
+            `[DrivesStore] Drive not found: connectionId=${connectionId}`,
+          );
           return;
         }
 
-        appLogger.info(`[DrivesStore] Drive selected: id=${connectionId}, provider=${drive.provider}, account=${drive.account}`);
+        appLogger.info(
+          `[DrivesStore] Drive selected: id=${connectionId}, provider=${drive.provider}, account=${drive.account}`,
+        );
 
         set({ selectedConnectionId: connectionId });
       },
@@ -70,11 +80,13 @@ export const useDrivesStore = create<DrivesState>()(
       },
 
       isConnected: (provider: string) => {
-        return get().drives.some((d) => d.provider === provider && d.status === 'connected');
+        return get().drives.some(
+          (d) => d.provider === provider && d.status === "connected",
+        );
       },
     }),
     {
-      name: 'drives-store',
+      name: "drives-store",
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         // ✅ AsyncStorage に保存する項目
@@ -83,8 +95,7 @@ export const useDrivesStore = create<DrivesState>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state && state.drives.length > 0) {
-          appLogger.info(`[DrivesStore] Rehydrated from AsyncStorage: count=${state.drives.length}, selected=${state.selectedConnectionId}`);
-          
+
           // ✅ AsyncStorage から復元されたデータをマッピング
           const mappedDrives = state.drives.map((drive) => {
             if ((drive as any).connected_at && !drive.connectedAt) {
@@ -93,11 +104,9 @@ export const useDrivesStore = create<DrivesState>()(
             }
             return drive;
           });
-          
-          appLogger.debug('[DrivesStore] マッピング後のドライブ:', mappedDrives);
           state.drives = mappedDrives;
         }
       },
-    }
-  )
+    },
+  ),
 );

@@ -10,7 +10,7 @@ import { router, usePathname } from 'expo-router';
 import { useAuth } from '../hooks/use-auth';
 import { appLogger } from '../utils/logger';
 
-type NavPath = '/local' | '/network' | '/playlist' | '/download' | '/settings';
+type NavPath = '/home' | '/screenshot' | '/local' | '/network' | '/playlist' | '/download' | '/settings' | '/watched-history';
 
 interface NavItem {
   label: string;
@@ -19,10 +19,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { label: 'ホーム', icon: '🏠', path: '/home' },
   { label: 'ローカルファイル', icon: '💾', path: '/local' },
   { label: 'ネットワーク', icon: '🌐', path: '/network' },
   { label: 'プレイリスト', icon: '📋', path: '/playlist' },
+  { label: 'スクリーンショット', icon: '📸', path: '/screenshot' },
   { label: 'ダウンロード', icon: '⬇️', path: '/download' },
+  { label: '視聴履歴', icon: '📜', path: '/watched-history' },
   { label: '設定', icon: '⚙️', path: '/settings' },
 ];
 
