@@ -5,7 +5,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
-import { GDriveModule } from './gdrive/gdrive.module';
+import { DriveModule } from './drive/drive.module';
 import { PlayerModule } from './player/player.module';
 import { CommonModule } from './common/common.module';
 import { NicovideoModule } from './nicovideo/nicovideo.module';
@@ -20,7 +20,7 @@ import { NicovideoModule } from './nicovideo/nicovideo.module';
     DatabaseModule,
     RedisModule,
     AuthModule,
-    GDriveModule,
+    DriveModule,
     PlayerModule,
     NicovideoModule,
   ],

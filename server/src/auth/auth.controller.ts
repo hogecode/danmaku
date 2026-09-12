@@ -10,13 +10,12 @@ import {
   Res,
   BadRequestException,
   HttpCode,
-  UsePipes,
-  ValidationPipe,
+  Param,
 } from '@nestjs/common';
 import type { Express, Request, Response } from 'express';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
-import { OAuthAccountService } from './services/auth-account.service';
+import { OAuthAccountService } from './services/oauth-account.service';
 import { TokenService } from './services/token.service';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitGuard, AuthGuard } from './guards';
@@ -29,6 +28,7 @@ import {
   RefreshTokenResponseDto,
 } from './dto';
 import { LoggerService } from '../common/logger/logger.service';
+import { ProviderType } from '../drive/constants';
 
 /**
  * Google OAuth 認証コントローラー
@@ -45,113 +45,77 @@ export class AuthController {
   ) {}
 
   /**
-   * POST /api/auth/login - ログイン開始
+   * POST /api/auth/login/:provider - プロバイダー別ログイン開始
+   * 例: POST /api/auth/login/onedrive
+   *
+   * 認可URLを生成して返す
    */
-  @Post('login')
+  @Post('login/:provider')
   @UseGuards(RateLimitGuard)
   @HttpCode(200)
-  async login(): Promise<LoginResponseDto> {
-    // 認可URL と state を生成して返す
-    return await this.authService.initializeLogin();
+  async loginWithProvider(
+    @Param('provider') provider: string,
+  ): Promise<LoginResponseDto> {
+    return await this.authService.initializeLogin(provider);
   }
 
   /**
-   * GET /api/auth/callback - OAuth コールバック
-   * Google OAuth 認証後にリダイレクトされるエンドポイント
-   * - Web版: 302リダイレクト
-   * - Flutter版: ディープリンクにリダイレクト
+   * GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック
+   * 例: GET /api/auth/callback/onedrive
    */
-  @Get('callback')
-  async callback(
+  @Get('callback/:provider')
+  async callbackWithProvider(
+    @Param('provider') provider: string,
     @Query() query: CallbackQueryDto,
     @Session() session: Express.Session,
     @Req() request: Request,
     @Res() response: Response,
   ): Promise<void> {
-    // エラーパラメータをチェック
     if (query.error) {
       const errorMsg = `Authorization failed: ${query.error_description || query.error}`;
-      this.logger.error('[AUTH] OAuth error', new Error(errorMsg));
-
+      this.logger.error(
+        `[AUTH] OAuth error (${provider})`,
+        new Error(errorMsg),
+      );
       throw new BadRequestException(errorMsg);
     }
 
-    // コードとstateの存在をチェック
     if (!query.code || !query.state) {
       const errorMsg = 'Missing code or state parameter';
-      this.logger.error('[AUTH] Missing OAuth parameters', new Error(errorMsg));
-
+      this.logger.error(
+        `[AUTH] Missing OAuth parameters (${provider})`,
+        new Error(errorMsg),
+      );
       throw new BadRequestException(errorMsg);
     }
 
     try {
-      // コールバック処理
-      const isMobileClient = this._isMobileClient(request);
-      const userInfo = await this.authService.handleGoogleCallback(
+      const userInfo = await this.authService.handleProviderCallback(
+        provider,
         query.code,
         query.state,
       );
 
-      // セッションにユーザーID（string）を保存
       (session as any).userId = userInfo.id;
 
-      // モバイル版の場合はディープリンクにリダイレクト
-      // JWT アクセストークンを生成
-      if (isMobileClient) {
-        this.logger.debug('[AUTH] Redirecting Mobile client to deep link');
-        const tokenService = (this.authService as any).tokenService;
-        const accessToken = tokenService.generateAccessToken(BigInt(userInfo.id));
-        const userData = JSON.stringify(userInfo);
-        const deepLinkUrl = `danmaku://auth/callback?user=${encodeURIComponent(userData)}&token=${encodeURIComponent(accessToken)}`;
-        this.logger.debug('[AUTH] Access token generated', { tokenLength: accessToken.length });
-        return response.redirect(302, deepLinkUrl);
-      }
+      // クライアントタイプを検出
+      const clientType = this.authService.detectClientType(request);
 
-      // Web版の場合はリダイレクト
-      this.logger.debug('[AUTH] Redirecting Web client to frontend home');
-      return response.redirect(302, `${this.configService.get('FRONTEND_URL')}/home`);
+      // コールバック後のレスポンスを準備
+      const callbackResponse = this.authService.prepareCallbackResponse(
+        userInfo,
+        provider,
+        clientType,
+      );
+
+      // ディープリンク URL またはリダイレクト URL でリダイレクト
+      return response.redirect(302, callbackResponse.url);
     } catch (error) {
-      this.logger.error('[AUTH] Callback error', error as Error);
-      
-      const errorMsg = error instanceof Error ? error.message : 'Authentication failed';
-
+      this.logger.error(`[AUTH] Callback error (${provider})`, error as Error);
+      const errorMsg =
+        error instanceof Error ? error.message : 'Authentication failed';
       throw new BadRequestException(errorMsg);
     }
-  }
-
-  /**
-   * クライアントタイプを判定
-   * 
-   * ⚠️ IMPORTANT: Google OAuth の redirect_uri_mismatch エラーを回避するため、
-   * クエリパラメータではなく Authorization ヘッダー (X-Client-Type) で判定
-   * 
-   * クライアント判定の優先順位:
-   * 1. X-Client-Type ヘッダー (クライアントが明示的に指定した場合)
-   * 2. User-Agent ヘッダー (モバイルブラウザの場合)
-   * 3. デフォルト: Web クライアント
-   */
-  private _isMobileClient(request: Request): boolean {
-    // 1. X-Client-Type ヘッダーをチェック（認証サービスから指定）
-    const clientType = request.headers['x-client-type'] as string | undefined;
-    if (clientType === 'flutter' || clientType === 'desktop' || clientType === 'mobile') {
-      this.logger.debug('[AUTH] Detected Mobile client via X-Client-Type header'); // 'flutter', 'desktop', 'mobile' are considered mobile clients
-      return true;
-    }
-
-    // 2. User-Agent からモバイルブラウザを検出
-    const userAgent = request.headers['user-agent']?.toLowerCase() || '';
-    const isMobileUserAgent =
-      /mobile|android|iphone|ipad|windows phone|opera mini|blackberry/i.test(userAgent);
-    
-    if (isMobileUserAgent) {
-      this.logger.debug('[AUTH] Detected mobile user agent');
-      // モバイルブラウザの場合はモバイルクライアントと判定
-      return true;
-    }
-
-    // 3. デフォルト: Web クライアント
-    this.logger.debug('[AUTH] Detected Web client (default)');
-    return false;
   }
 
   /**
@@ -159,34 +123,14 @@ export class AuthController {
    */
   @Get('me')
   @UseGuards(AuthGuard)
-  async getUserInfo(
-    @Session() session: Express.Session,
-  ): Promise<UserInfoDto> {
+  async getUserInfo(@Session() session: Express.Session): Promise<UserInfoDto> {
     const userId = (session as any).userId;
     if (!userId) {
       throw new BadRequestException('User ID not found in session');
     }
 
-    // 文字列から bigint に変換してサービスに渡す
+    // 接続ドライブ情報も含めて取得
     return await this.userService.getUserInfo(BigInt(userId));
-  }
-
-  /**
-   * POST /api/auth/refresh - トークン更新
-   */
-  @Post('refresh')
-  @UseGuards(AuthGuard)
-  @HttpCode(200)
-  async refreshToken(
-    @Session() session: Express.Session,
-  ): Promise<RefreshTokenResponseDto> {
-    const userId = (session as any).userId;
-    if (!userId) {
-      throw new BadRequestException('User ID not found in session');
-    }
-
-    // 文字列から bigint に変換してサービスに渡す
-    return await this.oauthAccountService.refreshToken(BigInt(userId));
   }
 
   /**
@@ -203,7 +147,8 @@ export class AuthController {
       throw new BadRequestException('User ID not found in session');
     }
 
-    // 文字列から bigint に変換してサービスに渡す
+    // 全てのログインサービスからログアウト
+    // TODO: ログアウトロジックを見直す
     await this.oauthAccountService.logout(BigInt(userId));
 
     // セッションを破棄（Express Session API）
@@ -211,43 +156,4 @@ export class AuthController {
 
     return { message: 'Logged out successfully' };
   }
-
-   /**
-    * POST /api/auth/video-token - 動画ストリーミング用トークン生成
-    * 
-    * 目的: モバイルアプリでの動画URL認証
-    * - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
-    * - 有効期限: 15分（デフォルト）
-    * 
-    * @example
-    * POST /api/auth/video-token
-    * Authorization: Bearer {access_token}
-    * 
-    * Response: { token: "eyJhbGciOiJIUzI1NiIs..." }
-    */
-   @Post('video-token')
-   @UseGuards(AuthGuard)
-   @HttpCode(200)
-   async generateVideoToken(
-     @Session() session: Express.Session,
-   ): Promise<{ token: string }> {
-     const userId = (session as any).userId;
-     if (!userId) {
-       throw new BadRequestException('User ID not found in session');
-     }
-
-     try {
-       this.logger.info(`🎬 Generating video token for userId: ${userId}`);
-       
-       // JWT トークンを生成（有効期限: 15分）
-       const token = this.tokenService.generateAccessToken(BigInt(userId));
-       
-       this.logger.info(`✅ Video token generated (length: ${token.length})`);
-       return { token };
-     } catch (error) {
-       this.logger.error(`❌ Failed to generate video token: ${(error as Error).message}`);
-       throw error;
-     }
-   }
-
 }

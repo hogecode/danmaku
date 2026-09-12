@@ -13,10 +13,15 @@ paths:
                 type: string
       tags:
         - App
-  /api/auth/login:
+  /api/auth/login/{provider}:
     post:
-      operationId: AuthController_login
-      parameters: []
+      operationId: AuthController_loginWithProvider
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
       responses:
         '200':
           description: ''
@@ -24,13 +29,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponseDto'
-      summary: POST /api/auth/login - ログイン開始
+      summary: |-
+        POST /api/auth/login/:provider - プロバイダー別ログイン開始
+        例: POST /api/auth/login/onedrive
       tags:
         - Auth
-  /api/auth/callback:
+  /api/auth/callback/{provider}:
     get:
-      operationId: AuthController_callback
+      operationId: AuthController_callbackWithProvider
       parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
         - name: code
           required: true
           in: query
@@ -55,10 +67,8 @@ paths:
         '200':
           description: ''
       summary: |-
-        GET /api/auth/callback - OAuth コールバック
-        Google OAuth 認証後にリダイレクトされるエンドポイント
-        - Web版: 302リダイレクト
-        - Flutter版: ディープリンクにリダイレクト
+        GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック
+        例: GET /api/auth/callback/onedrive
       tags:
         - Auth
   /api/auth/me:
@@ -99,24 +109,57 @@ paths:
       summary: POST /api/auth/logout - ログアウト
       tags:
         - Auth
-  /api/auth/video-token:
-    post:
-      operationId: AuthController_generateVideoToken
+  /api/drives:
+    get:
+      operationId: DriveConnectionController_list
       parameters: []
       responses:
         '200':
           description: ''
       summary: |-
-        POST /api/auth/video-token - 動画ストリーミング用トークン生成
-
-        目的: モバイルアプリでの動画URL認証
-        - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
-        - 有効期限: 15分（デフォルト）
+        GET /api/drives
+        接続済みドライブリストを取得
       tags:
-        - Auth
-  /api/gdrive/list:
+        - DriveConnection
+  /api/drives/{provider}/auth:
+    post:
+      operationId: DriveConnectionController_initiateConnection
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        POST /api/drives/:provider/auth
+        プロバイダー別 OAuth 認可開始
+        例: POST /api/drives/google/auth
+            POST /api/drives/onedrive/auth
+      tags:
+        - DriveConnection
+  /api/drives/{connectionId}:
+    delete:
+      operationId: DriveConnectionController_delete
+      parameters:
+        - name: connectionId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        DELETE /api/drives/:connectionId
+        接続を削除
+      tags:
+        - DriveConnection
+  /api/drive/list:
     get:
-      operationId: GDriveController_listFolder
+      operationId: FolderController_listFolder
       parameters:
         - name: folderId
           required: false
@@ -131,13 +174,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/FolderListDto'
       summary: |-
-        GET /api/gdrive/list
+        GET /api/drive/list （後方互換性用・Google Drive）
         フォルダ内容を取得
       tags:
-        - GDrive
-  /api/gdrive/search:
+        - Folder
+  /api/drive/search:
     get:
-      operationId: GDriveController_search
+      operationId: FolderController_search
       parameters:
         - name: folderId
           required: true
@@ -157,10 +200,67 @@ paths:
               schema:
                 $ref: '#/components/schemas/FolderListDto'
       summary: |-
-        GET /api/gdrive/search
+        GET /api/drive/search （後方互換性用・Google Drive）
         フォルダ内でキーワード検索
       tags:
-        - GDrive
+        - Folder
+  /api/drive/connections/{connectionId}/files:
+    get:
+      operationId: FolderController_listFolderByConnection
+      parameters:
+        - name: connectionId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: folderId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FolderListDto'
+      summary: |-
+        GET /api/drive/connections/:connectionId/files
+        特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）
+      tags:
+        - Folder
+  /api/drive/connections/{connectionId}/search:
+    get:
+      operationId: FolderController_searchByConnection
+      parameters:
+        - name: connectionId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: folderId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: query
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FolderListDto'
+      summary: |-
+        GET /api/drive/connections/:connectionId/search
+        特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
+      tags:
+        - Folder
   /api/player/stream/{fileId}:
     get:
       operationId: PlayerController_streamVideo
@@ -212,6 +312,21 @@ paths:
         - 見つからない場合: 空配列を返す
       tags:
         - Player
+  /api/player/token:
+    post:
+      operationId: PlayerController_generateVideoToken
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        POST /api/player/token - 動画ストリーミング用トークン生成
+
+        目的: モバイルアプリでの動画URL認証
+        - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
+        - 有効期限: 15分（デフォルト）
+      tags:
+        - Player
   /api/nicovideo/download/comments:
     post:
       operationId: NicovideoController_downloadComments
@@ -257,6 +372,31 @@ components:
         - authorize_url
         - state
         - expires_in
+    DriveConnectionDto:
+      type: object
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        account:
+          type: string
+        status:
+          enum:
+            - connected
+            - expired
+            - revoked
+            - error
+          type: string
+        connected_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - provider
+        - account
+        - status
+        - connected_at
     UserInfoDto:
       type: object
       properties:
@@ -269,16 +409,18 @@ components:
         picture_url:
           type: string
           nullable: true
-        oauth_provider:
-          type: string
         last_login:
           format: date-time
           type: string
           nullable: true
+        drives:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriveConnectionDto'
       required:
         - id
         - email
-        - oauth_provider
+        - drives
     RefreshTokenResponseDto:
       type: object
       properties:

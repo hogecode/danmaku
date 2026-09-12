@@ -12,7 +12,6 @@ import { XmlParser } from './utils/xml-parser';
 import { CommentConverter } from './utils/comment-converter';
 import { PlayerConstants } from './constants/player.constants';
 import { TokenService } from '../auth/services';
-import { GDriveService } from '../gdrive/gdrive.service';
 import { LoggerService } from '../common/logger/logger.service';
 
 interface FileInfo {
@@ -51,7 +50,6 @@ export class PlayerService {
     private readonly xmlParser: XmlParser,
     private readonly commentConverter: CommentConverter,
     private readonly tokenService: TokenService,
-    private readonly gdriveService: GDriveService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -100,7 +98,10 @@ export class PlayerService {
    * @param videoFileId - 動画ファイルID
    * @returns ファイル情報
    */
-  async getVideoMetadata(userId: bigint, videoFileId: string): Promise<FileInfo> {
+  async getVideoMetadata(
+    userId: bigint,
+    videoFileId: string,
+  ): Promise<FileInfo> {
     const accessToken = await this.tokenService.getValidAccessToken(userId);
     const oauth2Client = new OAuth2Client();
     oauth2Client.setCredentials({ access_token: accessToken });
@@ -148,10 +149,16 @@ export class PlayerService {
 
       // 1. 動画ファイル情報を取得
       const videoFile = await this.getVideoMetadata(userId, videoFileId);
-      this.logger.debug(`[PlayerService] Retrieved video metadata: name=${videoFile.name}`);
+      this.logger.debug(
+        `[PlayerService] Retrieved video metadata: name=${videoFile.name}`,
+      );
 
       // 2. 対応するコメントファイルを検索
-      const commentFile = await this.findCommentFile(userId, folderId, videoFile.name);
+      const commentFile = await this.findCommentFile(
+        userId,
+        folderId,
+        videoFile.name,
+      );
 
       if (!commentFile) {
         // コメント無し
@@ -162,7 +169,10 @@ export class PlayerService {
       }
 
       // 3. ファイルをダウンロード・パース
-      const fileContent = await this.downloadFileContent(userId, commentFile.id);
+      const fileContent = await this.downloadFileContent(
+        userId,
+        commentFile.id,
+      );
       const comments = await this.xmlParser.parseCommentFile(
         fileContent,
         commentFile.mimeType,
@@ -196,10 +206,15 @@ export class PlayerService {
   ): Promise<DPlayerCommentDto[]> {
     try {
       // ✅ CommentDto 形式でコメントを取得
-      const comments = await this.getCommentsByVideoId(userId, videoFileId, folderId);
+      const comments = await this.getCommentsByVideoId(
+        userId,
+        videoFileId,
+        folderId,
+      );
 
       // ✅ DPlayer 互換形式に変換
-      const dplayerComments = this.commentConverter.convertCommentsToDPlayer(comments);
+      const dplayerComments =
+        this.commentConverter.convertCommentsToDPlayer(comments);
 
       this.logger.debug(
         `[PlayerService] Converted ${dplayerComments.length} comments to DPlayer format`,
@@ -224,7 +239,6 @@ export class PlayerService {
     videoFileName: string,
   ): Promise<FileInfo | null> {
     try {
-
       // ファイル名から拡張子を除去（"aaa.mp4" → "aaa"）
       const baseFileName = videoFileName.replace(/\.[^/.]+$/, '');
 
@@ -247,7 +261,7 @@ export class PlayerService {
         pageSize: PlayerConstants.API.PAGE_SIZE,
         supportsAllDrives: true,
       });
-      
+
       const files = response.data.files || [];
 
       // aaa.xml または aaa.json を検索
@@ -287,10 +301,13 @@ export class PlayerService {
    * ファイル内容をテキストとしてダウンロード
    * @returns ファイル内容（文字列）
    */
-  private async downloadFileContent(userId: bigint, fileId: string): Promise<string> {
+  private async downloadFileContent(
+    userId: bigint,
+    fileId: string,
+  ): Promise<string> {
     try {
       const accessToken = await this.tokenService.getValidAccessToken(userId);
-      
+
       const oauth2Client = new OAuth2Client();
       oauth2Client.setCredentials({ access_token: accessToken });
 
@@ -305,7 +322,9 @@ export class PlayerService {
       );
 
       // バイナリをテキストに変換
-      const content = Buffer.from(response.data as ArrayBuffer).toString('utf-8');
+      const content = Buffer.from(response.data as ArrayBuffer).toString(
+        'utf-8',
+      );
       return content;
     } catch (error) {
       this.logger.error('[PlayerService] Error downloading file content:', {
@@ -322,7 +341,10 @@ export class PlayerService {
    * @param fileSize - ファイルサイズ
    * @returns パースされた Range 情報
    */
-  private parseRangeHeader(rangeHeader: string, fileSize: number): RangeInfo | null {
+  private parseRangeHeader(
+    rangeHeader: string,
+    fileSize: number,
+  ): RangeInfo | null {
     // Range ヘッダーの形式をチェック
     const rangeMatch = rangeHeader.match(/^bytes=(\d+)?-(\d+)?$/);
     if (!rangeMatch) {
@@ -390,7 +412,9 @@ export class PlayerService {
       // トークン取得
       this.logger.info(`🔐 Getting valid access token...`);
       const accessToken = await this.tokenService.getValidAccessToken(userId);
-      this.logger.debug(`✅ Access token obtained (preview: ${accessToken.substring(0, 30)}...)`);
+      this.logger.debug(
+        `✅ Access token obtained (preview: ${accessToken.substring(0, 30)}...)`,
+      );
 
       const oauth2Client = new OAuth2Client();
       oauth2Client.setCredentials({ access_token: accessToken });
@@ -404,11 +428,18 @@ export class PlayerService {
         fields: 'id,name,mimeType,size',
       });
 
-      this.logger.info(`✅ File metadata retrieved:`, { name: fileMetadata.data.name, mimeType: fileMetadata.data.mimeType, size: fileMetadata.data.size });
+      this.logger.info(`✅ File metadata retrieved:`, {
+        name: fileMetadata.data.name,
+        mimeType: fileMetadata.data.mimeType,
+        size: fileMetadata.data.size,
+      });
 
       // MIME タイプが MP4 であることを確認
       if (fileMetadata.data.mimeType !== PlayerConstants.MIME_TYPES.VIDEO_MP4) {
-        this.logger.error(`❌ Invalid MIME type: ${fileMetadata.data.mimeType}`, new Error(`Invalid MIME type: ${fileMetadata.data.mimeType}`));
+        this.logger.error(
+          `❌ Invalid MIME type: ${fileMetadata.data.mimeType}`,
+          new Error(`Invalid MIME type: ${fileMetadata.data.mimeType}`),
+        );
         throw new BadRequestException(
           `Invalid file type: ${fileMetadata.data.mimeType}. Only MP4 videos are supported.`,
         );
@@ -425,15 +456,18 @@ export class PlayerService {
       let contentRange: string | undefined;
 
       if (rangeHeader) {
-        this.logger.debug(`📊 Parsing Range header: ${rangeHeader}`, { rangeHeader });
+        this.logger.debug(`📊 Parsing Range header: ${rangeHeader}`, {
+          rangeHeader,
+        });
         rangeInfo = this.parseRangeHeader(rangeHeader, fileSize);
 
         if (!rangeInfo) {
-          this.logger.error(`❌ Invalid Range header`, new Error('Invalid Range header'));
-          // Range が無効な場合は 416 Range Not Satisfiable を返す
-          throw new BadRequestException(
-            `Invalid Range: bytes */` + fileSize,
+          this.logger.error(
+            `❌ Invalid Range header`,
+            new Error('Invalid Range header'),
           );
+          // Range が無効な場合は 416 Range Not Satisfiable を返す
+          throw new BadRequestException(`Invalid Range: bytes */` + fileSize);
         }
 
         statusCode = PlayerConstants.HTTP_STATUS.PARTIAL_CONTENT;
@@ -443,7 +477,9 @@ export class PlayerService {
       }
 
       // GDrive API からファイルをダウンロード（Range 指定）
-      this.logger.debug(`📥 Fetching video stream from GDrive (using alt=media)...`);
+      this.logger.debug(
+        `📥 Fetching video stream from GDrive (using alt=media)...`,
+      );
       const response = await drive.files.get(
         {
           fileId: videoFileId,
@@ -459,8 +495,13 @@ export class PlayerService {
         },
       );
 
-      this.logger.info(`✅ Stream obtained from GDrive`, { statusCode, contentLength });
-      this.logger.debug(`✅ Returning with status: ${statusCode}, contentLength: ${contentLength}`);
+      this.logger.info(`✅ Stream obtained from GDrive`, {
+        statusCode,
+        contentLength,
+      });
+      this.logger.debug(
+        `✅ Returning with status: ${statusCode}, contentLength: ${contentLength}`,
+      );
 
       return {
         stream: response.data,
@@ -473,9 +514,11 @@ export class PlayerService {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ getVideoStreamWithRange failed: ${(error as Error).message}`, error as Error);
+      this.logger.error(
+        `❌ getVideoStreamWithRange failed: ${(error as Error).message}`,
+        error as Error,
+      );
       throw error;
     }
   }
-
 }

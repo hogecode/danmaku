@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { router, usePathname } from 'expo-router';
 import { useAuth } from '../hooks/use-auth';
+import { useDriveAuth } from '../hooks/use-drive-auth';
 import { appLogger } from '../utils/logger';
 
 type NavPath = '/local' | '/network' | '/playlist' | '/download' | '/settings';
@@ -33,6 +34,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const auth = useAuth();
+  const driveAuth = useDriveAuth();
 
   const handleNavPress = (path: NavPath) => {
     appLogger.info(`[Sidebar] ${path} へ遷移`);
@@ -42,7 +44,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const handleLogout = () => {
     appLogger.info('[Sidebar] ログアウト');
-    auth.logout(); // ログアウト処理を呼び出す
+    // ドライブ認証情報もクリア
+    driveAuth.logoutAll();
+    // ユーザー認証をクリア
+    auth.logout();
     router.replace('/login');
   };
 

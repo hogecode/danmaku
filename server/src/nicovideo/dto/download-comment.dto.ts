@@ -5,7 +5,7 @@ import { IsString, IsOptional, IsNumber, Min } from 'class-validator';
  */
 export class DownloadCommentRequestDto {
   @IsString({ message: '動画IDは文字列である必要があります' })
-  videoId: string;
+  videoId!: string;
 
   @IsOptional()
   @IsNumber()

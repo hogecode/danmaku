@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Param,
   Query,
   Session,
@@ -11,22 +12,24 @@ import {
   Headers,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import type { Express } from 'express';
 import { PlayerService } from './player.service';
+import { TokenService } from '../auth/services/token.service';
 import { AuthGuard } from '../auth/guards';
 import { DPlayerCommentListDto } from './dto';
-import { Express } from 'express';
 import { PlayerConstants } from './constants/player.constants';
 import { LoggerService } from '../common/logger/logger.service';
 
 /**
  * プレイヤー Controller
- * 動画ストリーミング とコメント取得エンドポイント
+ * 動画ストリーミング、コメント取得、トークン生成エンドポイント
  */
 @Controller('api/player')
 @UseGuards(AuthGuard)
 export class PlayerController {
   constructor(
     private readonly playerService: PlayerService,
+    private readonly tokenService: TokenService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -41,15 +44,23 @@ export class PlayerController {
     @Headers(PlayerConstants.RANGE.HEADER_NAME) rangeHeader?: string,
   ): Promise<void> {
     try {
-      this.logger.info(`🎬 streamVideo called with fileId: ${fileId}`, { fileId });
+      this.logger.info(`🎬 streamVideo called with fileId: ${fileId}`, {
+        fileId,
+      });
 
       if (!session.userId) {
-        this.logger.error('❌ User ID not found in session', new Error('User ID missing'));
+        this.logger.error(
+          '❌ User ID not found in session',
+          new Error('User ID missing'),
+        );
         throw new BadRequestException('User ID not found in session');
       }
 
       if (!fileId || fileId.trim().length === 0) {
-        this.logger.error('❌ fileId parameter is required', new Error('fileId missing'));
+        this.logger.error(
+          '❌ fileId parameter is required',
+          new Error('fileId missing'),
+        );
         throw new BadRequestException('fileId parameter is required');
       }
 
@@ -60,8 +71,14 @@ export class PlayerController {
         rangeHeader,
       );
 
-      this.logger.info(`✅ Got stream response with status: ${streamResponse.statusCode}`, { statusCode: streamResponse.statusCode });
-      this.logger.debug(`📊 Content-Length: ${streamResponse.headers.contentLength} bytes`, { contentLength: streamResponse.headers.contentLength });
+      this.logger.info(
+        `✅ Got stream response with status: ${streamResponse.statusCode}`,
+        { statusCode: streamResponse.statusCode },
+      );
+      this.logger.debug(
+        `📊 Content-Length: ${streamResponse.headers.contentLength} bytes`,
+        { contentLength: streamResponse.headers.contentLength },
+      );
 
       // ステータスコードを設定
       res.status(streamResponse.statusCode);
@@ -83,7 +100,10 @@ export class PlayerController {
       // ストリーム送信
       streamResponse.stream.pipe(res);
     } catch (error) {
-      this.logger.error(`❌ streamVideo error: ${(error as Error).message}`, error as Error);
+      this.logger.error(
+        `❌ streamVideo error: ${(error as Error).message}`,
+        error as Error,
+      );
       throw error;
     }
   }
@@ -125,5 +145,44 @@ export class PlayerController {
     return {
       comments,
     };
+  }
+
+  /**
+   * POST /api/player/token - 動画ストリーミング用トークン生成
+   *
+   * 目的: モバイルアプリでの動画URL認証
+   * - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
+   * - 有効期限: 15分（デフォルト）
+   *
+   * @example
+   * POST /api/player/token
+   * Authorization: Bearer {access_token}
+   *
+   * Response: { token: "eyJhbGciOiJIUzI1NiIs..." }
+   */
+  @Post('token')
+  @HttpCode(200)
+  async generateVideoToken(
+    @Session() session: Express.Session,
+  ): Promise<{ token: string }> {
+    const userId = (session as any).userId;
+    if (!userId) {
+      throw new BadRequestException('User ID not found in session');
+    }
+
+    try {
+      this.logger.info(`🎬 Generating video token for userId: ${userId}`);
+
+      // JWT トークンを生成（有効期限: 15分）
+      const token = this.tokenService.generateAccessToken(BigInt(userId));
+
+      this.logger.info(`✅ Video token generated (length: ${token.length})`);
+      return { token };
+    } catch (error) {
+      this.logger.error(
+        `❌ Failed to generate video token: ${(error as Error).message}`,
+      );
+      throw error;
+    }
   }
 }

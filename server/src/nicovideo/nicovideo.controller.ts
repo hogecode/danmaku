@@ -33,12 +33,12 @@ export class NicovideoController {
 
   /**
    * POST /api/nicovideo/download/comments
-   * セッション不要 - thread_keyが取得できれば可能
    * 
-   * flow:
    * 1. getVideoMetadata() で HTML から thread_key を抽出
    * 2. thread_key が存在すればコメント取得可能
    * 3. thread_key が不在 = 非公開動画またはコメント機能無効
+   * 
+   * TODO: レスポンスDTOを定義
    */
   @Post('download/comments')
   async downloadComments(
@@ -60,7 +60,7 @@ export class NicovideoController {
       // ステップ2: thread_key の確認
       if (!metadata.threadKey) {
         throw new BadRequestException(
-          'コメント取得不可 - 非公開動画またはコメント機能が無効です'
+          'コメント取得不可 - 非公開動画またはコメント機能が無効です',
         );
       }
 
@@ -75,7 +75,11 @@ export class NicovideoController {
 
       this.logger.info(
         `コメント取得完了: ${videoId} (${comments.globalComments.retrievedCount}/${comments.globalComments.commentCount})`,
-        { videoId, retrievedCount: comments.globalComments.retrievedCount, totalCount: comments.globalComments.commentCount }
+        {
+          videoId,
+          retrievedCount: comments.globalComments.retrievedCount,
+          totalCount: comments.globalComments.commentCount,
+        },
       );
 
       res.json({
@@ -88,10 +92,13 @@ export class NicovideoController {
           retrievedCount: comments.globalComments.retrievedCount,
           threads: comments.threads.length,
         },
-        comments
+        comments,
       });
     } catch (error) {
-      this.logger.error(`コメント取得エラー (${downloadDto.videoId}):`, error as Error);
+      this.logger.error(
+        `コメント取得エラー (${downloadDto.videoId}):`,
+        error as Error,
+      );
       res.status(500).json({
         status: 'failed',
         message: `エラー: ${(error as Error).message}`,

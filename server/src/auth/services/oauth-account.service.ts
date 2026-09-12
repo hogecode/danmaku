@@ -10,9 +10,11 @@ import { eq, and } from 'drizzle-orm';
 import { TokenService } from './token.service';
 import { RefreshTokenResponseDto } from '../dto';
 import { LoggerService } from '../../common/logger/logger.service';
+import { ProviderType } from '../../drive/constants';
 
 /**
- * OAuth アカウント管理サービス
+ * マルチプロバイダー OAuth アカウント管理サービス
+ * Google, OneDrive 対応
  */
 @Injectable()
 export class OAuthAccountService {
@@ -27,8 +29,9 @@ export class OAuthAccountService {
    */
   async upsertOAuthAccount(
     userId: bigint,
-    googleUser: any,
+    userInfo: any,
     tokenData: any,
+    provider: string = ProviderType.GOOGLE,
   ) {
     const accessTokenExpiresAt = this.tokenService.calculateTokenExpiration(
       tokenData.expires_in,
@@ -38,13 +41,12 @@ export class OAuthAccountService {
       : null;
 
     const now = new Date();
-    // 
-    this.Logger.debug('Google user:', googleUser);
+    this.Logger.debug(`${provider} user:`, userInfo);
 
     const existingOAuth = await this.db.query.oauthAccounts.findFirst({
       where: and(
         eq(oauthAccounts.user_id, userId),
-        eq(oauthAccounts.provider_name, 'google'),
+        eq(oauthAccounts.provider_name, provider),
       ),
     });
 
@@ -52,8 +54,8 @@ export class OAuthAccountService {
       await this.db
         .update(oauthAccounts)
         .set({
-          provider_user_id: googleUser.sub,
-          provider_email: googleUser.email,
+          provider_user_id: userInfo.sub,
+          provider_email: userInfo.email,
           access_token: tokenData.access_token,
           refresh_token:
             tokenData.refresh_token || existingOAuth.refresh_token,
@@ -65,9 +67,9 @@ export class OAuthAccountService {
     } else {
       await this.db.insert(oauthAccounts).values({
         user_id: userId,
-        provider_name: 'google',
-        provider_user_id: googleUser.sub,
-        provider_email: googleUser.email,
+        provider_name: provider,
+        provider_user_id: userInfo.sub,
+        provider_email: userInfo.email,
         access_token: tokenData.access_token,
         refresh_token: tokenData.refresh_token,
         access_token_expires_at: accessTokenExpiresAt,
@@ -79,68 +81,29 @@ export class OAuthAccountService {
   }
 
   /**
-   * トークンを更新
-   */
-  async refreshToken(userId: bigint): Promise<RefreshTokenResponseDto> {
-    try {
-      const newTokenData = await this.tokenService.refreshAccessToken(
-        userId,
-        'google',
-      );
-
-      const accessTokenExpiresAt = this.tokenService.calculateTokenExpiration(
-        newTokenData.expires_in,
-      );
-      const now = new Date();
-
-      await this.db
-        .update(oauthAccounts)
-        .set({
-          access_token: newTokenData.access_token,
-          access_token_expires_at: accessTokenExpiresAt,
-          updated_at: now,
-        })
-        .where(
-          and(
-            eq(oauthAccounts.user_id, userId),
-            eq(oauthAccounts.provider_name, 'google'),
-          ),
-        );
-
-      return {
-        access_token: newTokenData.access_token,
-        expires_in: newTokenData.expires_in,
-      };
-    } catch (error) {
-      console.error('Token refresh error:', error);
-      throw new UnauthorizedException('Failed to refresh token');
-    }
-  }
-
-  /**
-   * 有効な Google OAuth アクセストークンを取得
+   * 有効なアクセストークンを取得
    * トークンが期限切れの場合は自動的にリフレッシュして返す
    *
    * @param userId - ユーザーID
-   * @returns 有効な Google OAuth アクセストークン
+   * @param provider - プロバイダー名
+   * @returns 有効なアクセストークン
    */
-  async getValidAccessToken(userId: bigint): Promise<string> {
-    return await this.tokenService.getValidAccessToken(userId, 'google');
+  async getValidAccessToken(userId: bigint, provider: string = ProviderType.GOOGLE): Promise<string> {
+    return await this.tokenService.getValidAccessToken(userId, provider);
   }
 
   /**
-   * ログアウト処理
+   * ログアウト処理（全プロバイダーのトークンを無効化）
    */
   async logout(userId: bigint): Promise<void> {
-    const oauth = await this.db.query.oauthAccounts.findFirst({
-      where: and(
-        eq(oauthAccounts.user_id, userId),
-        eq(oauthAccounts.provider_name, 'google'),
-      ),
+    const oauths = await this.db.query.oauthAccounts.findMany({
+      where: eq(oauthAccounts.user_id, userId),
     });
 
-    if (oauth && oauth.access_token) {
-      await this.tokenService.revokeToken(oauth.access_token);
+    for (const oauth of oauths) {
+      if (oauth.access_token) {
+        await this.tokenService.revokeToken(oauth.access_token, oauth.provider_name);
+      }
     }
   }
 }

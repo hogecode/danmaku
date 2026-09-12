@@ -1,14 +1,29 @@
 /**
  * Google Drive カスタムフック
+ * drive-auth-store から Google Drive のトークンを取得して使用
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useDriveStore } from '@/stores/drive-store';
-import { driveService } from '@/services/drive-service';
+import { useDriveAuthStore } from '@/stores/drive-auth-store';
+import { createDriveService } from '@/services/drive-service';
 import { appLogger } from '@/utils/logger';
 
 export function useDrive() {
   const drive = useDriveStore();
+  const driveAuth = useDriveAuthStore();
+
+  // Google Drive のトークンを取得
+  const gdriveToken = useMemo(
+    () => driveAuth.sessions['gdrive']?.user ? 'gdrive_token' : undefined,
+    [driveAuth.sessions]
+  );
+
+  // ドライブサービスをトークンとともにインスタンス化
+  const driveService = useMemo(
+    () => createDriveService(gdriveToken),
+    [gdriveToken]
+  );
 
   /**
    * フォルダ内のファイル一覧を読み込む

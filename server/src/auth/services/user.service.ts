@@ -5,9 +5,9 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import type { Database } from '../../database/database.module';
-import { users } from '../../database';
+import { users, oauthAccounts } from '../../database';
 import { eq } from 'drizzle-orm';
-import { UserInfoDto, GoogleUserInfoDto } from '../dto';
+import { UserInfoDto, GoogleUserInfoDto, DriveConnectionDto } from '../dto';
 
 /**
  * ユーザー管理サービス
@@ -18,6 +18,7 @@ export class UserService {
 
   /**
    * ユーザー情報を取得
+   * 接続済みドライブ情報も含める
    */
   async getUserInfo(userId: bigint): Promise<UserInfoDto> {
     const user = await this.db.query.users.findFirst({
@@ -28,14 +29,55 @@ export class UserService {
       throw new UnauthorizedException('User not found');
     }
 
+    // 接続済みドライブ情報を取得
+    const oauthConnections = await this.db.query.oauthAccounts.findMany({
+      where: eq(oauthAccounts.user_id, userId),
+    });
+
+    // DriveConnectionDto に変換
+    const drives: DriveConnectionDto[] = oauthConnections.map((oauth) => ({
+      id: String(oauth.id),
+      provider: oauth.provider_name,
+      account: oauth.provider_email || 'unknown',
+      status: this.getConnectionStatus(oauth),
+      connected_at: oauth.created_at,
+    }));
+
     return {
       id: String(user.id),
       email: user.email,
       name: user.name || undefined,
       picture_url: user.picture_url,
-      oauth_provider: 'google',
       last_login: user.last_login,
+      drives,
     };
+  }
+
+  /**
+   * OAuth接続の状態を判定
+   */
+  private getConnectionStatus(
+    oauth: any,
+  ): 'connected' | 'expired' | 'revoked' | 'error' {
+    // access_token が無い場合は revoked
+    if (!oauth.access_token) {
+      return 'revoked';
+    }
+
+    // トークンが期限切れの場合は expired
+    if (
+      oauth.access_token_expires_at &&
+      new Date(oauth.access_token_expires_at) < new Date()
+    ) {
+      return 'expired';
+    }
+
+    // refresh_token がない場合は不安定
+    if (!oauth.refresh_token && oauth.access_token_expires_at) {
+      return 'expired';
+    }
+
+    return 'connected';
   }
 
   /**

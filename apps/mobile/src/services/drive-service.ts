@@ -19,11 +19,13 @@ export class DriveException extends Error {
 
 export class DriveService {
   private gdriveApi: GDriveApi;
+  private token?: string;
 
-  constructor() {
+  constructor(token?: string) {
     try {
-      // OpenAPI Configuration を設定
-      const config = createApiConfiguration();
+      this.token = token;
+      // OpenAPI Configuration を設定（ドライブ固有のトークンを渡す）
+      const config = createApiConfiguration(token);
       this.gdriveApi = new GDriveApi(config);
       appLogger.info('DriveService: 初期化完了');
     } catch (error) {
@@ -85,4 +87,13 @@ export class DriveService {
   }
 }
 
+/**
+ * DriveService ファクトリ
+ * 複数ドライブ対応のため、トークンごとに新しいインスタンスを生成
+ */
+export const createDriveService = (token?: string): DriveService => {
+  return new DriveService(token);
+};
+
+// デフォルト（auth-store のトークン使用）
 export const driveService = new DriveService();

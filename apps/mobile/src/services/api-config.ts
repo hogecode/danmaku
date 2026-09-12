@@ -11,8 +11,9 @@ import { useAuthStore } from '@/stores/auth-store';
 /**
  * カスタム Fetch 関数
  * トークンを自動的に付与し、エラーハンドリングを行う
+ * @param token - ドライブ固有のアクセストークン（省略時は auth-store から取得）
  */
-export const createFetchWithAuth = (fetchFn?: typeof fetch) => {
+export const createFetchWithAuth = (token?: string, fetchFn?: typeof fetch) => {
   return async (url: string, options?: RequestInit): Promise<Response> => {
     const finalOptions: RequestInit = {
       ...options,
@@ -25,12 +26,15 @@ export const createFetchWithAuth = (fetchFn?: typeof fetch) => {
 
     // トークンを取得して付与
     try {
-      const token = useAuthStore.getState().token;
-      if (token) {
+      // 引数で指定されたトークンを優先、なければ auth-store から取得
+      const accessToken = token || useAuthStore.getState().token;
+      if (accessToken) {
         finalOptions.headers = {
           ...finalOptions.headers,
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         };
+      } else {
+        appLogger.warning('No token available for API request');
       }
     } catch (error) {
       appLogger.error('Failed to get token for API request', error);
@@ -70,10 +74,11 @@ export const createFetchWithAuth = (fetchFn?: typeof fetch) => {
 
 /**
  * OpenAPI Configuration を作成
+ * @param token - ドライブ固有のアクセストークン（オプション）
  */
-export const createApiConfiguration = (): Configuration => {
+export const createApiConfiguration = (token?: string): Configuration => {
   return new Configuration({
     basePath: API_BASE_URL,
-    fetchApi: createFetchWithAuth(),
+    fetchApi: createFetchWithAuth(token),
   });
 };
