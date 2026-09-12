@@ -15,6 +15,34 @@ import { GoogleLogoSVG } from '@/components/GoogleButton';
 import { MicrosoftLogoSVG } from '@/components/MicrosoftButton';
 import { appLogger } from '@/utils/logger';
 
+/**
+ * 接続日時をフォーマット
+ * connectedAt は ISO 8601 形式の文字列
+ */
+function formatConnectedDate(connectedAt: string | Date | undefined): string {
+  if (!connectedAt) return '不明';
+
+  try {
+    // Date オブジェクトまたは ISO 8601 形式の文字列をパース
+    const date = new Date(connectedAt);
+    
+    // 無効な日付チェック
+    if (isNaN(date.getTime())) {
+      appLogger.error('[formatConnectedDate] 無効な日付:', connectedAt);
+      return '不明';
+    }
+    
+    return date.toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  } catch (error) {
+    appLogger.error('[formatConnectedDate] 日付フォーマット失敗:', error);
+    return '不明';
+  }
+}
+
 export default function NetworkScreen() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { drives, selectedDrive, selectDrive, isLoading } = useDrives();
@@ -145,7 +173,7 @@ export default function NetworkScreen() {
                   </View>
                   <Text className="text-sm text-gray-600">{drive.account}</Text>
                   <Text className="text-xs text-gray-400 mt-1">
-                    接続日時: {new Date(drive.connectedAt).toLocaleDateString('ja-JP')}
+                    接続日時: {formatConnectedDate(drive.connectedAt)}
                   </Text>
                 </View>
 
@@ -155,21 +183,6 @@ export default function NetworkScreen() {
                 )}
               </TouchableOpacity>
             ))}
-
-            {/* ✅ 選択中のドライブ情報 */}
-            {selectedDrive && (
-              <View className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <Text className="text-sm font-semibold text-blue-900 mb-2">
-                  現在選択中:
-                </Text>
-                <Text className="text-base text-blue-800">
-                  {selectedDrive.account} ({selectedDrive.provider})
-                </Text>
-                <Text className="text-xs text-blue-600 mt-2">
-                  ID: {selectedDrive.id}
-                </Text>
-              </View>
-            )}
           </>
         )}
       </ScrollView>
