@@ -17,7 +17,7 @@ import * as Linking from 'expo-linking';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/use-auth';
 import { useDrivesStore } from '@/stores/drives-store';
-import { GoogleSignInButton, MicrosoftSignInButton } from '@/components';
+import { GoogleButton, MicrosoftButton } from '@/components';
 import { appLogger } from '@/utils/logger';
 import { DEEP_LINK_AUTH_CALLBACK } from '@/utils/constants';
 
@@ -233,7 +233,7 @@ export default function LoginScreen() {
         <View className="items-center">
           <Text className="text-3xl font-bold mb-2 text-center">Danmaku</Text>
           <Text className="text-sm text-gray-500 mb-8 text-center">
-            クラウドストレージのビデオを再生
+            クラウドストレージのビデオを弾幕付きで再生できるサービスです。
           </Text>
 
           {error && (
@@ -244,13 +244,13 @@ export default function LoginScreen() {
 
           {/* ✅ プロバイダー選択ボタン */}
           <View className="gap-4">
-            <GoogleSignInButton
+            <GoogleButton
               onPress={() => handleLogin('google')}
               disabled={isLoggingIn || auth.loading}
               loading={selectedProvider === 'google' && (isLoggingIn || auth.loading)}
               label="Google Drive でログイン"
             />
-            <MicrosoftSignInButton
+            <MicrosoftButton
               onPress={() => handleLogin('onedrive')}
               disabled={isLoggingIn || auth.loading}
               loading={selectedProvider === 'onedrive' && (isLoggingIn || auth.loading)}

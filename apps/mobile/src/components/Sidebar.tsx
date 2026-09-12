@@ -4,10 +4,10 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 import { router, usePathname } from 'expo-router';
 import { useAuth } from '../hooks/use-auth';
-import { useDriveAuth } from '../hooks/use-drive-auth';
 import { appLogger } from '../utils/logger';
 
 type NavPath = '/local' | '/network' | '/playlist' | '/download' | '/settings';
@@ -35,6 +35,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const auth = useAuth();
 
+  // デバッグログ
+  React.useEffect(() => {
+    appLogger.info('========== [Sidebar] ユーザー情報 ==========');
+    appLogger.info(`[Sidebar] hydrated: ${(auth as any).hydrated}`);
+    if (auth.user) {
+      appLogger.info(`[Sidebar] ユーザー名: ${auth.user.name}`);
+      appLogger.info(`[Sidebar] pictureUrl: ${auth.user.pictureUrl}`);
+      appLogger.info(`[Sidebar] pictureUrl タイプ: ${typeof auth.user.pictureUrl}`);
+    } 
+    appLogger.info('==========================================');
+  }, [auth.user, (auth as any).hydrated]);
+
   const handleNavPress = (path: NavPath) => {
     appLogger.info(`[Sidebar] ${path} へ遷移`);
     router.replace(path as any);
@@ -60,9 +72,51 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <Text className="text-xl font-bold text-gray-900">
               Danmaku
             </Text>
-            <Text className="text-xs text-gray-500 mt-1">
-              {auth.user?.name || 'ユーザー'}
-            </Text>
+
+            {/* ユーザープロフィール */}
+            {auth.user && (
+              <View className="mt-4 flex-row items-center">
+                {/* プロフィール画像 */}
+                {auth.user.pictureUrl ? (
+                  <Image
+                    source={{ uri: auth.user.pictureUrl }}
+                    style={{ width: 48, height: 48, borderRadius: 24 }}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 24,
+                      backgroundColor: '#E5E7EB',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text className="text-xl">{auth.user.name?.[0] || 'U'}</Text>
+                  </View>
+                )}
+
+                {/* ユーザー情報 */}
+                <View className="ml-3 flex-1">
+                  <Text className="text-sm font-semibold text-gray-900">
+                    {auth.user.name || 'ユーザー'}
+                  </Text>
+                  <Text
+                    className="text-xs text-gray-500 mt-1"
+                    numberOfLines={1}
+                  >
+                    {auth.user.email}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {!auth.user && (
+              <Text className="text-xs text-gray-500 mt-1">
+                ユーザー
+              </Text>
+            )}
           </View>
 
           {/* ナビゲーション項目 */}

@@ -10,7 +10,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { PersistStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
-import { UserInfoDto } from '@/generated';
+import { UserInfoDto, UserInfoDtoFromJSON } from '@/generated';
 import { appLogger } from '@/utils/logger';
 
 export interface AuthState {
@@ -20,6 +20,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  hydrated: boolean; // ✅ hydration 完了フラグ
 
   // アクション
   setUser: (user: UserInfoDto | null) => void;
@@ -27,6 +28,7 @@ export interface AuthState {
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  setHydrated: (hydrated: boolean) => void;
   reset: () => void;
 }
 
@@ -37,8 +39,13 @@ const secureStorage: PersistStorage<AuthState> = {
       appLogger.debug(`[SecureStorage] 読み込み開始: ${key}`);
       const value = await SecureStore.getItemAsync(key);
       if (value) {
+        const parsed = JSON.parse(value);
         appLogger.debug(`[SecureStorage] 読み込み成功: ${key}`);
-        return JSON.parse(value);
+        appLogger.debug(`[SecureStorage] 復元されたユーザー: ${JSON.stringify(parsed.state?.user)}`);
+        if (parsed.state?.user) {
+          appLogger.debug(`[SecureStorage] pictureUrl: ${parsed.state.user.pictureUrl}`);
+        }
+        return parsed;
       }
       appLogger.debug(`[SecureStorage] 保存データなし: ${key}`);
       return null;
@@ -51,7 +58,23 @@ const secureStorage: PersistStorage<AuthState> = {
   setItem: async (key: string, value) => {
     try {
       appLogger.debug(`[SecureStorage] 保存開始: ${key}`);
-      await SecureStore.setItemAsync(key, JSON.stringify(value));
+      appLogger.debug(`[SecureStorage] 保存するユーザー: ${JSON.stringify(value.state?.user)}`);
+      
+      // ✅ user をマッピングしてから保存
+      let stateToSave = value;
+      if (value.state?.user) {
+        const mappedUser = UserInfoDtoFromJSON(value.state.user);
+        appLogger.debug(`[SecureStorage] マッピング後の pictureUrl: ${mappedUser.pictureUrl}`);
+        stateToSave = {
+          ...value,
+          state: {
+            ...value.state,
+            user: mappedUser,
+          },
+        };
+      }
+      
+      await SecureStore.setItemAsync(key, JSON.stringify(stateToSave));
       appLogger.debug(`[SecureStorage] 保存成功: ${key}`);
     } catch (error) {
       appLogger.error(`[SecureStorage] 保存失敗: ${key}`, error);
@@ -80,10 +103,14 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       loading: false,
       error: null,
+      hydrated: false,
 
       // アクション
       setUser: (user) => {
         appLogger.debug(`AuthStore: ユーザー情報を設定 - ${user?.name || 'null'}`);
+        if (user) {
+          appLogger.debug(`AuthStore: pictureUrl = ${user.pictureUrl}`);
+        }
         set({ user });
       },
 
@@ -108,6 +135,11 @@ export const useAuthStore = create<AuthState>()(
         set({ error });
       },
 
+      setHydrated: (hydrated) => {
+        appLogger.debug(`AuthStore: hydrated = ${hydrated}`);
+        set({ hydrated });
+      },
+
       reset: () => {
         appLogger.info('AuthStore: リセット');
         set({
@@ -116,6 +148,7 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           loading: false,
           error: null,
+          hydrated: false,
         });
       },
     }),
@@ -129,6 +162,16 @@ export const useAuthStore = create<AuthState>()(
         sessionId: state.sessionId,
         isAuthenticated: state.isAuthenticated,
       }) as PersistedAuthState,
+      onRehydrateStorage: () => (state) => {
+        if (state && state.user) {
+          appLogger.info('[AuthStore] rehydration 開始');
+          appLogger.debug('[AuthStore] 復元前:', JSON.stringify(state.user));
+          // ✅ setUser を通して、確実にマッピングを実行
+          state.setUser(state.user);
+          appLogger.debug('[AuthStore] 復元後 pictureUrl:', state.user.pictureUrl);
+        }
+        state?.setHydrated(true);
+      },
     }
   )
 );

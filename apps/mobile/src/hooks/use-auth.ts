@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { authService } from '@/services/auth-service';
 import { appLogger } from '@/utils/logger';
 import { UserInfo } from '@/types';
+import { UserInfoDtoFromJSON } from '@/generated';
 
 export function useAuth() {
   const auth = useAuthStore();
@@ -96,9 +97,14 @@ export function useAuth() {
 
         appLogger.info('[useAuth] ==================== sessionId とユーザー情報を保存 ====================');
 
+        // ✅ userInfo をマッピング（picture_url → pictureUrl）
+        const mappedUserInfo = UserInfoDtoFromJSON(userInfo);
+        appLogger.debug('[useAuth] マッピング前 picture_url:', (userInfo as any).picture_url);
+        appLogger.debug('[useAuth] マッピング後 pictureUrl:', mappedUserInfo.pictureUrl);
+
         // sessionId と状態を更新（persist middleware で自動保存）
         auth.setSessionId(sessionId);
-        auth.setUser(userInfo);
+        auth.setUser(mappedUserInfo);
         auth.setIsAuthenticated(true);
 
         appLogger.info('[useAuth] 🎉 AuthState を更新完了 (isAuthenticated=true, sessionId=saved)');

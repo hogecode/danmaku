@@ -1,6 +1,6 @@
 /**
- * Google Sign-In ボタンコンポーネント
- * 公式の Google Material Design スタイルを再現
+ * Microsoft Sign-In ボタンコンポーネント
+ * 公式の Microsoft Design スタイルを再現
  */
 
 import React, { useState } from 'react';
@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-interface GoogleSignInButtonProps {
+interface MicrosoftSignInButtonProps {
   onPress: () => void | Promise<void>;
   disabled?: boolean;
   loading?: boolean;
@@ -22,13 +22,13 @@ interface GoogleSignInButtonProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function GoogleSignInButton({
+export function MicrosoftButton({
   onPress,
   disabled = false,
   loading = false,
-  label = 'Sign in with Google',
+  label = 'Sign in with Microsoft',
   style,
-}: GoogleSignInButtonProps) {
+}: MicrosoftSignInButtonProps) {
   const [isPressed, setIsPressed] = useState(false);
 
   const handlePressIn = () => setIsPressed(true);
@@ -44,20 +44,20 @@ export function GoogleSignInButton({
         {
           height: 40,
           borderRadius: 20,
-          backgroundColor: disabled ? 'rgba(255, 255, 255, 0.38)' : '#FFFFFF',
+          backgroundColor: disabled ? 'rgba(0, 120, 212, 0.38)' : '#0078D4',
           borderWidth: 1,
-          borderColor: disabled ? 'rgba(31, 31, 31, 0.12)' : '#747775',
+          borderColor: disabled ? 'rgba(0, 120, 212, 0.38)' : '#0078D4',
           paddingHorizontal: 12,
           overflow: 'hidden',
           ...((isPressed && !disabled) && {
-            shadowColor: 'rgba(60, 64, 67, 0.30)',
+            shadowColor: 'rgba(0, 120, 212, 0.3)',
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 1,
             shadowRadius: 2,
             elevation: 3,
           }),
           ...(!isPressed && !disabled && {
-            shadowColor: 'rgba(60, 64, 67, 0)',
+            shadowColor: 'rgba(0, 120, 212, 0)',
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 0,
             shadowRadius: 0,
@@ -75,22 +75,22 @@ export function GoogleSignInButton({
           width: '100%',
         }}
       >
-        {/* Google SVG Icon */}
+        {/* Microsoft Logo Icon */}
         {!loading && (
           <View style={{ width: 20, height: 20, marginRight: 10 }}>
-            <GoogleLogoSVG />
+            <MicrosoftLogoSVG />
           </View>
         )}
 
         {/* Loading Indicator */}
-        {loading && <ActivityIndicator color="#1f1f1f" size="small" />}
+        {loading && <ActivityIndicator color="#FFFFFF" size="small" />}
 
         {/* Text Label */}
         <Text
           style={{
             fontSize: 14,
             fontWeight: '500',
-            color: disabled ? 'rgba(31, 31, 31, 0.38)' : '#1f1f1f',
+            color: disabled ? 'rgba(255, 255, 255, 0.38)' : '#FFFFFF',
             fontFamily: 'Roboto, Arial, sans-serif',
             letterSpacing: 0.25,
             opacity: disabled ? 0.38 : 1,
@@ -109,7 +109,7 @@ export function GoogleSignInButton({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: '#303030',
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
             opacity: 0.12,
           }}
         />
@@ -119,31 +119,20 @@ export function GoogleSignInButton({
 }
 
 /**
- * Google ロゴ SVG コンポーネント
+ * Microsoft ロゴ SVG コンポーネント
+ * 4 つの四角形を使った シンプルなデザイン
  */
-function GoogleLogoSVG() {
+function MicrosoftLogoSVG() {
   return (
     <Svg viewBox="0 0 48 48" width="100%" height="100%">
-      {/* Red Path */}
-      <Path
-        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-        fill="#EA4335"
-      />
-      {/* Blue Path */}
-      <Path
-        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-        fill="#4285F4"
-      />
-      {/* Yellow Path */}
-      <Path
-        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-        fill="#FBBC05"
-      />
-      {/* Green Path */}
-      <Path
-        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-        fill="#34A853"
-      />
+      {/* Top Left - Red */}
+      <Path d="M0 0h20v20H0z" fill="#F25022" />
+      {/* Top Right - Green */}
+      <Path d="M28 0h20v20H28z" fill="#7FBA00" />
+      {/* Bottom Left - Blue */}
+      <Path d="M0 28h20v20H0z" fill="#00A4EF" />
+      {/* Bottom Right - Yellow */}
+      <Path d="M28 28h20v20H28z" fill="#FFB900" />
     </Svg>
   );
 }
