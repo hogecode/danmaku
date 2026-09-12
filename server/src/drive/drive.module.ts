@@ -3,6 +3,7 @@ import { DriveConnectionController } from './controllers/drive-connection.contro
 import { FolderController } from './controllers/folder.controller';
 import { DriveService } from './services/drive.service';
 import { DriveConnectionService } from './services/drive-connection.service';
+import { DriveConnectionOAuthService } from './services/drive-connection-oauth.service';
 import { FolderService } from './services/folder.service';
 import { GoogleDriveProvider, OnedriveProvider } from './providers';
 import { DatabaseModule } from '../database/database.module';
@@ -15,6 +16,7 @@ import { AuthModule } from '../auth/auth.module';
   providers: [
     DriveService,
     DriveConnectionService,
+    DriveConnectionOAuthService,
     FolderService,
     GoogleDriveProvider,
     OnedriveProvider,
@@ -22,6 +24,7 @@ import { AuthModule } from '../auth/auth.module';
   exports: [
     DriveService,
     DriveConnectionService,
+    DriveConnectionOAuthService,
     FolderService,
     GoogleDriveProvider,
     OnedriveProvider,

@@ -35,6 +35,7 @@ export class GoogleAuthService implements ProviderAuthService {
   /**
    * Google OAuth コールバック処理
    * 認可コードからアクセストークンを取得し、ユーザー情報を取得してDBに保存する
+   * authIdentitiesとusersテーブルにユーザー情報を保存する
    */
   async handleCallback(code: string, state: string): Promise<UserInfoDto> {
     const verifierKey = `oauth:verifier:google:${state}`;
@@ -65,6 +66,7 @@ export class GoogleAuthService implements ProviderAuthService {
 
       const user = await this.userService.upsertUser(googleUser);
 
+      // TODO: トランザクションを利用
       // ログイン用 Auth Identity を作成
       await this.userService.upsertAuthIdentity(
         user.id,

@@ -15,6 +15,7 @@ import { EncryptionService } from 'src/common/encryption/encryption.service';
 
 /**
  * ユーザー管理サービス
+ * (実質リポジトリ層)
  */
 @Injectable()
 export class UserService {
@@ -266,7 +267,9 @@ export class UserService {
           );
           await this.tokenService.revokeToken(accessToken, conn.provider_name);
         } catch (error) {
-          this.Logger.warn(`Failed to revoke token for ${conn.provider_name}:`, error);
+          this.Logger.warn(`Failed to revoke token for ${conn.provider_name}:`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       }
     }

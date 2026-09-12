@@ -11,6 +11,7 @@ import { eq, and } from 'drizzle-orm';
 import { DriveConnectionDto } from '../../auth/dto';
 import { TokenService } from '../../auth/services/token.service';
 import { EncryptionService } from '../../common/encryption/encryption.service';
+import { DriveConnectionOAuthService } from './drive-connection-oauth.service';
 import Redis from 'ioredis';
 import { ProviderType } from '../constants';
 import { LoggerService } from '../../common/logger/logger.service';
@@ -40,6 +41,7 @@ export class DriveConnectionService {
     }));
   }
 
+  // 接続を削除
   async deleteConnection(userId: bigint, connectionId: bigint): Promise<void> {
     const c = await this.db.query.driveConnections.findFirst({
       where: and(
@@ -55,11 +57,16 @@ export class DriveConnectionService {
         // 暗号化されたトークンを復号化
         const decryptedToken = this.encryptionService.decrypt(c.access_token_encrypted);
         // プロバイダー名を指定してトークンを取り消す
+        // ここではAPIを通じてトークンを取り消す処理を行う
         await this.tokenService.revokeToken(decryptedToken, c.provider_name);
       } catch (e) {
         this.logger.error('Failed to revoke token', e);
         // revoke に失敗してもレコード削除は続行
       }
     }
+    // DBレコードを削除
+    await this.db.delete(driveConnections).where(
+      eq(driveConnections.id, connectionId),
+    );
   }
 }

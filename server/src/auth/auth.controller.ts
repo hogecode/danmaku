@@ -149,7 +149,7 @@ export class AuthController {
 
     // 全てのログインサービスからログアウト
     // TODO: ログアウトロジックを見直す
-    await this.userService.logout(BigInt(userId));
+    // await this.userService.logout(BigInt(userId));
 
     // セッションを破棄（Express Session API）
     (session as any).destroy?.(() => {});
