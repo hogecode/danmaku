@@ -22,50 +22,6 @@ export class FolderController {
   constructor(private readonly folderService: FolderService) {}
 
   /**
-   * GET /api/drive/list
-   * フォルダ内容を取得
-   */
-  @Get('list')
-  async listFolder(
-    @Query('folderId') folderId: string = 'root',
-    @Query('connectionId') connectionId: string,
-    @Session() session: Express.Session & { userId?: string },
-  ): Promise<FolderListDto> {
-    if (!session.userId) {
-      throw new BadRequestException('User ID not found in session');
-    }
-
-    return this.folderService.listFolderContents(BigInt(session.userId), BigInt(connectionId), folderId);
-  }
-
-  /**
-   * GET /api/drive/search
-   * フォルダ内でキーワード検索
-   */
-  @Get('search')
-  async search(
-    @Query('connectionId') connectionId: string,
-    @Query('folderId') folderId: string,
-    @Query('query') query: string,
-    @Session() session: Express.Session & { userId?: string },
-  ): Promise<FolderListDto> {
-    if (!session.userId) {
-      throw new BadRequestException('User ID not found in session');
-    }
-
-    if (!folderId) {
-      throw new BadRequestException('folderId is required');
-    }
-
-    return this.folderService.searchInFolder(
-      BigInt(session.userId),
-      BigInt(connectionId),
-      folderId,
-      query,
-    );
-  }
-
-  /**
    * GET /api/drive/connections/:connectionId/files
    * 
    * 特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）

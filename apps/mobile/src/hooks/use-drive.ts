@@ -43,7 +43,7 @@ export function useDrive() {
       appLogger.info(`[useDrive] フォルダを読み込み中... (connectionId=${connectionId}, folderId=${currentFolderId})`);
 
       // ✅ connectionId を付与して API 呼び出し
-      const result = await driveService.listFolder(connectionId, currentFolderId);
+      const result = await driveService.listFolderByConnection(connectionId, currentFolderId);
       drive.setFiles(result.items);
 
       appLogger.info(`[useDrive] フォルダ読み込み完了: ${result.items?.length || 0} 個`);
@@ -126,7 +126,7 @@ export function useDrive() {
       appLogger.info(`[useDrive] 検索実行中: connectionId=${connectionId}, query=${query}`);
 
       // ✅ connectionId を付与して API 呼び出し
-      const result = await driveService.search(connectionId, currentFolderId, query);
+      const result = await driveService.searchByConnection(connectionId, currentFolderId, query);
       drive.setFiles(result.items);
 
       appLogger.info(`[useDrive] 検索完了: ${result.items?.length || 0} 件`);
