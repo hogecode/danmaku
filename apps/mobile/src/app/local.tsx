@@ -28,20 +28,6 @@ export default function LocalScreen() {
   const [selected, setSelected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!auth.isAuthenticated) {
-      router.replace('/login');
-    }
-  }, [auth.isAuthenticated]);
-
-  if (!auth.isAuthenticated) {
-    return (
-      <View className="flex-1 justify-center items-center bg-stone-100">
-        <ActivityIndicator size="large" color="#1976d2" />
-      </View>
-    );
-  }
-
   const handleOpenFolder = async () => {
     try {
       setLoading(true);
@@ -49,8 +35,8 @@ export default function LocalScreen() {
       appLogger.info('[LocalScreen] フォルダピッカーを開く');
 
       const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*',
-        copyToCacheDirectory: false,
+        type: 'video/*',
+        copyToCacheDirectory: false, // キャッシュディレクトリにコピーしない
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
