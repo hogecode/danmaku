@@ -2,13 +2,15 @@
  * ホーム画面（Google Drive ファイル一覧）
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
   ActivityIndicator,
   TouchableOpacity,
   FlatList,
+  Image,
+  useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +24,15 @@ export default function HomeScreen() {
   const auth = useAuth();
   const drive = useDrive();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { width } = useWindowDimensions();
+
+  // ✅ 画面幅に応じて列数を決定
+  const numColumns = useMemo(() => {
+    if (width >= 600) {
+      return 3; // タブレット：3列
+    }
+    return 2; // モバイル：2列
+  }, [width]);
 
   useEffect(() => {
     if (!auth.isAuthenticated) {
@@ -99,32 +110,47 @@ export default function HomeScreen() {
         </View>
       ) : (
         <FlatList
+          key={numColumns}  // numColumns 変更時に強制再レンダリング
           data={drive.files}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingVertical: 8 }}
+          numColumns={numColumns}
+          columnWrapperStyle={{ paddingHorizontal: 8, gap: 8 }}
+          contentContainerStyle={{ paddingVertical: 8, paddingHorizontal: 8 }}
+          scrollEnabled={true}
           renderItem={({ item }) => (
             <TouchableOpacity
-              className="flex-row items-center px-4 py-3 bg-white my-1 mx-2 rounded-lg"
+              className="flex-1 bg-white rounded-lg overflow-hidden"
+              style={{ aspectRatio: 1 }}
               onPress={() => handleFilePress(item.id, item.mimeType, item.name)}
             >
-              <Text className="text-2xl mr-3">
-                {FileUtility.isVideo(item.mimeType) ? "🎬" : "📁"}
-              </Text>
-              {/* アイコンを表示するようにする */}
-              <View className="flex-1">
+              {/* ✅ グリッドアイテム：サムネイル画像またはアイコンを表示 */}
+              <View className="flex-1 bg-gray-200 justify-center items-center">
+                {FileUtility.isVideo(item.mimeType) && item.thumbnailLink ? (
+                  <Image
+                    source={{ uri: item.thumbnailLink }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text className="text-5xl">
+                    {FileUtility.isVideo(item.mimeType) ? "🎬" : "📁"}
+                  </Text>
+                )}
+              </View>
+              {/* ✅ アイテム情報 */}
+              <View className="p-2 bg-white border-t border-gray-100">
                 <Text
-                  className="text-sm font-medium text-gray-900"
+                  className="text-xs font-medium text-gray-900"
                   numberOfLines={2}
                 >
                   {item.name}
                 </Text>
                 {FileUtility.isVideo(item.mimeType) && item.size && (
-                  <Text className="text-xs text-gray-400 mt-1">
+                  <Text className="text-xs text-gray-400 mt-0.5">
                     {FileUtility.formatFileSize(item.size)}
                   </Text>
                 )}
               </View>
-              <Text className="text-lg text-gray-300">›</Text>
             </TouchableOpacity>
           )}
         />
