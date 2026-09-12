@@ -1,146 +1,140 @@
 import {
   Injectable,
   Inject,
-  BadRequestException,
   NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import type { Database } from '../database/database.module';
+import { oauthAccounts } from '../database';
+import { eq, and } from 'drizzle-orm';
 import { CommentDto, DPlayerCommentDto } from './dto';
 import { XmlParser } from './utils/xml-parser';
 import { CommentConverter } from './utils/comment-converter';
-import { PlayerConstants } from './constants/player.constants';
 import { TokenService } from '../auth/services';
 import { LoggerService } from '../common/logger/logger.service';
+import { ProviderType } from '../drive/constants';
+import {
+  PlayerCommonConstants,
+  PlayerGoogleConstants,
+} from './constants';
+import {
+  GooglePlayerProvider,
+  OnedrivePlayerProvider,
+  PlayerProvider,
+  PlayerFileInfo,
+  PlayerStreamResponse,
+  RangeInfo,
+} from './providers';
 
-interface FileInfo {
-  id: string;
-  name: string;
-  mimeType: string;
-  size?: number;
-  parentId?: string;
-}
-
-interface RangeInfo {
-  start: number;
-  end: number;
-  size: number;
-}
-
-interface StreamResponse {
-  stream: NodeJS.ReadableStream;
-  statusCode: number;
-  headers: {
-    contentType: string;
-    contentLength: number;
-    contentRange?: string;
-    acceptRanges: string;
-  };
-}
+type FileInfo = PlayerFileInfo;
+type StreamResponse = PlayerStreamResponse;
 
 /**
- * プレイヤー Service
+ * プレイヤー Service（共通＋ルーティング層）
  * 動画ストリーミング とコメント取得を管理
+ * マルチプロバイダー対応：Google Drive, OneDrive
  */
 @Injectable()
 export class PlayerService {
+  private readonly googleProvider: GooglePlayerProvider;
+  private readonly onedriveProvider: OnedrivePlayerProvider;
+
   constructor(
     @Inject('DATABASE_CONNECTION') private readonly db: Database,
     private readonly xmlParser: XmlParser,
     private readonly commentConverter: CommentConverter,
     private readonly tokenService: TokenService,
     private readonly logger: LoggerService,
-  ) {}
+  ) {
+    // プロバイダーをインスタンス化
+    this.googleProvider = new GooglePlayerProvider();
+    this.onedriveProvider = new OnedrivePlayerProvider();
+  }
 
   /**
-   * 動画ファイルをストリーミング取得
-   * @returns ストリーム情報（ファイルサイズ、MIME タイプ）
+   * プロバイダーを取得（ルーティング）
+   */
+  private getProvider(providerName: string): PlayerProvider {
+    if (providerName === ProviderType.GOOGLE) {
+      return this.googleProvider;
+    } else if (providerName === ProviderType.ONEDRIVE) {
+      return this.onedriveProvider;
+    }
+    throw new InternalServerErrorException(
+      `Unsupported provider: ${providerName}`,
+    );
+  }
+
+  /**
+   * プロバイダータイプから接続情報を取得
+   */
+  private async getProviderConnection(
+    userId: bigint,
+    connectionId: bigint,
+  ): Promise<{ provider: PlayerProvider; providerName: string }> {
+    const connection = await this.db.query.oauthAccounts.findFirst({
+      where: and(
+        eq(oauthAccounts.id, connectionId),
+        eq(oauthAccounts.user_id, userId),
+      ),
+    });
+
+    if (!connection) {
+      throw new NotFoundException('Drive connection not found');
+    }
+
+    const provider = this.getProvider(connection.provider_name);
+    return { provider, providerName: connection.provider_name };
+  }
+
+  /**
+   * 動画ファイルをストリーミング取得（マルチプロバイダー対応）
    */
   async getVideoStream(
     userId: bigint,
+    connectionId: bigint,
     videoFileId: string,
   ): Promise<NodeJS.ReadableStream> {
-    const accessToken = await this.tokenService.getValidAccessToken(userId);
-    const oauth2Client = new OAuth2Client();
-    oauth2Client.setCredentials({ access_token: accessToken });
-
-    const drive = google.drive({ version: 'v3', auth: oauth2Client });
-
-    // ファイルメタデータを取得
-    const fileMetadata = await drive.files.get({
-      fileId: videoFileId,
-      fields: 'id,name,mimeType,size',
-    });
-
-    // MIME タイプが MP4 であることを確認
-    if (fileMetadata.data.mimeType !== PlayerConstants.MIME_TYPES.VIDEO_MP4) {
-      throw new BadRequestException(
-        `Invalid file type: ${fileMetadata.data.mimeType}. Only MP4 videos are supported.`,
-      );
-    }
-
-    // Google Drive API からファイルをダウンロード
-    const response = await drive.files.get(
-      {
-        fileId: videoFileId,
-        alt: 'media',
-      },
-      { responseType: 'stream' },
+    const { provider, providerName } = await this.getProviderConnection(
+      userId,
+      connectionId,
     );
-
-    return response.data;
+    const accessToken = await this.tokenService.getValidAccessToken(
+      userId,
+      providerName,
+    );
+    return provider.getVideoStream(accessToken, videoFileId);
   }
 
   /**
-   * 動画ファイルのメタデータを取得
-   * @param userId - ユーザーID
-   * @param videoFileId - 動画ファイルID
-   * @returns ファイル情報
+   * 動画ファイルのメタデータを取得（マルチプロバイダー対応）
    */
   async getVideoMetadata(
     userId: bigint,
+    connectionId: bigint,
     videoFileId: string,
   ): Promise<FileInfo> {
-    const accessToken = await this.tokenService.getValidAccessToken(userId);
-    const oauth2Client = new OAuth2Client();
-    oauth2Client.setCredentials({ access_token: accessToken });
-
-    const drive = google.drive({ version: 'v3', auth: oauth2Client });
-
-    // files.get() で動画ファイルの基本情報を取得
-    const fileResponse = await drive.files.get({
-      fileId: videoFileId,
-      fields: 'id,name,mimeType,size',
-      supportsAllDrives: true,
-    });
-
-    if (!fileResponse.data.id) {
-      throw new NotFoundException(`Video file not found: ${videoFileId}`);
-    }
-
-    return {
-      id: fileResponse.data.id,
-      name: fileResponse.data.name || '',
-      mimeType: fileResponse.data.mimeType || '',
-      size: fileResponse.data.size
-        ? parseInt(fileResponse.data.size as string, 10)
-        : undefined,
-      parentId: undefined, // フロント側で folderId を管理
-    };
+    const { provider, providerName } = await this.getProviderConnection(
+      userId,
+      connectionId,
+    );
+    const accessToken = await this.tokenService.getValidAccessToken(
+      userId,
+      providerName,
+    );
+    return provider.getVideoMetadata(accessToken, videoFileId);
   }
 
   /**
-   * 動画に対応するコメントを取得（CommentDto 形式）
-   * @param userId - ユーザーID
-   * @param videoFileId - 動画ファイルID
-   * @param folderId - 動画ファイルが存在するフォルダID（フロント側から指定）
-   * @returns ニコニコ実況形式コメント配列（JSON）
+   * 動画に対応するコメントを取得
    */
   async getCommentsByVideoId(
     userId: bigint,
     videoFileId: string,
     folderId: string,
+    connectionId?: bigint,
   ): Promise<CommentDto[]> {
     try {
       this.logger.debug(
@@ -148,7 +142,23 @@ export class PlayerService {
       );
 
       // 1. 動画ファイル情報を取得
-      const videoFile = await this.getVideoMetadata(userId, videoFileId);
+      // connectionId がない場合は、ユーザーのデフォルト接続を使用（Google Drive）
+      if (!connectionId) {
+        // Google Drive のデフォルト接続を検索
+        const defaultConnection = await this.db.query.oauthAccounts.findFirst({
+          where: and(
+            eq(oauthAccounts.user_id, userId),
+            eq(oauthAccounts.provider_name, ProviderType.GOOGLE),
+          ),
+        });
+        if (defaultConnection) {
+          connectionId = defaultConnection.id;
+        } else {
+          throw new NotFoundException('No Google Drive connection found');
+        }
+      }
+
+      const videoFile = await this.getVideoMetadata(userId, connectionId, videoFileId);
       this.logger.debug(
         `[PlayerService] Retrieved video metadata: name=${videoFile.name}`,
       );
@@ -257,8 +267,8 @@ export class PlayerService {
       const response = await drive.files.list({
         q: `'${folderId}' in parents and trashed=false`,
         spaces: 'drive',
-        fields: PlayerConstants.API.LIST_FIELDS,
-        pageSize: PlayerConstants.API.PAGE_SIZE,
+        fields: PlayerGoogleConstants.API.LIST_FIELDS,
+        pageSize: PlayerGoogleConstants.API.PAGE_SIZE,
         supportsAllDrives: true,
       });
 
@@ -271,9 +281,9 @@ export class PlayerService {
 
         if (
           (fileName === `${baseFileName}.xml` &&
-            mimeType === PlayerConstants.MIME_TYPES.XML) ||
+            mimeType === PlayerCommonConstants.MIME_TYPES.XML) ||
           (fileName === `${baseFileName}.json` &&
-            mimeType === PlayerConstants.MIME_TYPES.JSON)
+            mimeType === PlayerCommonConstants.MIME_TYPES.JSON)
         ) {
           return {
             id: file.id || '',
@@ -393,126 +403,42 @@ export class PlayerService {
   }
 
   /**
-   * 動画をストリーミング取得（Range 対応）
-   * @param userId - ユーザーID
-   * @param videoFileId - 動画ファイルID
-   * @param rangeHeader - Range ヘッダー（オプション）
-   * @returns ストリーム情報（ステータスコード、ヘッダー含む）
+   * 動画をストリーミング取得（Range 対応、マルチプロバイダー）
    */
   async getVideoStreamWithRange(
     userId: bigint,
+    connectionId: bigint,
     videoFileId: string,
     rangeHeader?: string,
   ): Promise<StreamResponse> {
     try {
       this.logger.info(`🎬 getVideoStreamWithRange called`);
-      this.logger.debug(`  - userId: ${userId}`);
-      this.logger.debug(`  - videoFileId: ${videoFileId}`);
+      this.logger.debug(
+        `  - userId: ${userId}, connectionId: ${connectionId}, fileId: ${videoFileId}`,
+      );
+
+      // ストレージプロバイダー接続情報を取得
+      const { provider, providerName } = await this.getProviderConnection(
+        userId,
+        connectionId,
+      );
 
       // トークン取得
       this.logger.info(`🔐 Getting valid access token...`);
-      const accessToken = await this.tokenService.getValidAccessToken(userId);
+      const accessToken = await this.tokenService.getValidAccessToken(
+        userId,
+        providerName,
+      );
       this.logger.debug(
         `✅ Access token obtained (preview: ${accessToken.substring(0, 30)}...)`,
       );
 
-      const oauth2Client = new OAuth2Client();
-      oauth2Client.setCredentials({ access_token: accessToken });
-
-      const drive = google.drive({ version: 'v3', auth: oauth2Client });
-
-      // ファイルメタデータを取得（サイズ確認）
-      this.logger.debug(`📋 Fetching file metadata from GDrive...`);
-      const fileMetadata = await drive.files.get({
-        fileId: videoFileId,
-        fields: 'id,name,mimeType,size',
-      });
-
-      this.logger.info(`✅ File metadata retrieved:`, {
-        name: fileMetadata.data.name,
-        mimeType: fileMetadata.data.mimeType,
-        size: fileMetadata.data.size,
-      });
-
-      // MIME タイプが MP4 であることを確認
-      if (fileMetadata.data.mimeType !== PlayerConstants.MIME_TYPES.VIDEO_MP4) {
-        this.logger.error(
-          `❌ Invalid MIME type: ${fileMetadata.data.mimeType}`,
-          new Error(`Invalid MIME type: ${fileMetadata.data.mimeType}`),
-        );
-        throw new BadRequestException(
-          `Invalid file type: ${fileMetadata.data.mimeType}. Only MP4 videos are supported.`,
-        );
-      }
-
-      const fileSize = fileMetadata.data.size
-        ? parseInt(fileMetadata.data.size as string, 10)
-        : 0;
-
-      // Range ヘッダーをパース
-      let rangeInfo: RangeInfo | null = null;
-      let statusCode = PlayerConstants.HTTP_STATUS.OK;
-      let contentLength = fileSize;
-      let contentRange: string | undefined;
-
-      if (rangeHeader) {
-        this.logger.debug(`📊 Parsing Range header: ${rangeHeader}`, {
-          rangeHeader,
-        });
-        rangeInfo = this.parseRangeHeader(rangeHeader, fileSize);
-
-        if (!rangeInfo) {
-          this.logger.error(
-            `❌ Invalid Range header`,
-            new Error('Invalid Range header'),
-          );
-          // Range が無効な場合は 416 Range Not Satisfiable を返す
-          throw new BadRequestException(`Invalid Range: bytes */` + fileSize);
-        }
-
-        statusCode = PlayerConstants.HTTP_STATUS.PARTIAL_CONTENT;
-        contentLength = rangeInfo.end - rangeInfo.start + 1;
-        contentRange = `bytes ${rangeInfo.start}-${rangeInfo.end}/${fileSize}`;
-        this.logger.debug(`✅ Range parsed: ${contentRange}`, { contentRange });
-      }
-
-      // GDrive API からファイルをダウンロード（Range 指定）
-      this.logger.debug(
-        `📥 Fetching video stream from GDrive (using alt=media)...`,
+      // プロバイダー経由でストリーミング取得
+      return await provider.getVideoStreamWithRange(
+        accessToken,
+        videoFileId,
+        rangeHeader,
       );
-      const response = await drive.files.get(
-        {
-          fileId: videoFileId,
-          alt: 'media',
-        },
-        {
-          responseType: 'stream',
-          headers: rangeInfo
-            ? {
-                Range: `bytes=${rangeInfo.start}-${rangeInfo.end}`,
-              }
-            : undefined,
-        },
-      );
-
-      this.logger.info(`✅ Stream obtained from GDrive`, {
-        statusCode,
-        contentLength,
-      });
-      this.logger.debug(
-        `✅ Returning with status: ${statusCode}, contentLength: ${contentLength}`,
-      );
-
-      return {
-        stream: response.data,
-        statusCode,
-        headers: {
-          contentType: PlayerConstants.MIME_TYPES.VIDEO_MP4,
-          contentLength,
-          contentRange,
-          acceptRanges: PlayerConstants.RANGE.ACCEPT_RANGES,
-        },
-      };
     } catch (error) {
       this.logger.error(
         `❌ getVideoStreamWithRange failed: ${(error as Error).message}`,

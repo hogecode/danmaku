@@ -3,9 +3,7 @@
  * ニコニコ実況形式に準拠
  */
 export class CommentDto {
-  /**
-   * スレッドID
-   */
+
   thread?: string;
 
   /**
@@ -28,24 +26,9 @@ export class CommentDto {
    * 例: "184", "184 big ue", "ue", "big" など
    */
   mail?: string;
-
-  /**
-   * ユーザーID
-   */
+  
   user_id?: string;
-
-  /**
-   * プレミアムユーザーフラグ
-   */
   premium?: number;
-
-  /**
-   * 匿名投稿フラグ
-   */
   anonymity?: number;
-
-  /**
-   * コメント内容（テキスト）
-   */
   text!: string;
 }

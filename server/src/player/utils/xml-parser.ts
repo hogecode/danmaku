@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as xml2js from 'xml2js';
 import { CommentDto } from '../dto';
-import { PlayerConstants } from '../constants/player.constants';
+import { PlayerCommonConstants } from '../constants';
 
 /**
  * XML/JSON コメントパーサー
@@ -91,9 +91,9 @@ export class XmlParser {
     fileContent: string,
     mimeType: string,
   ): Promise<CommentDto[]> {
-    if (mimeType === PlayerConstants.MIME_TYPES.XML) {
+    if (mimeType === PlayerCommonConstants.MIME_TYPES.XML) {
       return this.parseXmlComments(fileContent);
-    } else if (mimeType === PlayerConstants.MIME_TYPES.JSON) {
+    } else if (mimeType === PlayerCommonConstants.MIME_TYPES.JSON) {
       return this.parseJsonComments(fileContent);
     }
     throw new BadRequestException('Unsupported comment file format');

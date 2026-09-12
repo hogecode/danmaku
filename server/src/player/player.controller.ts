@@ -17,7 +17,7 @@ import { PlayerService } from './player.service';
 import { TokenService } from '../auth/services/token.service';
 import { AuthGuard } from '../auth/guards';
 import { DPlayerCommentListDto } from './dto';
-import { PlayerConstants } from './constants/player.constants';
+import { PlayerCommonConstants } from './constants';
 import { LoggerService } from '../common/logger/logger.service';
 
 /**
@@ -34,19 +34,24 @@ export class PlayerController {
   ) {}
 
   /**
-   * 動画ファイルをストリーミング再生
+   * 動画ファイルをストリーミング再生（マルチプロバイダー対応）
    */
-  @Get('stream/:fileId')
+  @Get('stream/:connectionId/:fileId')
   async streamVideo(
+    @Param('connectionId') connectionId: string,
     @Param('fileId') fileId: string,
     @Session() session: Express.Session & { userId?: string },
     @Res() res: Response,
-    @Headers(PlayerConstants.RANGE.HEADER_NAME) rangeHeader?: string,
+    @Headers(PlayerCommonConstants.RANGE.HEADER_NAME) rangeHeader?: string,
   ): Promise<void> {
     try {
-      this.logger.info(`🎬 streamVideo called with fileId: ${fileId}`, {
-        fileId,
-      });
+      this.logger.info(
+        `🎬 streamVideo called with connectionId: ${connectionId}, fileId: ${fileId}`,
+        {
+          connectionId,
+          fileId,
+        },
+      );
 
       if (!session.userId) {
         this.logger.error(
@@ -54,6 +59,14 @@ export class PlayerController {
           new Error('User ID missing'),
         );
         throw new BadRequestException('User ID not found in session');
+      }
+
+      if (!connectionId || connectionId.trim().length === 0) {
+        this.logger.error(
+          '❌ connectionId parameter is required',
+          new Error('connectionId missing'),
+        );
+        throw new BadRequestException('connectionId parameter is required');
       }
 
       if (!fileId || fileId.trim().length === 0) {
@@ -65,8 +78,10 @@ export class PlayerController {
       }
 
       this.logger.debug(`🔄 Calling playerService.getVideoStreamWithRange...`);
+      
       const streamResponse = await this.playerService.getVideoStreamWithRange(
         BigInt(session.userId),
+        BigInt(connectionId),
         fileId,
         rangeHeader,
       );
@@ -153,12 +168,8 @@ export class PlayerController {
    * 目的: モバイルアプリでの動画URL認証
    * - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
    * - 有効期限: 15分（デフォルト）
-   *
-   * @example
-   * POST /api/player/token
-   * Authorization: Bearer {access_token}
-   *
-   * Response: { token: "eyJhbGciOiJIUzI1NiIs..." }
+   * 
+   * TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
    */
   @Post('token')
   @HttpCode(200)
