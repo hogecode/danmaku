@@ -34,7 +34,6 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const auth = useAuth();
-  const driveAuth = useDriveAuth();
 
   const handleNavPress = (path: NavPath) => {
     appLogger.info(`[Sidebar] ${path} へ遷移`);
@@ -44,8 +43,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const handleLogout = () => {
     appLogger.info('[Sidebar] ログアウト');
-    // ドライブ認証情報もクリア
-    driveAuth.logoutAll();
     // ユーザー認証をクリア
     auth.logout();
     router.replace('/login');

@@ -8,8 +8,6 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  ActivityIndicator,
-  TouchableOpacity,
   ScrollView,
   Platform,
 } from 'react-native';
@@ -19,6 +17,7 @@ import * as Linking from 'expo-linking';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/use-auth';
 import { useDrivesStore } from '@/stores/drives-store';
+import { GoogleSignInButton, MicrosoftSignInButton } from '@/components';
 import { appLogger } from '@/utils/logger';
 import { DEEP_LINK_AUTH_CALLBACK } from '@/utils/constants';
 
@@ -27,13 +26,7 @@ if (Platform.OS === 'web') {
   WebBrowser.maybeCompleteAuthSession();
 }
 
-// プロバイダーの定義
-interface Provider {
-  id: string;
-  name: string;
-  icon: string;
-  description: string;
-}
+
 
 export default function LoginScreen() {
   const auth = useAuth();
@@ -69,21 +62,7 @@ export default function LoginScreen() {
     }
   };
 
-  // プロバイダーリスト
-  const providers: Provider[] = [
-    {
-      id: 'onedrive',
-      name: 'OneDrive',
-      icon: '☁️',
-      description: 'Microsoft OneDrive',
-    },
-    {
-      id: 'google',
-      name: 'Google Drive',
-      icon: '📁',
-      description: 'Google Drive',
-    },
-  ];
+
 
   // ✅ Deep link リスナー（バックグラウンドから戻ってきた場合に対応）
   useEffect(() => {
@@ -264,36 +243,19 @@ export default function LoginScreen() {
           )}
 
           {/* ✅ プロバイダー選択ボタン */}
-          <View className="w-full gap-3">
-            {providers.map((provider) => (
-              <TouchableOpacity
-                key={provider.id}
-                className={`rounded-lg py-4 px-6 flex-row items-center gap-3 ${
-                  selectedProvider === provider.id && (isLoggingIn || auth.loading)
-                    ? 'bg-blue-300'
-                    : 'bg-blue-500'
-                }`}
-                onPress={() => handleLogin(provider.id)}
-                disabled={isLoggingIn || auth.loading}
-              >
-                {selectedProvider === provider.id && (isLoggingIn || auth.loading) ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <>
-                    <Text className="text-2xl">{provider.icon}</Text>
-                    <View className="flex-1">
-                      <Text className="text-white text-base font-semibold">
-                        {provider.name}
-                      </Text>
-                      <Text className="text-blue-100 text-xs">
-                        {provider.description}
-                      </Text>
-                    </View>
-                    <Text className="text-white">→</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            ))}
+          <View className="gap-4">
+            <GoogleSignInButton
+              onPress={() => handleLogin('google')}
+              disabled={isLoggingIn || auth.loading}
+              loading={selectedProvider === 'google' && (isLoggingIn || auth.loading)}
+              label="Google Drive でログイン"
+            />
+            <MicrosoftSignInButton
+              onPress={() => handleLogin('onedrive')}
+              disabled={isLoggingIn || auth.loading}
+              loading={selectedProvider === 'onedrive' && (isLoggingIn || auth.loading)}
+              label="Microsoft OneDrive でログイン"
+            />
           </View>
         </View>
       </ScrollView>
