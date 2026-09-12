@@ -121,8 +121,9 @@ export function MicrosoftButton({
 /**
  * Microsoft ロゴ SVG コンポーネント
  * 4 つの四角形を使った シンプルなデザイン
+ * ✅ エクスポート可能にしてアイコン利用を対応
  */
-function MicrosoftLogoSVG() {
+export function MicrosoftLogoSVG() {
   return (
     <Svg viewBox="0 0 48 48" width="100%" height="100%">
       {/* Top Left - Red */}

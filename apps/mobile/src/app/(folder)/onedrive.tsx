@@ -1,5 +1,5 @@
 /**
- * ホーム画面（Google Drive ファイル一覧）
+ * OneDrive ファイル一覧画面
  */
 
 import React, { useEffect, useState } from 'react';
@@ -18,26 +18,26 @@ import { appLogger } from '@/utils/logger';
 import { FileUtility } from '@/utils/FileUtility';
 import { Sidebar } from '@/components/Sidebar';
 
-export default function HomeScreen() {
+export default function OneDriveScreen() {
   const auth = useAuth();
   const drive = useDrive();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!auth.isAuthenticated) {
-      appLogger.info('[HomeScreen] ユーザーがログインしていません');
+      appLogger.info('[OneDriveScreen] ユーザーがログインしていません');
       router.replace('/login');
       return;
     }
 
-    appLogger.info('[HomeScreen] Google Drive ファイル一覧を読み込み');
+    appLogger.info('[OneDriveScreen] OneDrive ファイル一覧を読み込み');
     drive.loadFolder();
   }, [auth.isAuthenticated]);
 
   if (!auth.isAuthenticated) {
     return (
       <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#1976d2" />
+        <ActivityIndicator size="large" color="#0078D4" />
       </View>
     );
   }
@@ -62,7 +62,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-stone-100" edges={["top"]}>
       {/* ヘッダー
-  　　    ←　GoogleDrive　↻ 
+  　　    ←　OneDrive　↻ 
       */}
       <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
         <TouchableOpacity
@@ -78,7 +78,7 @@ export default function HomeScreen() {
           <Text className="text-2xl">←</Text>
         </TouchableOpacity>
         <Text className="flex-1 text-lg font-semibold text-center">
-          Google Drive
+          OneDrive
         </Text>
         <TouchableOpacity
           className="w-10 h-10 justify-center items-center"
@@ -91,7 +91,7 @@ export default function HomeScreen() {
 
       {drive.loading && drive.files.length === 0 ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#1976d2" />
+          <ActivityIndicator size="large" color="#0078D4" />
         </View>
       ) : drive.files.length === 0 ? (
         <View className="flex-1 justify-center items-center px-6">

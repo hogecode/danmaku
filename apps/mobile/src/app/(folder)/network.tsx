@@ -11,29 +11,54 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useDrives } from '@/hooks/use-drives';
 import { Sidebar } from '@/components/Sidebar';
+import { GoogleLogoSVG } from '@/components/GoogleButton';
+import { MicrosoftLogoSVG } from '@/components/MicrosoftButton';
 import { appLogger } from '@/utils/logger';
-
-// ✅ プロバイダーアイコンマッピング
-const PROVIDER_ICONS: Record<string, string> = {
-  google: '📁',
-  onedrive: '☁️',
-  dropbox: '💼',
-};
 
 export default function NetworkScreen() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { drives, selectedDrive, selectDrive, isLoading } = useDrives();
 
+  /**
+   * ドライブを選択し、プロバイダーに応じた画面に遷移
+   */
   const handleSelectDrive = (connectionId: string) => {
+    const drive = drives.find((d) => d.id === connectionId);
+    
     appLogger.info(
       `[NetworkScreen] Drive selected ${JSON.stringify({
         connectionId,
-        provider: drives.find((d) => d.id === connectionId)?.provider,
+        provider: drive?.provider,
       })}`,
     );
+    
     selectDrive(connectionId);
-    // ✅ 選択後はホーム画面へ（ドライブの内容を表示）
-    router.push('/');
+
+    // ✅ プロバイダーに応じた遷移ロジック
+    if (drive?.provider === 'google') {
+      appLogger.info('[NetworkScreen] Google Drive へ遷移');
+      router.push('/gdrive');
+    } else if (drive?.provider === 'onedrive') {
+      appLogger.info('[NetworkScreen] OneDrive へ遷移');
+      router.push('/onedrive');
+    } else {
+      // デフォルトはホーム画面
+      appLogger.info('[NetworkScreen] ホーム画面へ遷移');
+      router.push('/');
+    }
+  };
+
+  /**
+   * プロバイダーアイコンを取得
+   */
+  const getProviderIcon = (provider: string) => {
+    return (
+      <View style={{ width: 48, height: 48 }}>
+        {provider === 'google' && <GoogleLogoSVG />}
+        {provider === 'onedrive' && <MicrosoftLogoSVG />}
+        {provider === 'dropbox' && <Text className="text-3xl">💼</Text>}
+      </View>
+    );
   };
 
   if (isLoading) {
@@ -81,9 +106,9 @@ export default function NetworkScreen() {
                 }`}
               >
                 {/* アイコン */}
-                <Text className="text-3xl mr-3">
-                  {PROVIDER_ICONS[drive.provider] || '📁'}
-                </Text>
+                <View className="mr-3">
+                  {getProviderIcon(drive.provider)}
+                </View>
 
                 {/* ドライブ情報 */}
                 <View className="flex-1">

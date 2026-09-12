@@ -99,8 +99,6 @@ export function useAuth() {
 
         // ✅ userInfo をマッピング（picture_url → pictureUrl）
         const mappedUserInfo = UserInfoDtoFromJSON(userInfo);
-        appLogger.debug('[useAuth] マッピング前 picture_url:', (userInfo as any).picture_url);
-        appLogger.debug('[useAuth] マッピング後 pictureUrl:', mappedUserInfo.pictureUrl);
 
         // sessionId と状態を更新（persist middleware で自動保存）
         auth.setSessionId(sessionId);

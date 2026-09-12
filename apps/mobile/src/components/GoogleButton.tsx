@@ -120,8 +120,9 @@ export function GoogleButton({
 
 /**
  * Google ロゴ SVG コンポーネント
+ * ✅ エクスポート可能にしてアイコン利用を対応
  */
-function GoogleLogoSVG() {
+export function GoogleLogoSVG() {
   return (
     <Svg viewBox="0 0 48 48" width="100%" height="100%">
       {/* Red Path */}
