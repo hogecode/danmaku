@@ -13,6 +13,7 @@ import { AuthGuard } from '../../auth/guards';
 import { DriveConnectionService } from '../services/drive-connection.service';
 import { DriveConnectionDto } from '../../auth/dto';
 import { Express } from 'express';
+import { TokenService } from '../../auth/services/token.service';
 
 /**
  * ドライブ接続管理コントローラー
@@ -20,7 +21,10 @@ import { Express } from 'express';
 @Controller('api/drives')
 @UseGuards(AuthGuard)
 export class DriveConnectionController {
-  constructor(private readonly driveConnectionService: DriveConnectionService) {}
+  constructor(
+    private readonly driveConnectionService: DriveConnectionService,
+    private readonly tokenService: TokenService,
+  ) {}
 
   /**
    * GET /api/drives
@@ -40,8 +44,7 @@ export class DriveConnectionController {
    * POST /api/drives/:provider/auth
    * プロバイダー別 OAuth 認可開始
    * 
-   * 例: POST /api/drives/google/auth
-   *     POST /api/drives/onedrive/auth
+   * 認可URLを取得する
    */
   @Post(':provider/auth')
   @HttpCode(200)
@@ -50,10 +53,7 @@ export class DriveConnectionController {
     @Session() session: Express.Session & { userId?: string },
   ): Promise<{ authorize_url: string; state: string; expires_in: number }> {
     if (!session.userId) throw new BadRequestException('User ID not found');
-    return await this.driveConnectionService.initiateProviderConnection(
-      BigInt(session.userId),
-      provider,
-    );
+    return await this.tokenService.generateAuthorizationUrl(provider, BigInt(session.userId));
   }
 
   /**

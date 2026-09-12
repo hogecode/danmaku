@@ -28,13 +28,14 @@ export class FolderController {
   @Get('list')
   async listFolder(
     @Query('folderId') folderId: string = 'root',
+    @Query('connectionId') connectionId: string,
     @Session() session: Express.Session & { userId?: string },
   ): Promise<FolderListDto> {
     if (!session.userId) {
       throw new BadRequestException('User ID not found in session');
     }
 
-    return this.folderService.listFolderContents(BigInt(session.userId), undefined, folderId);
+    return this.folderService.listFolderContents(BigInt(session.userId), BigInt(connectionId), folderId);
   }
 
   /**
@@ -45,6 +46,7 @@ export class FolderController {
    */
   @Get('search')
   async search(
+    @Query('connectionId') connectionId: string,
     @Query('folderId') folderId: string,
     @Query('query') query: string,
     @Session() session: Express.Session & { userId?: string },
@@ -59,7 +61,7 @@ export class FolderController {
 
     return this.folderService.searchInFolder(
       BigInt(session.userId),
-      undefined,
+      BigInt(connectionId),
       folderId,
       query,
     );
@@ -67,9 +69,8 @@ export class FolderController {
 
   /**
    * GET /api/drive/connections/:connectionId/files
+   * 
    * 特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）
-   * @param connectionId - ドライブ接続ID
-   * @param folderId - フォルダID（デフォルト: 'root'）
    */
   @Get('connections/:connectionId/files')
   async listFolderByConnection(

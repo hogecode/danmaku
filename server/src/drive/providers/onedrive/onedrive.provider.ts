@@ -1,5 +1,5 @@
 import { Injectable, NotImplementedException } from '@nestjs/common';
-import { DriveProvider, DriveListResponse } from './drive.provider.interface';
+import { DriveProvider, DriveListResponse } from '../drive.provider.interface';
 
 /**
  * OneDrive プロバイダー実装

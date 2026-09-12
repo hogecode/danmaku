@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import { DriveProvider, DriveListResponse } from './drive.provider.interface';
-import { FileItemDto } from '../dto';
+import { DriveProvider, DriveListResponse } from '../drive.provider.interface';
+import { FileItemDto } from '../../dto';
 
 /**
  * Google Drive プロバイダー実装
