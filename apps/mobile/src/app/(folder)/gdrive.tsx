@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../hooks/use-auth';
-import { useDrive } from '../hooks/use-drive';
-import { appLogger } from '../utils/logger';
-import { FileUtility } from '../utils/FileUtility';
-import { Sidebar } from '../components/Sidebar';
+import { useAuth } from '../../hooks/use-auth';
+import { useDrive } from '../../hooks/use-drive';
+import { appLogger } from '../../utils/logger';
+import { FileUtility } from '../../utils/FileUtility';
+import { Sidebar } from '../../components/Sidebar';
 
 export default function HomeScreen() {
   const auth = useAuth();

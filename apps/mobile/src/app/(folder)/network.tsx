@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Sidebar } from '../components/Sidebar';
+import { Sidebar } from '../../components/Sidebar';
 
 export default function NetworkScreen() {
   const [sidebarOpen, setSidebarOpen] = useState(false);

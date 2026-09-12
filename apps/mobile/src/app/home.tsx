@@ -15,6 +15,7 @@ export default function HomeScreen() {
   const auth = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  
   useEffect(() => {
     if (!auth.isAuthenticated) {
       router.replace('/login');
@@ -29,6 +30,7 @@ export default function HomeScreen() {
       </View>
     );
   }
+    
 
   const handleGDrivePress = () => {
     router.push('/gdrive');

@@ -9,10 +9,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
-import { useAuth } from '../hooks/use-auth';
-import { FileUtility } from '../utils/FileUtility';
-import { appLogger } from '../utils/logger';
-import { Sidebar } from '../components/Sidebar';
+import { useAuth } from '../../hooks/use-auth';
+import { FileUtility } from '../../utils/FileUtility';
+import { appLogger } from '../../utils/logger';
+import { Sidebar } from '../../components/Sidebar';
 
 interface LocalFile {
   id: string;
