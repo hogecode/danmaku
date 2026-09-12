@@ -16,7 +16,7 @@ generate-flutter-client: ## Dart OpenAPIクライアント生成 (Flutter用 - D
 
 .PHONY: generate-all-clients
 generate-all-clients: generate-api-client generate-mobile-client generate-flutter-client ## すべてのクライアント生成 (Web + Mobile + Flutter)
-	@echo "✅ すべてのAPIクライアント生成が完了しました！"
+	@echo "All clients generated successfully!"
 
 
 # desktop (Flutter)

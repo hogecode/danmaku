@@ -24,8 +24,6 @@ import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError
 // @ts-ignore
 import type { LoginResponseDto } from '../models';
 // @ts-ignore
-import type { RefreshTokenResponseDto } from '../models';
-// @ts-ignore
 import type { UserInfoDto } from '../models';
 /**
  * AuthApi - axios parameter creator
@@ -34,7 +32,8 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
     return {
         /**
          * 
-         * @summary GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント
+         * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+         * @param {string} provider 
          * @param {string} code 
          * @param {string} state 
          * @param {string} [error] 
@@ -42,12 +41,15 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authControllerCallback: async (code: string, state: string, error?: string, errorDescription?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authControllerCallbackWithProvider: async (provider: string, code: string, state: string, error?: string, errorDescription?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'provider' is not null or undefined
+            assertParamExists('authControllerCallbackWithProvider', 'provider', provider)
             // verify required parameter 'code' is not null or undefined
-            assertParamExists('authControllerCallback', 'code', code)
+            assertParamExists('authControllerCallbackWithProvider', 'code', code)
             // verify required parameter 'state' is not null or undefined
-            assertParamExists('authControllerCallback', 'state', state)
-            const localVarPath = `/api/auth/callback`;
+            assertParamExists('authControllerCallbackWithProvider', 'state', state)
+            const localVarPath = `/api/auth/callback/{provider}`
+                .replace(`{${"provider"}}`, encodeURIComponent(String(provider)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -117,12 +119,16 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary POST /api/auth/login - ログイン開始
+         * @summary POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
+         * @param {string} provider 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authControllerLogin: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/auth/login`;
+        authControllerLoginWithProvider: async (provider: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'provider' is not null or undefined
+            assertParamExists('authControllerLoginWithProvider', 'provider', provider)
+            const localVarPath = `/api/auth/login/{provider}`
+                .replace(`{${"provider"}}`, encodeURIComponent(String(provider)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -174,36 +180,6 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
                 options: localVarRequestOptions,
             };
         },
-        /**
-         * 
-         * @summary POST /api/auth/refresh - トークン更新
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        authControllerRefreshToken: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/auth/refresh`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
     }
 };
 
@@ -215,7 +191,8 @@ export const AuthApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント
+         * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+         * @param {string} provider 
          * @param {string} code 
          * @param {string} state 
          * @param {string} [error] 
@@ -223,10 +200,10 @@ export const AuthApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async authControllerCallback(code: string, state: string, error?: string, errorDescription?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.authControllerCallback(code, state, error, errorDescription, options);
+        async authControllerCallbackWithProvider(provider: string, code: string, state: string, error?: string, errorDescription?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authControllerCallbackWithProvider(provider, code, state, error, errorDescription, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthApi.authControllerCallback']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthApi.authControllerCallbackWithProvider']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -243,14 +220,15 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary POST /api/auth/login - ログイン開始
+         * @summary POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
+         * @param {string} provider 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async authControllerLogin(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.authControllerLogin(options);
+        async authControllerLoginWithProvider(provider: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authControllerLoginWithProvider(provider, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthApi.authControllerLogin']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthApi.authControllerLoginWithProvider']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -265,18 +243,6 @@ export const AuthApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['AuthApi.authControllerLogout']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
-        /**
-         * 
-         * @summary POST /api/auth/refresh - トークン更新
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async authControllerRefreshToken(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RefreshTokenResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.authControllerRefreshToken(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthApi.authControllerRefreshToken']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
     }
 };
 
@@ -288,7 +254,8 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
     return {
         /**
          * 
-         * @summary GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント
+         * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+         * @param {string} provider 
          * @param {string} code 
          * @param {string} state 
          * @param {string} [error] 
@@ -296,8 +263,8 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authControllerCallback(code: string, state: string, error?: string, errorDescription?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.authControllerCallback(code, state, error, errorDescription, options).then((request) => request(axios, basePath));
+        authControllerCallbackWithProvider(provider: string, code: string, state: string, error?: string, errorDescription?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.authControllerCallbackWithProvider(provider, code, state, error, errorDescription, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -310,12 +277,13 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary POST /api/auth/login - ログイン開始
+         * @summary POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
+         * @param {string} provider 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authControllerLogin(options?: RawAxiosRequestConfig): AxiosPromise<LoginResponseDto> {
-            return localVarFp.authControllerLogin(options).then((request) => request(axios, basePath));
+        authControllerLoginWithProvider(provider: string, options?: RawAxiosRequestConfig): AxiosPromise<LoginResponseDto> {
+            return localVarFp.authControllerLoginWithProvider(provider, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -326,15 +294,6 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         authControllerLogout(options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.authControllerLogout(options).then((request) => request(axios, basePath));
         },
-        /**
-         * 
-         * @summary POST /api/auth/refresh - トークン更新
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        authControllerRefreshToken(options?: RawAxiosRequestConfig): AxiosPromise<RefreshTokenResponseDto> {
-            return localVarFp.authControllerRefreshToken(options).then((request) => request(axios, basePath));
-        },
     };
 };
 
@@ -344,7 +303,8 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
 export class AuthApi extends BaseAPI {
     /**
      * 
-     * @summary GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント
+     * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+     * @param {string} provider 
      * @param {string} code 
      * @param {string} state 
      * @param {string} [error] 
@@ -352,8 +312,8 @@ export class AuthApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public authControllerCallback(code: string, state: string, error?: string, errorDescription?: string, options?: RawAxiosRequestConfig) {
-        return AuthApiFp(this.configuration).authControllerCallback(code, state, error, errorDescription, options).then((request) => request(this.axios, this.basePath));
+    public authControllerCallbackWithProvider(provider: string, code: string, state: string, error?: string, errorDescription?: string, options?: RawAxiosRequestConfig) {
+        return AuthApiFp(this.configuration).authControllerCallbackWithProvider(provider, code, state, error, errorDescription, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -368,12 +328,13 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary POST /api/auth/login - ログイン開始
+     * @summary POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
+     * @param {string} provider 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public authControllerLogin(options?: RawAxiosRequestConfig) {
-        return AuthApiFp(this.configuration).authControllerLogin(options).then((request) => request(this.axios, this.basePath));
+    public authControllerLoginWithProvider(provider: string, options?: RawAxiosRequestConfig) {
+        return AuthApiFp(this.configuration).authControllerLoginWithProvider(provider, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -384,16 +345,6 @@ export class AuthApi extends BaseAPI {
      */
     public authControllerLogout(options?: RawAxiosRequestConfig) {
         return AuthApiFp(this.configuration).authControllerLogout(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary POST /api/auth/refresh - トークン更新
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public authControllerRefreshToken(options?: RawAxiosRequestConfig) {
-        return AuthApiFp(this.configuration).authControllerRefreshToken(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

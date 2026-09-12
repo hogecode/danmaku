@@ -188,14 +188,14 @@ class ApiClient {
           return DPlayerCommentListDto.fromJson(value);
         case 'DownloadCommentRequestDto':
           return DownloadCommentRequestDto.fromJson(value);
+        case 'DriveConnectionDto':
+          return DriveConnectionDto.fromJson(value);
         case 'FileItemDto':
           return FileItemDto.fromJson(value);
         case 'FolderListDto':
           return FolderListDto.fromJson(value);
         case 'LoginResponseDto':
           return LoginResponseDto.fromJson(value);
-        case 'RefreshTokenResponseDto':
-          return RefreshTokenResponseDto.fromJson(value);
         case 'UserInfoDto':
           return UserInfoDto.fromJson(value);
         default:

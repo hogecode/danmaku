@@ -25,9 +25,11 @@ import {
 export interface PlayerControllerGetCommentsRequest {
     videoFileId: string;
     folderId: string;
+    connectionId: string;
 }
 
 export interface PlayerControllerStreamVideoRequest {
+    connectionId: string;
     fileId: string;
     range: string;
 }
@@ -36,6 +38,42 @@ export interface PlayerControllerStreamVideoRequest {
  * 
  */
 export class PlayerApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for playerControllerGenerateVideoToken without sending the request
+     */
+    async playerControllerGenerateVideoTokenRequestOpts(): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/player/token`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
+     */
+    async playerControllerGenerateVideoTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.playerControllerGenerateVideoTokenRequestOpts();
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
+     */
+    async playerControllerGenerateVideoToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.playerControllerGenerateVideoTokenRaw(initOverrides);
+    }
 
     /**
      * Creates request options for playerControllerGetComments without sending the request
@@ -55,10 +93,21 @@ export class PlayerApi extends runtime.BaseAPI {
             );
         }
 
+        if (requestParameters['connectionId'] == null) {
+            throw new runtime.RequiredError(
+                'connectionId',
+                'Required parameter "connectionId" was null or undefined when calling playerControllerGetComments().'
+            );
+        }
+
         const queryParameters: any = {};
 
         if (requestParameters['folderId'] != null) {
             queryParameters['folderId'] = requestParameters['folderId'];
+        }
+
+        if (requestParameters['connectionId'] != null) {
+            queryParameters['connectionId'] = requestParameters['connectionId'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -97,6 +146,13 @@ export class PlayerApi extends runtime.BaseAPI {
      * Creates request options for playerControllerStreamVideo without sending the request
      */
     async playerControllerStreamVideoRequestOpts(requestParameters: PlayerControllerStreamVideoRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['connectionId'] == null) {
+            throw new runtime.RequiredError(
+                'connectionId',
+                'Required parameter "connectionId" was null or undefined when calling playerControllerStreamVideo().'
+            );
+        }
+
         if (requestParameters['fileId'] == null) {
             throw new runtime.RequiredError(
                 'fileId',
@@ -120,7 +176,8 @@ export class PlayerApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/api/player/stream/{fileId}`;
+        let urlPath = `/api/player/stream/{connectionId}/{fileId}`;
+        urlPath = urlPath.replace(`{${"connectionId"}}`, encodeURIComponent(String(requestParameters['connectionId'])));
         urlPath = urlPath.replace(`{${"fileId"}}`, encodeURIComponent(String(requestParameters['fileId'])));
 
         return {
@@ -132,7 +189,7 @@ export class PlayerApi extends runtime.BaseAPI {
     }
 
     /**
-     * 動画ファイルをストリーミング再生
+     * 動画ファイルをストリーミング再生（マルチプロバイダー対応）
      */
     async playerControllerStreamVideoRaw(requestParameters: PlayerControllerStreamVideoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const requestOptions = await this.playerControllerStreamVideoRequestOpts(requestParameters);
@@ -142,7 +199,7 @@ export class PlayerApi extends runtime.BaseAPI {
     }
 
     /**
-     * 動画ファイルをストリーミング再生
+     * 動画ファイルをストリーミング再生（マルチプロバイダー対応）
      */
     async playerControllerStreamVideo(requestParameters: PlayerControllerStreamVideoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.playerControllerStreamVideoRaw(requestParameters, initOverrides);

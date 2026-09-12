@@ -7,12 +7,13 @@
 import { Module, Global } from '@nestjs/common';
 import { LoggerModule } from './logger/logger.module';
 import { EncryptionModule } from './encryption/encryption.module';
+import { RedisModule } from '../redis/redis.module';
 import { OAuthStateService } from './oauth/oauth-state.service';
 
 @Global()
 @Module({
-  imports: [LoggerModule, EncryptionModule],
+  imports: [LoggerModule, EncryptionModule, RedisModule],
   providers: [OAuthStateService],
-  exports: [LoggerModule, EncryptionModule, OAuthStateService],
+  exports: [LoggerModule, EncryptionModule, RedisModule, OAuthStateService],
 })
 export class CommonModule {}

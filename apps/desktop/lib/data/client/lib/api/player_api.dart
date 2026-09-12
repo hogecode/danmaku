@@ -16,7 +16,43 @@ class PlayerApi {
 
   final ApiClient apiClient;
 
-  /// GET /api/player/comments/:videoFileId DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す  Query Parameters: - folderId (required): 動画ファイルが存在するフォルダID  Response (DPlayer 互換形式): {   \"comments\": [     {       \"time\": 10.5,       \"type\": \"normal\",       \"size\": \"normal\",       \"color\": \"#ffffff\",       \"author\": \"SlF_cF2J1CdotJTaojvbM9mDYAE or null\",       \"text\": \"てか無料期間中に見れば無料やん\"     }   ] }
+  /// POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> playerControllerGenerateVideoTokenWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/api/player/token';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
+  Future<void> playerControllerGenerateVideoToken() async {
+    final response = await playerControllerGenerateVideoTokenWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -25,7 +61,9 @@ class PlayerApi {
   /// * [String] videoFileId (required):
   ///
   /// * [String] folderId (required):
-  Future<Response> playerControllerGetCommentsWithHttpInfo(String videoFileId, String folderId,) async {
+  ///
+  /// * [String] connectionId (required):
+  Future<Response> playerControllerGetCommentsWithHttpInfo(String videoFileId, String folderId, String connectionId,) async {
     // ignore: prefer_const_declarations
     final path = r'/api/player/comments/{videoFileId}'
       .replaceAll('{videoFileId}', videoFileId);
@@ -38,6 +76,7 @@ class PlayerApi {
     final formParams = <String, String>{};
 
       queryParams.addAll(_queryParams('', 'folderId', folderId));
+      queryParams.addAll(_queryParams('', 'connectionId', connectionId));
 
     const contentTypes = <String>[];
 
@@ -53,15 +92,17 @@ class PlayerApi {
     );
   }
 
-  /// GET /api/player/comments/:videoFileId DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す  Query Parameters: - folderId (required): 動画ファイルが存在するフォルダID  Response (DPlayer 互換形式): {   \"comments\": [     {       \"time\": 10.5,       \"type\": \"normal\",       \"size\": \"normal\",       \"color\": \"#ffffff\",       \"author\": \"SlF_cF2J1CdotJTaojvbM9mDYAE or null\",       \"text\": \"てか無料期間中に見れば無料やん\"     }   ] }
+  /// DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す
   ///
   /// Parameters:
   ///
   /// * [String] videoFileId (required):
   ///
   /// * [String] folderId (required):
-  Future<DPlayerCommentListDto?> playerControllerGetComments(String videoFileId, String folderId,) async {
-    final response = await playerControllerGetCommentsWithHttpInfo(videoFileId, folderId,);
+  ///
+  /// * [String] connectionId (required):
+  Future<DPlayerCommentListDto?> playerControllerGetComments(String videoFileId, String folderId, String connectionId,) async {
+    final response = await playerControllerGetCommentsWithHttpInfo(videoFileId, folderId, connectionId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -75,18 +116,21 @@ class PlayerApi {
     return null;
   }
 
-  /// GET /api/player/stream/:fileId 動画ファイルをストリーミング再生  Range リクエスト対応: - Range: bytes=0-1023 （最初の1KBのみ取得） - Range: bytes=1024- （1KBから最後まで取得） - Range: bytes=-512 （最後の512バイトを取得）  レスポンス: - Range ヘッダーなし: HTTP 200 + Content-Length - Range ヘッダーあり（有効）: HTTP 206 + Content-Range - Range ヘッダーあり（無効）: HTTP 400 Bad Request
+  /// 動画ファイルをストリーミング再生（マルチプロバイダー対応）
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
+  /// * [String] connectionId (required):
+  ///
   /// * [String] fileId (required):
   ///
   /// * [String] range (required):
-  Future<Response> playerControllerStreamVideoWithHttpInfo(String fileId, String range,) async {
+  Future<Response> playerControllerStreamVideoWithHttpInfo(String connectionId, String fileId, String range,) async {
     // ignore: prefer_const_declarations
-    final path = r'/api/player/stream/{fileId}'
+    final path = r'/api/player/stream/{connectionId}/{fileId}'
+      .replaceAll('{connectionId}', connectionId)
       .replaceAll('{fileId}', fileId);
 
     // ignore: prefer_final_locals
@@ -112,15 +156,17 @@ class PlayerApi {
     );
   }
 
-  /// GET /api/player/stream/:fileId 動画ファイルをストリーミング再生  Range リクエスト対応: - Range: bytes=0-1023 （最初の1KBのみ取得） - Range: bytes=1024- （1KBから最後まで取得） - Range: bytes=-512 （最後の512バイトを取得）  レスポンス: - Range ヘッダーなし: HTTP 200 + Content-Length - Range ヘッダーあり（有効）: HTTP 206 + Content-Range - Range ヘッダーあり（無効）: HTTP 400 Bad Request
+  /// 動画ファイルをストリーミング再生（マルチプロバイダー対応）
   ///
   /// Parameters:
+  ///
+  /// * [String] connectionId (required):
   ///
   /// * [String] fileId (required):
   ///
   /// * [String] range (required):
-  Future<void> playerControllerStreamVideo(String fileId, String range,) async {
-    final response = await playerControllerStreamVideoWithHttpInfo(fileId, range,);
+  Future<void> playerControllerStreamVideo(String connectionId, String fileId, String range,) async {
+    final response = await playerControllerStreamVideoWithHttpInfo(connectionId, fileId, range,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

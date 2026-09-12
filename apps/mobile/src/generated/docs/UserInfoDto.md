@@ -10,8 +10,8 @@ Name | Type
 `email` | string
 `name` | string
 `pictureUrl` | string
-`oauthProvider` | string
 `lastLogin` | Date
+`drives` | [Array&lt;DriveConnectionDto&gt;](DriveConnectionDto.md)
 
 ## Example
 
@@ -24,8 +24,8 @@ const example = {
   "email": null,
   "name": null,
   "pictureUrl": null,
-  "oauthProvider": null,
   "lastLogin": null,
+  "drives": null,
 } satisfies UserInfoDto
 
 console.log(example)

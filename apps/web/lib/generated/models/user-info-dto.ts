@@ -13,13 +13,16 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { DriveConnectionDto } from './drive-connection-dto';
 
 export interface UserInfoDto {
     'id': string;
     'email': string;
-    'name'?: string | null;
+    'name'?: string;
     'picture_url'?: string | null;
-    'oauth_provider': string;
     'last_login'?: string | null;
+    'drives': Array<DriveConnectionDto>;
 }
 

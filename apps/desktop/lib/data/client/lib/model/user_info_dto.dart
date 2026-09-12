@@ -17,8 +17,8 @@ class UserInfoDto {
     required this.email,
     this.name,
     this.pictureUrl,
-    required this.oauthProvider,
     this.lastLogin,
+    this.drives = const [],
   });
 
   String id;
@@ -35,9 +35,9 @@ class UserInfoDto {
 
   String? pictureUrl;
 
-  String oauthProvider;
-
   DateTime? lastLogin;
+
+  List<DriveConnectionDto> drives;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserInfoDto &&
@@ -45,8 +45,8 @@ class UserInfoDto {
     other.email == email &&
     other.name == name &&
     other.pictureUrl == pictureUrl &&
-    other.oauthProvider == oauthProvider &&
-    other.lastLogin == lastLogin;
+    other.lastLogin == lastLogin &&
+    _deepEquality.equals(other.drives, drives);
 
   @override
   int get hashCode =>
@@ -55,11 +55,11 @@ class UserInfoDto {
     (email.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (pictureUrl == null ? 0 : pictureUrl!.hashCode) +
-    (oauthProvider.hashCode) +
-    (lastLogin == null ? 0 : lastLogin!.hashCode);
+    (lastLogin == null ? 0 : lastLogin!.hashCode) +
+    (drives.hashCode);
 
   @override
-  String toString() => 'UserInfoDto[id=$id, email=$email, name=$name, pictureUrl=$pictureUrl, oauthProvider=$oauthProvider, lastLogin=$lastLogin]';
+  String toString() => 'UserInfoDto[id=$id, email=$email, name=$name, pictureUrl=$pictureUrl, lastLogin=$lastLogin, drives=$drives]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -75,12 +75,12 @@ class UserInfoDto {
     } else {
       json[r'picture_url'] = null;
     }
-      json[r'oauth_provider'] = this.oauthProvider;
     if (this.lastLogin != null) {
       json[r'last_login'] = this.lastLogin!.toUtc().toIso8601String();
     } else {
       json[r'last_login'] = null;
     }
+      json[r'drives'] = this.drives;
     return json;
   }
 
@@ -99,8 +99,8 @@ class UserInfoDto {
         assert(json[r'id'] != null, 'Required key "UserInfoDto[id]" has a null value in JSON.');
         assert(json.containsKey(r'email'), 'Required key "UserInfoDto[email]" is missing from JSON.');
         assert(json[r'email'] != null, 'Required key "UserInfoDto[email]" has a null value in JSON.');
-        assert(json.containsKey(r'oauth_provider'), 'Required key "UserInfoDto[oauth_provider]" is missing from JSON.');
-        assert(json[r'oauth_provider'] != null, 'Required key "UserInfoDto[oauth_provider]" has a null value in JSON.');
+        assert(json.containsKey(r'drives'), 'Required key "UserInfoDto[drives]" is missing from JSON.');
+        assert(json[r'drives'] != null, 'Required key "UserInfoDto[drives]" has a null value in JSON.');
         return true;
       }());
 
@@ -109,8 +109,8 @@ class UserInfoDto {
         email: mapValueOfType<String>(json, r'email')!,
         name: mapValueOfType<String>(json, r'name'),
         pictureUrl: mapValueOfType<String>(json, r'picture_url'),
-        oauthProvider: mapValueOfType<String>(json, r'oauth_provider')!,
         lastLogin: mapDateTime(json, r'last_login', r''),
+        drives: DriveConnectionDto.listFromJson(json[r'drives']),
       );
     }
     return null;
@@ -160,7 +160,7 @@ class UserInfoDto {
   static const requiredKeys = <String>{
     'id',
     'email',
-    'oauth_provider',
+    'drives',
   };
 }
 

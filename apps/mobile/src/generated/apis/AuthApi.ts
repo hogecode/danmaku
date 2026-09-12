@@ -16,23 +16,25 @@
 import * as runtime from '../runtime';
 import type {
   LoginResponseDto,
-  RefreshTokenResponseDto,
   UserInfoDto,
 } from '../models/index';
 import {
     LoginResponseDtoFromJSON,
     LoginResponseDtoToJSON,
-    RefreshTokenResponseDtoFromJSON,
-    RefreshTokenResponseDtoToJSON,
     UserInfoDtoFromJSON,
     UserInfoDtoToJSON,
 } from '../models/index';
 
-export interface AuthControllerCallbackRequest {
+export interface AuthControllerCallbackWithProviderRequest {
+    provider: string;
     code: string;
     state: string;
     error?: string;
     errorDescription?: string;
+}
+
+export interface AuthControllerLoginWithProviderRequest {
+    provider: string;
 }
 
 /**
@@ -41,20 +43,27 @@ export interface AuthControllerCallbackRequest {
 export class AuthApi extends runtime.BaseAPI {
 
     /**
-     * Creates request options for authControllerCallback without sending the request
+     * Creates request options for authControllerCallbackWithProvider without sending the request
      */
-    async authControllerCallbackRequestOpts(requestParameters: AuthControllerCallbackRequest): Promise<runtime.RequestOpts> {
+    async authControllerCallbackWithProviderRequestOpts(requestParameters: AuthControllerCallbackWithProviderRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['provider'] == null) {
+            throw new runtime.RequiredError(
+                'provider',
+                'Required parameter "provider" was null or undefined when calling authControllerCallbackWithProvider().'
+            );
+        }
+
         if (requestParameters['code'] == null) {
             throw new runtime.RequiredError(
                 'code',
-                'Required parameter "code" was null or undefined when calling authControllerCallback().'
+                'Required parameter "code" was null or undefined when calling authControllerCallbackWithProvider().'
             );
         }
 
         if (requestParameters['state'] == null) {
             throw new runtime.RequiredError(
                 'state',
-                'Required parameter "state" was null or undefined when calling authControllerCallback().'
+                'Required parameter "state" was null or undefined when calling authControllerCallbackWithProvider().'
             );
         }
 
@@ -79,7 +88,8 @@ export class AuthApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/api/auth/callback`;
+        let urlPath = `/api/auth/callback/{provider}`;
+        urlPath = urlPath.replace(`{${"provider"}}`, encodeURIComponent(String(requestParameters['provider'])));
 
         return {
             path: urlPath,
@@ -90,56 +100,20 @@ export class AuthApi extends runtime.BaseAPI {
     }
 
     /**
-     * GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント - Web版: 302リダイレクト - Flutter版: ディープリンクにリダイレクト
+     * GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
      */
-    async authControllerCallbackRaw(requestParameters: AuthControllerCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const requestOptions = await this.authControllerCallbackRequestOpts(requestParameters);
+    async authControllerCallbackWithProviderRaw(requestParameters: AuthControllerCallbackWithProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.authControllerCallbackWithProviderRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント - Web版: 302リダイレクト - Flutter版: ディープリンクにリダイレクト
+     * GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
      */
-    async authControllerCallback(requestParameters: AuthControllerCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.authControllerCallbackRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Creates request options for authControllerGenerateVideoToken without sending the request
-     */
-    async authControllerGenerateVideoTokenRequestOpts(): Promise<runtime.RequestOpts> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/auth/video-token`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * POST /api/auth/video-token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）
-     */
-    async authControllerGenerateVideoTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const requestOptions = await this.authControllerGenerateVideoTokenRequestOpts();
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * POST /api/auth/video-token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）
-     */
-    async authControllerGenerateVideoToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.authControllerGenerateVideoTokenRaw(initOverrides);
+    async authControllerCallbackWithProvider(requestParameters: AuthControllerCallbackWithProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.authControllerCallbackWithProviderRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -180,15 +154,23 @@ export class AuthApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for authControllerLogin without sending the request
+     * Creates request options for authControllerLoginWithProvider without sending the request
      */
-    async authControllerLoginRequestOpts(): Promise<runtime.RequestOpts> {
+    async authControllerLoginWithProviderRequestOpts(requestParameters: AuthControllerLoginWithProviderRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['provider'] == null) {
+            throw new runtime.RequiredError(
+                'provider',
+                'Required parameter "provider" was null or undefined when calling authControllerLoginWithProvider().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/api/auth/login`;
+        let urlPath = `/api/auth/login/{provider}`;
+        urlPath = urlPath.replace(`{${"provider"}}`, encodeURIComponent(String(requestParameters['provider'])));
 
         return {
             path: urlPath,
@@ -199,20 +181,20 @@ export class AuthApi extends runtime.BaseAPI {
     }
 
     /**
-     * POST /api/auth/login - ログイン開始
+     * POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
      */
-    async authControllerLoginRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<LoginResponseDto>> {
-        const requestOptions = await this.authControllerLoginRequestOpts();
+    async authControllerLoginWithProviderRaw(requestParameters: AuthControllerLoginWithProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<LoginResponseDto>> {
+        const requestOptions = await this.authControllerLoginWithProviderRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => LoginResponseDtoFromJSON(jsonValue));
     }
 
     /**
-     * POST /api/auth/login - ログイン開始
+     * POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
      */
-    async authControllerLogin(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LoginResponseDto> {
-        const response = await this.authControllerLoginRaw(initOverrides);
+    async authControllerLoginWithProvider(requestParameters: AuthControllerLoginWithProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LoginResponseDto> {
+        const response = await this.authControllerLoginWithProviderRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -250,43 +232,6 @@ export class AuthApi extends runtime.BaseAPI {
      */
     async authControllerLogout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.authControllerLogoutRaw(initOverrides);
-    }
-
-    /**
-     * Creates request options for authControllerRefreshToken without sending the request
-     */
-    async authControllerRefreshTokenRequestOpts(): Promise<runtime.RequestOpts> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/auth/refresh`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * POST /api/auth/refresh - トークン更新
-     */
-    async authControllerRefreshTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RefreshTokenResponseDto>> {
-        const requestOptions = await this.authControllerRefreshTokenRequestOpts();
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => RefreshTokenResponseDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * POST /api/auth/refresh - トークン更新
-     */
-    async authControllerRefreshToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RefreshTokenResponseDto> {
-        const response = await this.authControllerRefreshTokenRaw(initOverrides);
-        return await response.value();
     }
 
 }

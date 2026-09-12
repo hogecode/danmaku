@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**nicovideoControllerDownloadComments**](NicovideoApi.md#nicovideocontrollerdownloadcomments) | **POST** /api/nicovideo/download/comments | POST /api/nicovideo/download/comments セッション不要 - thread_keyが取得できれば可能  flow: 1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 &#x3D; 非公開動画またはコメント機能無効 |
+| [**nicovideoControllerDownloadComments**](NicovideoApi.md#nicovideocontrollerdownloadcomments) | **POST** /api/nicovideo/download/comments | POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 &#x3D; 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義 |
 
 
 
@@ -12,7 +12,7 @@ All URIs are relative to *http://localhost*
 
 > nicovideoControllerDownloadComments(downloadCommentRequestDto)
 
-POST /api/nicovideo/download/comments セッション不要 - thread_keyが取得できれば可能  flow: 1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 &#x3D; 非公開動画またはコメント機能無効
+POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 &#x3D; 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
 
 ### Example
 

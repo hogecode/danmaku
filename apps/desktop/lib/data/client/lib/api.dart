@@ -30,17 +30,18 @@ part 'auth/http_bearer_auth.dart';
 
 part 'api/app_api.dart';
 part 'api/auth_api.dart';
-part 'api/g_drive_api.dart';
+part 'api/drive_connection_api.dart';
+part 'api/folder_api.dart';
 part 'api/nicovideo_api.dart';
 part 'api/player_api.dart';
 
 part 'model/d_player_comment_dto.dart';
 part 'model/d_player_comment_list_dto.dart';
 part 'model/download_comment_request_dto.dart';
+part 'model/drive_connection_dto.dart';
 part 'model/file_item_dto.dart';
 part 'model/folder_list_dto.dart';
 part 'model/login_response_dto.dart';
-part 'model/refresh_token_response_dto.dart';
 part 'model/user_info_dto.dart';
 
 

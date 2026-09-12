@@ -31,7 +31,8 @@ paths:
                 $ref: '#/components/schemas/LoginResponseDto'
       summary: |-
         POST /api/auth/login/:provider - プロバイダー別ログイン開始
-        例: POST /api/auth/login/onedrive
+
+        認可URLを生成して返す
       tags:
         - Auth
   /api/auth/callback/{provider}:
@@ -69,6 +70,8 @@ paths:
       summary: |-
         GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック
         例: GET /api/auth/callback/onedrive
+
+        DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
       tags:
         - Auth
   /api/auth/me:
@@ -85,20 +88,6 @@ paths:
       summary: GET /api/auth/me - ユーザー情報取得
       tags:
         - Auth
-  /api/auth/refresh:
-    post:
-      operationId: AuthController_refreshToken
-      parameters: []
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RefreshTokenResponseDto'
-      summary: POST /api/auth/refresh - トークン更新
-      tags:
-        - Auth
   /api/auth/logout:
     post:
       operationId: AuthController_logout
@@ -109,7 +98,7 @@ paths:
       summary: POST /api/auth/logout - ログアウト
       tags:
         - Auth
-  /api/drives:
+  /api/drive-connections:
     get:
       operationId: DriveConnectionController_list
       parameters: []
@@ -117,11 +106,11 @@ paths:
         '200':
           description: ''
       summary: |-
-        GET /api/drives
+        GET /api/drive-connections
         接続済みドライブリストを取得
       tags:
         - DriveConnection
-  /api/drives/{provider}/auth:
+  /api/drive-connections/{provider}:
     post:
       operationId: DriveConnectionController_initiateConnection
       parameters:
@@ -134,13 +123,38 @@ paths:
         '200':
           description: ''
       summary: |-
-        POST /api/drives/:provider/auth
-        プロバイダー別 OAuth 認可開始
-        例: POST /api/drives/google/auth
-            POST /api/drives/onedrive/auth
+        POST /api/drive-connections/:provider
+        Drive接続開始（OAuth認可URLを返す）
       tags:
         - DriveConnection
-  /api/drives/{connectionId}:
+  /api/drive-connections/{provider}/callback:
+    get:
+      operationId: DriveConnectionController_handleConnectionCallback
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: code
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: state
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        GET /api/drive-connections/:provider/callback
+        Drive接続 callback（JSON返却）
+      tags:
+        - DriveConnection
+  /api/drive-connections/{connectionId}:
     delete:
       operationId: DriveConnectionController_delete
       parameters:
@@ -153,7 +167,7 @@ paths:
         '200':
           description: ''
       summary: |-
-        DELETE /api/drives/:connectionId
+        DELETE /api/drive-connections/:connectionId
         接続を削除
       tags:
         - DriveConnection
@@ -166,6 +180,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: connectionId
+          required: true
+          in: query
+          schema:
+            type: string
       responses:
         '200':
           description: ''
@@ -174,7 +193,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FolderListDto'
       summary: |-
-        GET /api/drive/list （後方互換性用・Google Drive）
+        GET /api/drive/list
         フォルダ内容を取得
       tags:
         - Folder
@@ -182,6 +201,11 @@ paths:
     get:
       operationId: FolderController_search
       parameters:
+        - name: connectionId
+          required: true
+          in: query
+          schema:
+            type: string
         - name: folderId
           required: true
           in: query
@@ -200,7 +224,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FolderListDto'
       summary: |-
-        GET /api/drive/search （後方互換性用・Google Drive）
+        GET /api/drive/search
         フォルダ内でキーワード検索
       tags:
         - Folder
@@ -227,6 +251,7 @@ paths:
                 $ref: '#/components/schemas/FolderListDto'
       summary: |-
         GET /api/drive/connections/:connectionId/files
+
         特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）
       tags:
         - Folder
@@ -261,10 +286,15 @@ paths:
         特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
       tags:
         - Folder
-  /api/player/stream/{fileId}:
+  /api/player/stream/{connectionId}/{fileId}:
     get:
       operationId: PlayerController_streamVideo
       parameters:
+        - name: connectionId
+          required: true
+          in: path
+          schema:
+            type: string
         - name: fileId
           required: true
           in: path
@@ -278,7 +308,7 @@ paths:
       responses:
         '200':
           description: ''
-      summary: 動画ファイルをストリーミング再生
+      summary: 動画ファイルをストリーミング再生（マルチプロバイダー対応）
       tags:
         - Player
   /api/player/comments/{videoFileId}:
@@ -291,6 +321,11 @@ paths:
           schema:
             type: string
         - name: folderId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: connectionId
           required: true
           in: query
           schema:
@@ -325,6 +360,8 @@ paths:
         目的: モバイルアプリでの動画URL認証
         - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
         - 有効期限: 15分（デフォルト）
+
+        TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
       tags:
         - Player
   /api/nicovideo/download/comments:
@@ -342,12 +379,12 @@ paths:
           description: ''
       summary: |-
         POST /api/nicovideo/download/comments
-        セッション不要 - thread_keyが取得できれば可能
 
-        flow:
         1. getVideoMetadata() で HTML から thread_key を抽出
         2. thread_key が存在すればコメント取得可能
         3. thread_key が不在 = 非公開動画またはコメント機能無効
+
+        TODO: レスポンスDTOを定義
       tags:
         - Nicovideo
 info:
@@ -421,16 +458,6 @@ components:
         - id
         - email
         - drives
-    RefreshTokenResponseDto:
-      type: object
-      properties:
-        access_token:
-          type: string
-        expires_in:
-          type: number
-      required:
-        - access_token
-        - expires_in
     FileItemDto:
       type: object
       properties:

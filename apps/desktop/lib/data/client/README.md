@@ -59,16 +59,22 @@ All URIs are relative to *http://localhost*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AppApi* | [**appControllerGetHello**](doc//AppApi.md#appcontrollergethello) | **GET** / | 
-*AuthApi* | [**authControllerCallback**](doc//AuthApi.md#authcontrollercallback) | **GET** /api/auth/callback | GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント - Web版: 302リダイレクト - Flutter版: ディープリンクにリダイレクト
+*AuthApi* | [**authControllerCallbackWithProvider**](doc//AuthApi.md#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
 *AuthApi* | [**authControllerGetUserInfo**](doc//AuthApi.md#authcontrollergetuserinfo) | **GET** /api/auth/me | GET /api/auth/me - ユーザー情報取得
-*AuthApi* | [**authControllerLogin**](doc//AuthApi.md#authcontrollerlogin) | **POST** /api/auth/login | POST /api/auth/login - ログイン開始
+*AuthApi* | [**authControllerLoginWithProvider**](doc//AuthApi.md#authcontrollerloginwithprovider) | **POST** /api/auth/login/{provider} | POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
 *AuthApi* | [**authControllerLogout**](doc//AuthApi.md#authcontrollerlogout) | **POST** /api/auth/logout | POST /api/auth/logout - ログアウト
-*AuthApi* | [**authControllerRefreshToken**](doc//AuthApi.md#authcontrollerrefreshtoken) | **POST** /api/auth/refresh | POST /api/auth/refresh - トークン更新
-*GDriveApi* | [**gDriveControllerListFolder**](doc//GDriveApi.md#gdrivecontrollerlistfolder) | **GET** /api/gdrive/list | GET /api/gdrive/list フォルダ内容を取得
-*GDriveApi* | [**gDriveControllerSearch**](doc//GDriveApi.md#gdrivecontrollersearch) | **GET** /api/gdrive/search | GET /api/gdrive/search フォルダ内でキーワード検索
-*NicovideoApi* | [**nicovideoControllerDownloadComments**](doc//NicovideoApi.md#nicovideocontrollerdownloadcomments) | **POST** /api/nicovideo/download/comments | POST /api/nicovideo/download/comments セッション不要 - thread_keyが取得できれば可能  flow: 1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効
-*PlayerApi* | [**playerControllerGetComments**](doc//PlayerApi.md#playercontrollergetcomments) | **GET** /api/player/comments/{videoFileId} | GET /api/player/comments/:videoFileId DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す  Query Parameters: - folderId (required): 動画ファイルが存在するフォルダID  Response (DPlayer 互換形式): {   \"comments\": [     {       \"time\": 10.5,       \"type\": \"normal\",       \"size\": \"normal\",       \"color\": \"#ffffff\",       \"author\": \"SlF_cF2J1CdotJTaojvbM9mDYAE or null\",       \"text\": \"てか無料期間中に見れば無料やん\"     }   ] }
-*PlayerApi* | [**playerControllerStreamVideo**](doc//PlayerApi.md#playercontrollerstreamvideo) | **GET** /api/player/stream/{fileId} | GET /api/player/stream/:fileId 動画ファイルをストリーミング再生  Range リクエスト対応: - Range: bytes=0-1023 （最初の1KBのみ取得） - Range: bytes=1024- （1KBから最後まで取得） - Range: bytes=-512 （最後の512バイトを取得）  レスポンス: - Range ヘッダーなし: HTTP 200 + Content-Length - Range ヘッダーあり（有効）: HTTP 206 + Content-Range - Range ヘッダーあり（無効）: HTTP 400 Bad Request
+*DriveConnectionApi* | [**driveConnectionControllerDelete**](doc//DriveConnectionApi.md#driveconnectioncontrollerdelete) | **DELETE** /api/drive-connections/{connectionId} | DELETE /api/drive-connections/:connectionId 接続を削除
+*DriveConnectionApi* | [**driveConnectionControllerHandleConnectionCallback**](doc//DriveConnectionApi.md#driveconnectioncontrollerhandleconnectioncallback) | **GET** /api/drive-connections/{provider}/callback | GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+*DriveConnectionApi* | [**driveConnectionControllerInitiateConnection**](doc//DriveConnectionApi.md#driveconnectioncontrollerinitiateconnection) | **POST** /api/drive-connections/{provider} | POST /api/drive-connections/:provider Drive接続開始（OAuth認可URLを返す）
+*DriveConnectionApi* | [**driveConnectionControllerList**](doc//DriveConnectionApi.md#driveconnectioncontrollerlist) | **GET** /api/drive-connections | GET /api/drive-connections 接続済みドライブリストを取得
+*FolderApi* | [**folderControllerListFolder**](doc//FolderApi.md#foldercontrollerlistfolder) | **GET** /api/drive/list | GET /api/drive/list フォルダ内容を取得
+*FolderApi* | [**folderControllerListFolderByConnection**](doc//FolderApi.md#foldercontrollerlistfolderbyconnection) | **GET** /api/drive/connections/{connectionId}/files | GET /api/drive/connections/:connectionId/files  特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）
+*FolderApi* | [**folderControllerSearch**](doc//FolderApi.md#foldercontrollersearch) | **GET** /api/drive/search | GET /api/drive/search フォルダ内でキーワード検索
+*FolderApi* | [**folderControllerSearchByConnection**](doc//FolderApi.md#foldercontrollersearchbyconnection) | **GET** /api/drive/connections/{connectionId}/search | GET /api/drive/connections/:connectionId/search 特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
+*NicovideoApi* | [**nicovideoControllerDownloadComments**](doc//NicovideoApi.md#nicovideocontrollerdownloadcomments) | **POST** /api/nicovideo/download/comments | POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
+*PlayerApi* | [**playerControllerGenerateVideoToken**](doc//PlayerApi.md#playercontrollergeneratevideotoken) | **POST** /api/player/token | POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
+*PlayerApi* | [**playerControllerGetComments**](doc//PlayerApi.md#playercontrollergetcomments) | **GET** /api/player/comments/{videoFileId} | DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す
+*PlayerApi* | [**playerControllerStreamVideo**](doc//PlayerApi.md#playercontrollerstreamvideo) | **GET** /api/player/stream/{connectionId}/{fileId} | 動画ファイルをストリーミング再生（マルチプロバイダー対応）
 
 
 ## Documentation For Models
@@ -76,10 +82,10 @@ Class | Method | HTTP request | Description
  - [DPlayerCommentDto](doc//DPlayerCommentDto.md)
  - [DPlayerCommentListDto](doc//DPlayerCommentListDto.md)
  - [DownloadCommentRequestDto](doc//DownloadCommentRequestDto.md)
+ - [DriveConnectionDto](doc//DriveConnectionDto.md)
  - [FileItemDto](doc//FileItemDto.md)
  - [FolderListDto](doc//FolderListDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
- - [RefreshTokenResponseDto](doc//RefreshTokenResponseDto.md)
  - [UserInfoDto](doc//UserInfoDto.md)
 
 

@@ -16,6 +16,8 @@
 
 export * from './apis/app-api';
 export * from './apis/auth-api';
-export * from './apis/gdrive-api';
+export * from './apis/drive-connection-api';
+export * from './apis/folder-api';
+export * from './apis/nicovideo-api';
 export * from './apis/player-api';
 

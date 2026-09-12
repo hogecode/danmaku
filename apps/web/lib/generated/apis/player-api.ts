@@ -22,7 +22,7 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
-import type { CommentListDto } from '../models';
+import type { DPlayerCommentListDto } from '../models';
 /**
  * PlayerApi - axios parameter creator
  */
@@ -30,17 +30,49 @@ export const PlayerApiAxiosParamCreator = function (configuration?: Configuratio
     return {
         /**
          * 
-         * @summary 動画に対応するコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: JSON に変換して返す - 見つからない場合: 空配列を返す  Response: {   \"comments\": [     {       \"thread\": \"1492023606\",       \"no\": 19886,       \"vpos\": 0,       \"date\": 1492100460,       \"mail\": \"184\",       \"user_id\": \"SlF_cF2J1CdotJTaojvbM9mDYAE\",       \"premium\": 1,       \"anonymity\": 1,       \"text\": \"てか無料期間中に見れば無料やん\"     }   ] }
-         * @param {string} videoFileId 
-         * @param {string} folderId 
+         * @summary POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        playerControllerGetComments: async (videoFileId: string, folderId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        playerControllerGenerateVideoToken: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/player/token`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す
+         * @param {string} videoFileId 
+         * @param {string} folderId 
+         * @param {string} connectionId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        playerControllerGetComments: async (videoFileId: string, folderId: string, connectionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'videoFileId' is not null or undefined
             assertParamExists('playerControllerGetComments', 'videoFileId', videoFileId)
             // verify required parameter 'folderId' is not null or undefined
             assertParamExists('playerControllerGetComments', 'folderId', folderId)
+            // verify required parameter 'connectionId' is not null or undefined
+            assertParamExists('playerControllerGetComments', 'connectionId', connectionId)
             const localVarPath = `/api/player/comments/{videoFileId}`
                 .replace(`{${"videoFileId"}}`, encodeURIComponent(String(videoFileId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -58,6 +90,10 @@ export const PlayerApiAxiosParamCreator = function (configuration?: Configuratio
                 localVarQueryParameter['folderId'] = folderId;
             }
 
+            if (connectionId !== undefined) {
+                localVarQueryParameter['connectionId'] = connectionId;
+            }
+
             localVarHeaderParameter['Accept'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -71,18 +107,22 @@ export const PlayerApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
-         * @summary GET /api/player/stream/:fileId 動画ファイルをストリーミング再生  Range リクエスト対応: - Range: bytes=0-1023 （最初の1KBのみ取得） - Range: bytes=1024- （1KBから最後まで取得） - Range: bytes=-512 （最後の512バイトを取得）  レスポンス: - Range ヘッダーなし: HTTP 200 + Content-Length - Range ヘッダーあり（有効）: HTTP 206 + Content-Range - Range ヘッダーあり（無効）: HTTP 400 Bad Request
+         * @summary 動画ファイルをストリーミング再生（マルチプロバイダー対応）
+         * @param {string} connectionId 
          * @param {string} fileId 
          * @param {string} range 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        playerControllerStreamVideo: async (fileId: string, range: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        playerControllerStreamVideo: async (connectionId: string, fileId: string, range: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'connectionId' is not null or undefined
+            assertParamExists('playerControllerStreamVideo', 'connectionId', connectionId)
             // verify required parameter 'fileId' is not null or undefined
             assertParamExists('playerControllerStreamVideo', 'fileId', fileId)
             // verify required parameter 'range' is not null or undefined
             assertParamExists('playerControllerStreamVideo', 'range', range)
-            const localVarPath = `/api/player/stream/{fileId}`
+            const localVarPath = `/api/player/stream/{connectionId}/{fileId}`
+                .replace(`{${"connectionId"}}`, encodeURIComponent(String(connectionId)))
                 .replace(`{${"fileId"}}`, encodeURIComponent(String(fileId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -119,28 +159,42 @@ export const PlayerApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary 動画に対応するコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: JSON に変換して返す - 見つからない場合: 空配列を返す  Response: {   \"comments\": [     {       \"thread\": \"1492023606\",       \"no\": 19886,       \"vpos\": 0,       \"date\": 1492100460,       \"mail\": \"184\",       \"user_id\": \"SlF_cF2J1CdotJTaojvbM9mDYAE\",       \"premium\": 1,       \"anonymity\": 1,       \"text\": \"てか無料期間中に見れば無料やん\"     }   ] }
-         * @param {string} videoFileId 
-         * @param {string} folderId 
+         * @summary POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async playerControllerGetComments(videoFileId: string, folderId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommentListDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.playerControllerGetComments(videoFileId, folderId, options);
+        async playerControllerGenerateVideoToken(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.playerControllerGenerateVideoToken(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['PlayerApi.playerControllerGenerateVideoToken']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す
+         * @param {string} videoFileId 
+         * @param {string} folderId 
+         * @param {string} connectionId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async playerControllerGetComments(videoFileId: string, folderId: string, connectionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DPlayerCommentListDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.playerControllerGetComments(videoFileId, folderId, connectionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['PlayerApi.playerControllerGetComments']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
          * 
-         * @summary GET /api/player/stream/:fileId 動画ファイルをストリーミング再生  Range リクエスト対応: - Range: bytes=0-1023 （最初の1KBのみ取得） - Range: bytes=1024- （1KBから最後まで取得） - Range: bytes=-512 （最後の512バイトを取得）  レスポンス: - Range ヘッダーなし: HTTP 200 + Content-Length - Range ヘッダーあり（有効）: HTTP 206 + Content-Range - Range ヘッダーあり（無効）: HTTP 400 Bad Request
+         * @summary 動画ファイルをストリーミング再生（マルチプロバイダー対応）
+         * @param {string} connectionId 
          * @param {string} fileId 
          * @param {string} range 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async playerControllerStreamVideo(fileId: string, range: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.playerControllerStreamVideo(fileId, range, options);
+        async playerControllerStreamVideo(connectionId: string, fileId: string, range: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.playerControllerStreamVideo(connectionId, fileId, range, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['PlayerApi.playerControllerStreamVideo']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -156,25 +210,36 @@ export const PlayerApiFactory = function (configuration?: Configuration, basePat
     return {
         /**
          * 
-         * @summary 動画に対応するコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: JSON に変換して返す - 見つからない場合: 空配列を返す  Response: {   \"comments\": [     {       \"thread\": \"1492023606\",       \"no\": 19886,       \"vpos\": 0,       \"date\": 1492100460,       \"mail\": \"184\",       \"user_id\": \"SlF_cF2J1CdotJTaojvbM9mDYAE\",       \"premium\": 1,       \"anonymity\": 1,       \"text\": \"てか無料期間中に見れば無料やん\"     }   ] }
-         * @param {string} videoFileId 
-         * @param {string} folderId 
+         * @summary POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        playerControllerGetComments(videoFileId: string, folderId: string, options?: RawAxiosRequestConfig): AxiosPromise<CommentListDto> {
-            return localVarFp.playerControllerGetComments(videoFileId, folderId, options).then((request) => request(axios, basePath));
+        playerControllerGenerateVideoToken(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.playerControllerGenerateVideoToken(options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @summary GET /api/player/stream/:fileId 動画ファイルをストリーミング再生  Range リクエスト対応: - Range: bytes=0-1023 （最初の1KBのみ取得） - Range: bytes=1024- （1KBから最後まで取得） - Range: bytes=-512 （最後の512バイトを取得）  レスポンス: - Range ヘッダーなし: HTTP 200 + Content-Length - Range ヘッダーあり（有効）: HTTP 206 + Content-Range - Range ヘッダーあり（無効）: HTTP 400 Bad Request
+         * @summary DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す
+         * @param {string} videoFileId 
+         * @param {string} folderId 
+         * @param {string} connectionId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        playerControllerGetComments(videoFileId: string, folderId: string, connectionId: string, options?: RawAxiosRequestConfig): AxiosPromise<DPlayerCommentListDto> {
+            return localVarFp.playerControllerGetComments(videoFileId, folderId, connectionId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 動画ファイルをストリーミング再生（マルチプロバイダー対応）
+         * @param {string} connectionId 
          * @param {string} fileId 
          * @param {string} range 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        playerControllerStreamVideo(fileId: string, range: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.playerControllerStreamVideo(fileId, range, options).then((request) => request(axios, basePath));
+        playerControllerStreamVideo(connectionId: string, fileId: string, range: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.playerControllerStreamVideo(connectionId, fileId, range, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -185,26 +250,38 @@ export const PlayerApiFactory = function (configuration?: Configuration, basePat
 export class PlayerApi extends BaseAPI {
     /**
      * 
-     * @summary 動画に対応するコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: JSON に変換して返す - 見つからない場合: 空配列を返す  Response: {   \"comments\": [     {       \"thread\": \"1492023606\",       \"no\": 19886,       \"vpos\": 0,       \"date\": 1492100460,       \"mail\": \"184\",       \"user_id\": \"SlF_cF2J1CdotJTaojvbM9mDYAE\",       \"premium\": 1,       \"anonymity\": 1,       \"text\": \"てか無料期間中に見れば無料やん\"     }   ] }
-     * @param {string} videoFileId 
-     * @param {string} folderId 
+     * @summary POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public playerControllerGetComments(videoFileId: string, folderId: string, options?: RawAxiosRequestConfig) {
-        return PlayerApiFp(this.configuration).playerControllerGetComments(videoFileId, folderId, options).then((request) => request(this.axios, this.basePath));
+    public playerControllerGenerateVideoToken(options?: RawAxiosRequestConfig) {
+        return PlayerApiFp(this.configuration).playerControllerGenerateVideoToken(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @summary GET /api/player/stream/:fileId 動画ファイルをストリーミング再生  Range リクエスト対応: - Range: bytes=0-1023 （最初の1KBのみ取得） - Range: bytes=1024- （1KBから最後まで取得） - Range: bytes=-512 （最後の512バイトを取得）  レスポンス: - Range ヘッダーなし: HTTP 200 + Content-Length - Range ヘッダーあり（有効）: HTTP 206 + Content-Range - Range ヘッダーあり（無効）: HTTP 400 Bad Request
+     * @summary DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す
+     * @param {string} videoFileId 
+     * @param {string} folderId 
+     * @param {string} connectionId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public playerControllerGetComments(videoFileId: string, folderId: string, connectionId: string, options?: RawAxiosRequestConfig) {
+        return PlayerApiFp(this.configuration).playerControllerGetComments(videoFileId, folderId, connectionId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 動画ファイルをストリーミング再生（マルチプロバイダー対応）
+     * @param {string} connectionId 
      * @param {string} fileId 
      * @param {string} range 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public playerControllerStreamVideo(fileId: string, range: string, options?: RawAxiosRequestConfig) {
-        return PlayerApiFp(this.configuration).playerControllerStreamVideo(fileId, range, options).then((request) => request(this.axios, this.basePath));
+    public playerControllerStreamVideo(connectionId: string, fileId: string, range: string, options?: RawAxiosRequestConfig) {
+        return PlayerApiFp(this.configuration).playerControllerStreamVideo(connectionId, fileId, range, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

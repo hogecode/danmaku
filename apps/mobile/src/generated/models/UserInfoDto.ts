@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { DriveConnectionDto } from './DriveConnectionDto';
+import {
+    DriveConnectionDtoFromJSON,
+    DriveConnectionDtoFromJSONTyped,
+    DriveConnectionDtoToJSON,
+    DriveConnectionDtoToJSONTyped,
+} from './DriveConnectionDto';
+
 /**
  * 
  * @export
@@ -45,16 +53,16 @@ export interface UserInfoDto {
     pictureUrl?: string | null;
     /**
      * 
-     * @type {string}
-     * @memberof UserInfoDto
-     */
-    oauthProvider: string;
-    /**
-     * 
      * @type {Date}
      * @memberof UserInfoDto
      */
     lastLogin?: Date | null;
+    /**
+     * 
+     * @type {Array<DriveConnectionDto>}
+     * @memberof UserInfoDto
+     */
+    drives: Array<DriveConnectionDto>;
 }
 
 /**
@@ -63,7 +71,7 @@ export interface UserInfoDto {
 export function instanceOfUserInfoDto(value: object): value is UserInfoDto {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('email' in value) || value['email'] === undefined) return false;
-    if (!('oauthProvider' in value) || value['oauthProvider'] === undefined) return false;
+    if (!('drives' in value) || value['drives'] === undefined) return false;
     return true;
 }
 
@@ -81,8 +89,8 @@ export function UserInfoDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'email': json['email'],
         'name': json['name'] == null ? undefined : json['name'],
         'pictureUrl': json['picture_url'] == null ? undefined : json['picture_url'],
-        'oauthProvider': json['oauth_provider'],
         'lastLogin': json['last_login'] == null ? undefined : (new Date(json['last_login'])),
+        'drives': ((json['drives'] as Array<any>).map(DriveConnectionDtoFromJSON)),
     };
 }
 
@@ -101,8 +109,8 @@ export function UserInfoDtoToJSONTyped(value?: UserInfoDto | null, ignoreDiscrim
         'email': value['email'],
         'name': value['name'],
         'picture_url': value['pictureUrl'],
-        'oauth_provider': value['oauthProvider'],
         'last_login': value['lastLogin'] == null ? value['lastLogin'] : value['lastLogin'].toISOString(),
+        'drives': ((value['drives'] as Array<any>).map(DriveConnectionDtoToJSON)),
     };
 }
 

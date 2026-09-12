@@ -61,7 +61,7 @@ export class NicovideoApi extends runtime.BaseAPI {
     }
 
     /**
-     * POST /api/nicovideo/download/comments セッション不要 - thread_keyが取得できれば可能  flow: 1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効
+     * POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
      */
     async nicovideoControllerDownloadCommentsRaw(requestParameters: NicovideoControllerDownloadCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const requestOptions = await this.nicovideoControllerDownloadCommentsRequestOpts(requestParameters);
@@ -71,7 +71,7 @@ export class NicovideoApi extends runtime.BaseAPI {
     }
 
     /**
-     * POST /api/nicovideo/download/comments セッション不要 - thread_keyが取得できれば可能  flow: 1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効
+     * POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
      */
     async nicovideoControllerDownloadComments(requestParameters: NicovideoControllerDownloadCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.nicovideoControllerDownloadCommentsRaw(requestParameters, initOverrides);

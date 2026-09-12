@@ -9,8 +9,8 @@ Name | Type | Description | Notes
 **email** | **string** |  | [default to undefined]
 **name** | **string** |  | [optional] [default to undefined]
 **picture_url** | **string** |  | [optional] [default to undefined]
-**oauth_provider** | **string** |  | [default to undefined]
 **last_login** | **string** |  | [optional] [default to undefined]
+**drives** | [**Array&lt;DriveConnectionDto&gt;**](DriveConnectionDto.md) |  | [default to undefined]
 
 ## Example
 
@@ -22,8 +22,8 @@ const instance: UserInfoDto = {
     email,
     name,
     picture_url,
-    oauth_provider,
     last_login,
+    drives,
 };
 ```
 

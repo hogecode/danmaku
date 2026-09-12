@@ -4,20 +4,18 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**authControllerCallback**](AuthApi.md#authcontrollercallback) | **GET** /api/auth/callback | GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント - Web版: 302リダイレクト - Flutter版: ディープリンクにリダイレクト |
-| [**authControllerGenerateVideoToken**](AuthApi.md#authcontrollergeneratevideotoken) | **POST** /api/auth/video-token | POST /api/auth/video-token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token&#x3D;{jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト） |
+| [**authControllerCallbackWithProvider**](AuthApi.md#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする |
 | [**authControllerGetUserInfo**](AuthApi.md#authcontrollergetuserinfo) | **GET** /api/auth/me | GET /api/auth/me - ユーザー情報取得 |
-| [**authControllerLogin**](AuthApi.md#authcontrollerlogin) | **POST** /api/auth/login | POST /api/auth/login - ログイン開始 |
+| [**authControllerLoginWithProvider**](AuthApi.md#authcontrollerloginwithprovider) | **POST** /api/auth/login/{provider} | POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す |
 | [**authControllerLogout**](AuthApi.md#authcontrollerlogout) | **POST** /api/auth/logout | POST /api/auth/logout - ログアウト |
-| [**authControllerRefreshToken**](AuthApi.md#authcontrollerrefreshtoken) | **POST** /api/auth/refresh | POST /api/auth/refresh - トークン更新 |
 
 
 
-## authControllerCallback
+## authControllerCallbackWithProvider
 
-> authControllerCallback(code, state, error, errorDescription)
+> authControllerCallbackWithProvider(provider, code, state, error, errorDescription)
 
-GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント - Web版: 302リダイレクト - Flutter版: ディープリンクにリダイレクト
+GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
 
 ### Example
 
@@ -26,13 +24,15 @@ import {
   Configuration,
   AuthApi,
 } from '';
-import type { AuthControllerCallbackRequest } from '';
+import type { AuthControllerCallbackWithProviderRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const api = new AuthApi();
 
   const body = {
+    // string
+    provider: provider_example,
     // string
     code: code_example,
     // string
@@ -41,10 +41,10 @@ async function example() {
     error: error_example,
     // string (optional)
     errorDescription: errorDescription_example,
-  } satisfies AuthControllerCallbackRequest;
+  } satisfies AuthControllerCallbackWithProviderRequest;
 
   try {
-    const data = await api.authControllerCallback(body);
+    const data = await api.authControllerCallbackWithProvider(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -60,67 +60,11 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
+| **provider** | `string` |  | [Defaults to `undefined`] |
 | **code** | `string` |  | [Defaults to `undefined`] |
 | **state** | `string` |  | [Defaults to `undefined`] |
 | **error** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **errorDescription** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-`void` (Empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## authControllerGenerateVideoToken
-
-> authControllerGenerateVideoToken()
-
-POST /api/auth/video-token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token&#x3D;{jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）
-
-### Example
-
-```ts
-import {
-  Configuration,
-  AuthApi,
-} from '';
-import type { AuthControllerGenerateVideoTokenRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new AuthApi();
-
-  try {
-    const data = await api.authControllerGenerateVideoToken();
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-This endpoint does not need any parameter.
 
 ### Return type
 
@@ -201,11 +145,11 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## authControllerLogin
+## authControllerLoginWithProvider
 
-> LoginResponseDto authControllerLogin()
+> LoginResponseDto authControllerLoginWithProvider(provider)
 
-POST /api/auth/login - ログイン開始
+POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
 
 ### Example
 
@@ -214,14 +158,19 @@ import {
   Configuration,
   AuthApi,
 } from '';
-import type { AuthControllerLoginRequest } from '';
+import type { AuthControllerLoginWithProviderRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const api = new AuthApi();
 
+  const body = {
+    // string
+    provider: provider_example,
+  } satisfies AuthControllerLoginWithProviderRequest;
+
   try {
-    const data = await api.authControllerLogin();
+    const data = await api.authControllerLoginWithProvider(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -234,7 +183,10 @@ example().catch(console.error);
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **provider** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -305,63 +257,6 @@ No authorization required
 
 - **Content-Type**: Not defined
 - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## authControllerRefreshToken
-
-> RefreshTokenResponseDto authControllerRefreshToken()
-
-POST /api/auth/refresh - トークン更新
-
-### Example
-
-```ts
-import {
-  Configuration,
-  AuthApi,
-} from '';
-import type { AuthControllerRefreshTokenRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new AuthApi();
-
-  try {
-    const data = await api.authControllerRefreshToken();
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-This endpoint does not need any parameter.
-
-### Return type
-
-[**RefreshTokenResponseDto**](RefreshTokenResponseDto.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: `application/json`
 
 
 ### HTTP response details

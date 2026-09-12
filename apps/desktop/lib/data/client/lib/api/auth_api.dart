@@ -16,11 +16,13 @@ class AuthApi {
 
   final ApiClient apiClient;
 
-  /// GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント - Web版: 302リダイレクト - Flutter版: ディープリンクにリダイレクト
+  /// GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
+  ///
+  /// * [String] provider (required):
   ///
   /// * [String] code (required):
   ///
@@ -29,9 +31,10 @@ class AuthApi {
   /// * [String] error:
   ///
   /// * [String] errorDescription:
-  Future<Response> authControllerCallbackWithHttpInfo(String code, String state, { String? error, String? errorDescription, }) async {
+  Future<Response> authControllerCallbackWithProviderWithHttpInfo(String provider, String code, String state, { String? error, String? errorDescription, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/api/auth/callback';
+    final path = r'/api/auth/callback/{provider}'
+      .replaceAll('{provider}', provider);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -63,9 +66,11 @@ class AuthApi {
     );
   }
 
-  /// GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント - Web版: 302リダイレクト - Flutter版: ディープリンクにリダイレクト
+  /// GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
   ///
   /// Parameters:
+  ///
+  /// * [String] provider (required):
   ///
   /// * [String] code (required):
   ///
@@ -74,8 +79,8 @@ class AuthApi {
   /// * [String] error:
   ///
   /// * [String] errorDescription:
-  Future<void> authControllerCallback(String code, String state, { String? error, String? errorDescription, }) async {
-    final response = await authControllerCallbackWithHttpInfo(code, state,  error: error, errorDescription: errorDescription, );
+  Future<void> authControllerCallbackWithProvider(String provider, String code, String state, { String? error, String? errorDescription, }) async {
+    final response = await authControllerCallbackWithProviderWithHttpInfo(provider, code, state,  error: error, errorDescription: errorDescription, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -125,12 +130,17 @@ class AuthApi {
     return null;
   }
 
-  /// POST /api/auth/login - ログイン開始
+  /// POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> authControllerLoginWithHttpInfo() async {
+  ///
+  /// Parameters:
+  ///
+  /// * [String] provider (required):
+  Future<Response> authControllerLoginWithProviderWithHttpInfo(String provider,) async {
     // ignore: prefer_const_declarations
-    final path = r'/api/auth/login';
+    final path = r'/api/auth/login/{provider}'
+      .replaceAll('{provider}', provider);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -153,9 +163,13 @@ class AuthApi {
     );
   }
 
-  /// POST /api/auth/login - ログイン開始
-  Future<LoginResponseDto?> authControllerLogin() async {
-    final response = await authControllerLoginWithHttpInfo();
+  /// POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
+  ///
+  /// Parameters:
+  ///
+  /// * [String] provider (required):
+  Future<LoginResponseDto?> authControllerLoginWithProvider(String provider,) async {
+    final response = await authControllerLoginWithProviderWithHttpInfo(provider,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -203,49 +217,5 @@ class AuthApi {
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-  }
-
-  /// POST /api/auth/refresh - トークン更新
-  ///
-  /// Note: This method returns the HTTP [Response].
-  Future<Response> authControllerRefreshTokenWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/api/auth/refresh';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// POST /api/auth/refresh - トークン更新
-  Future<RefreshTokenResponseDto?> authControllerRefreshToken() async {
-    final response = await authControllerRefreshTokenWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'RefreshTokenResponseDto',) as RefreshTokenResponseDto;
-    
-    }
-    return null;
   }
 }

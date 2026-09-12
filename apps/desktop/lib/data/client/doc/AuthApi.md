@@ -9,32 +9,32 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**authControllerCallback**](AuthApi.md#authcontrollercallback) | **GET** /api/auth/callback | GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント - Web版: 302リダイレクト - Flutter版: ディープリンクにリダイレクト
+[**authControllerCallbackWithProvider**](AuthApi.md#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
 [**authControllerGetUserInfo**](AuthApi.md#authcontrollergetuserinfo) | **GET** /api/auth/me | GET /api/auth/me - ユーザー情報取得
-[**authControllerLogin**](AuthApi.md#authcontrollerlogin) | **POST** /api/auth/login | POST /api/auth/login - ログイン開始
+[**authControllerLoginWithProvider**](AuthApi.md#authcontrollerloginwithprovider) | **POST** /api/auth/login/{provider} | POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
 [**authControllerLogout**](AuthApi.md#authcontrollerlogout) | **POST** /api/auth/logout | POST /api/auth/logout - ログアウト
-[**authControllerRefreshToken**](AuthApi.md#authcontrollerrefreshtoken) | **POST** /api/auth/refresh | POST /api/auth/refresh - トークン更新
 
 
-# **authControllerCallback**
-> authControllerCallback(code, state, error, errorDescription)
+# **authControllerCallbackWithProvider**
+> authControllerCallbackWithProvider(provider, code, state, error, errorDescription)
 
-GET /api/auth/callback - OAuth コールバック Google OAuth 認証後にリダイレクトされるエンドポイント - Web版: 302リダイレクト - Flutter版: ディープリンクにリダイレクト
+GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
 
 ### Example
 ```dart
 import 'package:desktop/api.dart';
 
 final api_instance = AuthApi();
+final provider = provider_example; // String | 
 final code = code_example; // String | 
 final state = state_example; // String | 
 final error = error_example; // String | 
 final errorDescription = errorDescription_example; // String | 
 
 try {
-    api_instance.authControllerCallback(code, state, error, errorDescription);
+    api_instance.authControllerCallbackWithProvider(provider, code, state, error, errorDescription);
 } catch (e) {
-    print('Exception when calling AuthApi->authControllerCallback: $e\n');
+    print('Exception when calling AuthApi->authControllerCallbackWithProvider: $e\n');
 }
 ```
 
@@ -42,6 +42,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **provider** | **String**|  | 
  **code** | **String**|  | 
  **state** | **String**|  | 
  **error** | **String**|  | [optional] 
@@ -99,27 +100,31 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **authControllerLogin**
-> LoginResponseDto authControllerLogin()
+# **authControllerLoginWithProvider**
+> LoginResponseDto authControllerLoginWithProvider(provider)
 
-POST /api/auth/login - ログイン開始
+POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
 
 ### Example
 ```dart
 import 'package:desktop/api.dart';
 
 final api_instance = AuthApi();
+final provider = provider_example; // String | 
 
 try {
-    final result = api_instance.authControllerLogin();
+    final result = api_instance.authControllerLoginWithProvider(provider);
     print(result);
 } catch (e) {
-    print('Exception when calling AuthApi->authControllerLogin: $e\n');
+    print('Exception when calling AuthApi->authControllerLoginWithProvider: $e\n');
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **provider** | **String**|  | 
 
 ### Return type
 
@@ -169,43 +174,6 @@ No authorization required
 
  - **Content-Type**: Not defined
  - **Accept**: Not defined
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **authControllerRefreshToken**
-> RefreshTokenResponseDto authControllerRefreshToken()
-
-POST /api/auth/refresh - トークン更新
-
-### Example
-```dart
-import 'package:desktop/api.dart';
-
-final api_instance = AuthApi();
-
-try {
-    final result = api_instance.authControllerRefreshToken();
-    print(result);
-} catch (e) {
-    print('Exception when calling AuthApi->authControllerRefreshToken: $e\n');
-}
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-[**RefreshTokenResponseDto**](RefreshTokenResponseDto.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
