@@ -9,13 +9,15 @@ import type { Database } from '../../database/database.module';
 import { oauthAccounts } from '../../database';
 import { eq, and } from 'drizzle-orm';
 import Redis from 'ioredis';
-import { google } from 'googleapis';
-import { OAuth2Client } from 'google-auth-library';
-import { GDriveConstants } from '../constants/gdrive.constants';
+import {
+  DriveConstants,
+  GoogleDriveConstants,
+  OnedriveDriveConstants,
+  ProviderType,
+} from '../constants';
 import { FileItemDto, FolderListDto } from '../dto';
 import { TokenService } from '../../auth/services';
 import { GoogleDriveProvider, OnedriveProvider } from '../providers';
-import { ProviderType } from '../constants';
 
 @Injectable()
 export class FolderService {
@@ -35,17 +37,6 @@ export class FolderService {
     connectionId: bigint,
     folderId: string = 'root',
   ): Promise<FolderListDto> {
-    const cacheKey = this.getCacheKey(userId, connectionId, folderId, 'list');
-    const cachedData = await this.redis.get(cacheKey);
-
-    if (cachedData) {
-      try {
-        return JSON.parse(cachedData) as FolderListDto;
-      } catch (err) {
-        await this.redis.del(cacheKey);
-      }
-    }
-
     // 接続情報を取得
     const connection = await this.db.query.oauthAccounts.findFirst({
       where: and(
@@ -58,10 +49,29 @@ export class FolderService {
       throw new UnauthorizedException('Drive connection not found');
     }
 
-    const accessToken = connection.access_token;
-    if (!accessToken) {
-      throw new UnauthorizedException('Access token not available');
+    // キャッシュキーを生成（プロバイダー情報を含める）
+    const cacheKey = this.getCacheKey(
+      userId,
+      connectionId,
+      folderId,
+      'list',
+      connection.provider_name,
+    );
+    const cachedData = await this.redis.get(cacheKey);
+
+    if (cachedData) {
+      try {
+        return JSON.parse(cachedData) as FolderListDto;
+      } catch (err) {
+        await this.redis.del(cacheKey);
+      }
     }
+
+    // 有効なアクセストークンを取得（自動リフレッシュ対応）
+    const accessToken = await this.tokenService.getValidAccessToken(
+      userId,
+      connection.provider_name,
+    );
 
     let result: FolderListDto;
     if (connection.provider_name === ProviderType.GOOGLE) {
@@ -74,10 +84,10 @@ export class FolderService {
       );
     }
 
-    // キャッシュに保存
+    // キャッシュに保存（共通定数を使用）
     await this.redis.setex(
       cacheKey,
-      GDriveConstants.CACHE.TTL_SECONDS,
+      DriveConstants.CACHE.TTL_SECONDS,
       JSON.stringify(result),
     );
 
@@ -125,13 +135,18 @@ export class FolderService {
     }
   }
 
+  /**
+   * キャッシュキーを生成
+   * プロバイダー情報を含めることで、プロバイダー別キャッシュを分離
+   */
   private getCacheKey(
     userId: bigint,
     connectionId: bigint,
     folderId: string,
     op: string,
+    provider: string,
   ): string {
     const connPart = `conn:${connectionId}`;
-    return `${GDriveConstants.CACHE.KEY_PREFIX}:${userId}:${connPart}:${folderId}:${op}`;
+    return `${DriveConstants.CACHE.KEY_PREFIX}:${provider}:${userId}:${connPart}:${folderId}:${op}`;
   }
 }

@@ -39,10 +39,8 @@ export class FolderController {
   }
 
   /**
-   * GET /api/drive/search （後方互換性用・Google Drive）
+   * GET /api/drive/search
    * フォルダ内でキーワード検索
-   * @param folderId - 検索対象フォルダID
-   * @param query - 検索キーワード
    */
   @Get('search')
   async search(

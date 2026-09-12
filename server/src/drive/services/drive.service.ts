@@ -4,13 +4,15 @@ import { oauthAccounts } from '../../database';
 import { eq, and } from 'drizzle-orm';
 import { TokenService } from '../../auth/services/token.service';
 import type { DriveProvider, DriveListResponse } from '../providers';
-import { GoogleDriveProvider } from '../providers';
+import { GoogleDriveProvider, OnedriveProvider } from '../providers';
 
 /**
  * Drive Service
- * - Provider の選択
+ * - プロバイダーの選択（Map パターン）
  * - トークン管理
  * - ファイル操作を統一インターフェースで提供
+ * 
+ * マルチプロバイダー対応：Google Drive, OneDrive に対応
  */
 @Injectable()
 export class DriveService {
@@ -20,10 +22,11 @@ export class DriveService {
     @Inject('DATABASE_CONNECTION') private db: Database,
     private tokenService: TokenService,
     private googleDriveProvider: GoogleDriveProvider,
+    private onedriveProvider: OnedriveProvider,
   ) {
+    // 利用可能なプロバイダーを登録
     this.providers.set('google', googleDriveProvider);
-    // this.providers.set('onedrive', onedriveProvider); // 将来
-    // this.providers.set('dropbox', dropboxProvider);   // 将来
+    this.providers.set('onedrive', onedriveProvider);
   }
 
   /**
