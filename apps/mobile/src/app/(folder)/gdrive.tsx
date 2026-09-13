@@ -28,11 +28,24 @@ export default function HomeScreen() {
 
   // ✅ 画面幅に応じて列数を決定
   const numColumns = useMemo(() => {
-    if (width >= 600) {
-      return 3; // タブレット：3列
+    if (width >= 1200) {
+      return 8; // 超大型タブレット：8列
     }
-    return 2; // モバイル：2列
+    if (width >= 900) {
+      return 6; // 大型タブレット：6列
+    }
+    if (width >= 600) {
+      return 4; // タブレット：4列
+    }
+    return 3; // モバイル：3列
   }, [width]);
+
+  // ✅ 各アイテムの固定幅を計算（最後の行が小さくなるのを防ぐ）
+  const itemWidth = useMemo(() => {
+    const padding = 8 * 2; // columnWrapperStyle のパディング
+    const gap = 8 * (numColumns - 1); // gap の合計
+    return (width - padding - gap) / numColumns;
+  }, [width, numColumns]);
 
   useEffect(() => {
     if (!auth.isAuthenticated) {
@@ -119,8 +132,8 @@ export default function HomeScreen() {
           scrollEnabled={true}
           renderItem={({ item }) => (
             <TouchableOpacity
-              className="flex-1 bg-white rounded-lg overflow-hidden"
-              style={{ aspectRatio: 1 }}
+              className="bg-white rounded-lg overflow-hidden"
+              style={{ width: itemWidth, aspectRatio: 1 }}
               onPress={() => handleFilePress(item.id, item.mimeType, item.name)}
             >
               {/* ✅ グリッドアイテム：サムネイル画像またはアイコンを表示 */}

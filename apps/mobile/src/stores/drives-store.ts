@@ -72,7 +72,7 @@ export const useDrivesStore = create<DrivesState>()(
         // ✅ 既に同じドライブが存在する場合はスキップ
         const { drives } = get();
         if (drives.some((d) => d.id === mappedDrive.id)) {
-          appLogger.warn(
+          appLogger.warning(
             `[DrivesStore] Drive already exists: id=${mappedDrive.id}`,
           );
           return;
