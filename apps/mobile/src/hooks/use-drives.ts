@@ -12,18 +12,26 @@ import { appLogger } from '@/utils/logger';
 
 export function useDrives() {
   const auth = useAuth();
-  const { drives, selectedConnectionId, setDrives, selectDrive, getSelectedDrive } =
+  const { drives, selectedConnectionId, setDrives, selectDrive, getSelectedDrive, hydrated } =
     useDrivesStore();
 
-  // ✅ ログイン後、drives を ストアに初期化
+  // ✅ hydration 完了後、API からドライブを初期化
+  // ❌ AsyncStorage に保存済みのドライブを上書きしない
   useEffect(() => {
-    if (auth.user?.drives && auth.user.drives.length > 0) {
+    // hydration が完了しておらず、かつ drives が空の場合のみ初期化
+    if (!hydrated) {
+      appLogger.info("[useDrives] Waiting for hydration...");
+      return;
+    }
+
+    // hydration 完了後、drives が空で、user.drives がある場合のみ初期化
+    if (drives.length === 0 && auth.user?.drives && auth.user.drives.length > 0) {
       appLogger.info(
-        `[useDrives] Initializing drives from user info (count: ${auth.user.drives.length})`,
+        `[useDrives] Initializing drives from user info after hydration (count: ${auth.user.drives.length})`,
       );
       setDrives(auth.user.drives);
     }
-  }, [auth.user?.id]); // user.id が変わったとき（ログイン時）
+  }, [hydrated, auth.user?.id]); // hydrated または user.id が変わったとき
 
   const selectedDrive = getSelectedDrive();
 

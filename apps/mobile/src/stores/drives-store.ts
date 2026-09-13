@@ -6,7 +6,8 @@
  */
 
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
+import type { PersistStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DriveConnectionDto,
@@ -18,6 +19,7 @@ interface DrivesState {
   // ✅ ドライブ接続情報
   drives: DriveConnectionDto[];
   selectedConnectionId: string | null;
+  hydrated: boolean; // hydration 完了フラグ
 
   // アクション
   setDrives: (drives: DriveConnectionDto[]) => void;
@@ -26,13 +28,85 @@ interface DrivesState {
   getSelectedDrive: () => DriveConnectionDto | null;
   isConnected: (provider: string) => boolean;
   removeDrive: (connectionId: string) => void;
+  clearStore: () => void;
+  setHydrated: (hydrated: boolean) => void;
 }
+
+// ✅ AsyncStorage を使用したカスタムストレージ
+const drivesStorage: PersistStorage<Pick<DrivesState, "drives" | "selectedConnectionId">> = {
+  getItem: async (key: string) => {
+    try {
+      appLogger.info(`[DrivesStorage] 読み込み開始: ${key}`);
+      const value = await AsyncStorage.getItem(key);
+      
+      if (value) {
+        const parsed = JSON.parse(value);
+        appLogger.info(
+          `[DrivesStorage] 読み込み成功: ${key}, drives=${parsed.state?.drives?.length || 0}`,
+        );
+        
+        // ✅ スネークケースをキャメルケースにマッピング
+        if (parsed.state?.drives && Array.isArray(parsed.state.drives)) {
+          const mappedDrives = parsed.state.drives.map((drive: any) => {
+            if (drive.connected_at && !drive.connectedAt) {
+              return DriveConnectionDtoFromJSON(drive);
+            }
+            return drive;
+          });
+          
+          appLogger.info(
+            `[DrivesStorage] マッピング完了: ${mappedDrives.length} drives`,
+          );
+          
+          return {
+            ...parsed,
+            state: {
+              ...parsed.state,
+              drives: mappedDrives,
+            },
+          };
+        }
+        
+        return parsed;
+      }
+      
+      appLogger.info(`[DrivesStorage] 保存データなし: ${key}`);
+      return null;
+    } catch (error) {
+      appLogger.error(`[DrivesStorage] 読み込み失敗: ${key}`, error);
+      return null;
+    }
+  },
+
+  setItem: async (key: string, value) => {
+    try {
+      appLogger.info(
+        `[DrivesStorage] 保存開始: ${key}, drives=${value.state?.drives?.length || 0}`,
+      );
+      await AsyncStorage.setItem(key, JSON.stringify(value));
+      appLogger.info(`[DrivesStorage] 保存成功: ${key}`);
+    } catch (error) {
+      appLogger.error(`[DrivesStorage] 保存失敗: ${key}`, error);
+    }
+  },
+
+  removeItem: async (key: string) => {
+    try {
+      appLogger.info(`[DrivesStorage] 削除開始: ${key}`);
+      await AsyncStorage.removeItem(key);
+      appLogger.info(`[DrivesStorage] 削除成功: ${key}`);
+    } catch (error) {
+      appLogger.error(`[DrivesStorage] 削除失敗: ${key}`, error);
+    }
+  },
+};
 
 export const useDrivesStore = create<DrivesState>()(
   persist(
     (set, get) => ({
       drives: [],
       selectedConnectionId: null,
+      hydrated: false,
 
       setDrives: (drives: DriveConnectionDto[]) => {
         appLogger.info(
@@ -51,10 +125,10 @@ export const useDrivesStore = create<DrivesState>()(
 
         // 最初のドライブを自動選択（以前の選択がない場合）
         const { selectedConnectionId } = get();
-        if (!selectedConnectionId && drives.length > 0) {
-          set({ selectedConnectionId: drives[0].id });
+        if (!selectedConnectionId && mappedDrives.length > 0) {
+          set({ selectedConnectionId: mappedDrives[0].id });
           appLogger.info(
-            `[DrivesStore] Auto-selected first drive: id=${drives[0].id}, provider=${drives[0].provider}`,
+            `[DrivesStore] Auto-selected first drive: id=${mappedDrives[0].id}, provider=${mappedDrives[0].provider}`,
           );
         }
       },
@@ -134,27 +208,35 @@ export const useDrivesStore = create<DrivesState>()(
           );
         }
       },
+
+      clearStore: () => {
+        appLogger.info("[DrivesStore] Clearing store");
+        set({ drives: [], selectedConnectionId: null });
+      },
+
+      setHydrated: (hydrated: boolean) => {
+        appLogger.info(`[DrivesStore] setHydrated(${hydrated})`);
+        set({ hydrated });
+      },
     }),
     {
       name: "drives-store",
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: drivesStorage,
       partialize: (state) => ({
-        // ✅ AsyncStorage に保存する項目
+        // ✅ AsyncStorage に保存する項目（hydrated は除外）
         drives: state.drives,
         selectedConnectionId: state.selectedConnectionId,
       }),
       onRehydrateStorage: () => (state) => {
-        if (state && state.drives.length > 0) {
-
-          // ✅ AsyncStorage から復元されたデータをマッピング
-          const mappedDrives = state.drives.map((drive) => {
-            if ((drive as any).connected_at && !drive.connectedAt) {
-              // スネークケースで来たデータをマッピング
-              return DriveConnectionDtoFromJSON(drive);
-            }
-            return drive;
-          });
-          state.drives = mappedDrives;
+        if (state && state.drives && state.drives.length > 0) {
+          appLogger.info(
+            `[DrivesStore] ✅ Rehydrated from AsyncStorage: drives=${state.drives.length}, selectedId=${state.selectedConnectionId}`,
+          );
+          // ✅ hydration 完了を設定
+          state.setHydrated(true);
+        } else {
+          appLogger.info("[DrivesStore] No persisted data found in AsyncStorage");
+          state?.setHydrated(true);
         }
       },
     },
