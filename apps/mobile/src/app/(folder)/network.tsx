@@ -8,12 +8,14 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
 import { useDrives } from '@/hooks/use-drives';
 import { Sidebar } from '@/components/Sidebar';
 import { GoogleLogoSVG } from '@/components/GoogleButton';
 import { MicrosoftLogoSVG } from '@/components/MicrosoftButton';
 import { AddDriveModal } from '@/components/AddDriveModal';
+import { SwipeableDriveItem } from '@/components/SwipeableDriveItem';
 import { appLogger } from '@/utils/logger';
 
 /**
@@ -101,106 +103,58 @@ export default function NetworkScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-stone-100" edges={['top']}>
-      {/* ヘッダー */}
-      <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-        <TouchableOpacity onPress={() => setSidebarOpen(true)} className="w-10 h-10 justify-center items-center">
-          <Text className="text-2xl">☰</Text>
-        </TouchableOpacity>
-        <Text className="flex-1 text-lg font-semibold text-center">接続先</Text>
-        <TouchableOpacity onPress={() => setModalOpen(true)} className="w-10 h-10 justify-center items-center">
-          <Text className="text-2xl">+</Text>
-        </TouchableOpacity>
-      </View>
+    <GestureHandlerRootView className="flex-1">
+      <SafeAreaView className="flex-1 bg-stone-100" edges={['top']}>
+        {/* ヘッダー */}
+        <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+          <TouchableOpacity onPress={() => setSidebarOpen(true)} className="w-10 h-10 justify-center items-center">
+            <Text className="text-2xl">☰</Text>
+          </TouchableOpacity>
+          <Text className="flex-1 text-lg font-semibold text-center">接続先</Text>
+          <TouchableOpacity onPress={() => setModalOpen(true)} className="w-10 h-10 justify-center items-center">
+            <Text className="text-2xl">+</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* コンテンツ */}
-      <ScrollView className="flex-1 px-4 py-6">
-        {drives.length === 0 ? (
-          <View className="flex-1 justify-center items-center py-12">
-            <Text className="text-xl font-semibold text-gray-900 mb-2">ドライブが接続されていません</Text>
-            <Text className="text-sm text-gray-600 text-center mb-6">
-              クラウドストレージを接続してご利用ください
-            </Text>
-            <TouchableOpacity
-              onPress={() => setModalOpen(true)}
-              className="bg-blue-500 rounded-lg px-6 py-3"
-            >
-              <Text className="text-white font-semibold">+ ドライブを追加</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <>
-            <Text className="text-lg font-bold text-gray-900 mb-4">接続済みドライブ</Text>
-
-            {/* ✅ ドライブ一覧 */}
-            {drives.map((drive) => (
+        {/* コンテンツ */}
+        <ScrollView className="flex-1 px-4 py-6">
+          {drives.length === 0 ? (
+            <View className="flex-1 justify-center items-center py-12">
+              <Text className="text-xl font-semibold text-gray-900 mb-2">ドライブが接続されていません</Text>
+              <Text className="text-sm text-gray-600 text-center mb-6">
+                クラウドストレージを接続してご利用ください
+              </Text>
               <TouchableOpacity
-                key={drive.id}
-                onPress={() => handleSelectDrive(drive.id)}
-                className={`rounded-lg p-4 mb-3 flex-row items-center border-2 ${
-                  selectedDrive?.id === drive.id
-                    ? 'bg-blue-50 border-blue-500'
-                    : 'bg-white border-gray-200'
-                }`}
+                onPress={() => setModalOpen(true)}
+                className="bg-blue-500 rounded-lg px-6 py-3"
               >
-                {/* アイコン */}
-                <View className="mr-3">
-                  {getProviderIcon(drive.provider)}
-                </View>
-
-                {/* ドライブ情報 */}
-                <View className="flex-1">
-                  <View className="flex-row items-center gap-2 mb-1">
-                    <Text className="text-base font-semibold text-gray-900">
-                      {drive.provider.toUpperCase()}
-                    </Text>
-                    {/* ✅ ステータスバッジ */}
-                    <View
-                      className={`px-2 py-1 rounded-full ${
-                        drive.status === 'connected'
-                          ? 'bg-green-100'
-                          : drive.status === 'expired'
-                          ? 'bg-yellow-100'
-                          : 'bg-red-100'
-                      }`}
-                    >
-                      <Text
-                        className={`text-xs font-semibold ${
-                          drive.status === 'connected'
-                            ? 'text-green-700'
-                            : drive.status === 'expired'
-                            ? 'text-yellow-700'
-                            : 'text-red-700'
-                        }`}
-                      >
-                        {drive.status === 'connected'
-                          ? '接続中'
-                          : drive.status === 'expired'
-                          ? '再認証必要'
-                          : 'エラー'}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text className="text-sm text-gray-600">{drive.account}</Text>
-                  <Text className="text-xs text-gray-400 mt-1">
-                    接続日時: {formatConnectedDate(drive.connectedAt)}
-                  </Text>
-                </View>
-
-                {/* チェックマーク */}
-                {selectedDrive?.id === drive.id && (
-                  <Text className="text-2xl text-blue-500 ml-2">✓</Text>
-                )}
+                <Text className="text-white font-semibold">+ ドライブを追加</Text>
               </TouchableOpacity>
-            ))}
-          </>
-        )}
-      </ScrollView>
+            </View>
+          ) : (
+            <>
+              <Text className="text-lg font-bold text-gray-900 mb-4">接続済みドライブ</Text>
 
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+              {/* ✅ スワイプ可能なドライブ一覧 */}
+              {drives.map((drive) => (
+                <SwipeableDriveItem
+                  key={drive.id}
+                  drive={drive}
+                  isSelected={selectedDrive?.id === drive.id}
+                  onPress={() => handleSelectDrive(drive.id)}
+                  getProviderIcon={getProviderIcon}
+                  formatConnectedDate={formatConnectedDate}
+                />
+              ))}
+            </>
+          )}
+        </ScrollView>
 
-      {/* ✅ ドライブ追加モーダル */}
-      <AddDriveModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
-    </SafeAreaView>
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+        {/* ✅ ドライブ追加モーダル */}
+        <AddDriveModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
