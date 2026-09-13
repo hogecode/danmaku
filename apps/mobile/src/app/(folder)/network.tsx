@@ -13,6 +13,7 @@ import { useDrives } from '@/hooks/use-drives';
 import { Sidebar } from '@/components/Sidebar';
 import { GoogleLogoSVG } from '@/components/GoogleButton';
 import { MicrosoftLogoSVG } from '@/components/MicrosoftButton';
+import { AddDriveModal } from '@/components/AddDriveModal';
 import { appLogger } from '@/utils/logger';
 
 /**
@@ -45,6 +46,7 @@ function formatConnectedDate(connectedAt: string | Date | undefined): string {
 
 export default function NetworkScreen() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const { drives, selectedDrive, selectDrive, isLoading } = useDrives();
 
   /**
@@ -106,7 +108,9 @@ export default function NetworkScreen() {
           <Text className="text-2xl">☰</Text>
         </TouchableOpacity>
         <Text className="flex-1 text-lg font-semibold text-center">接続先</Text>
-        <View className="w-10" />
+        <TouchableOpacity onPress={() => setModalOpen(true)} className="w-10 h-10 justify-center items-center">
+          <Text className="text-2xl">+</Text>
+        </TouchableOpacity>
       </View>
 
       {/* コンテンツ */}
@@ -114,9 +118,15 @@ export default function NetworkScreen() {
         {drives.length === 0 ? (
           <View className="flex-1 justify-center items-center py-12">
             <Text className="text-xl font-semibold text-gray-900 mb-2">ドライブが接続されていません</Text>
-            <Text className="text-sm text-gray-600 text-center">
-              設定画面からドライブを接続してください
+            <Text className="text-sm text-gray-600 text-center mb-6">
+              クラウドストレージを接続してご利用ください
             </Text>
+            <TouchableOpacity
+              onPress={() => setModalOpen(true)}
+              className="bg-blue-500 rounded-lg px-6 py-3"
+            >
+              <Text className="text-white font-semibold">+ ドライブを追加</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <>
@@ -188,6 +198,9 @@ export default function NetworkScreen() {
       </ScrollView>
 
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* ✅ ドライブ追加モーダル */}
+      <AddDriveModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </SafeAreaView>
   );
 }

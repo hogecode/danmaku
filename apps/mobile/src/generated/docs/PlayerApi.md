@@ -12,7 +12,7 @@ All URIs are relative to *http://localhost*
 
 ## playerControllerGenerateVideoToken
 
-> playerControllerGenerateVideoToken()
+> GenerateVideoTokenResponseDto playerControllerGenerateVideoToken()
 
 POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token&#x3D;{jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
 
@@ -47,7 +47,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-`void` (Empty response body)
+[**GenerateVideoTokenResponseDto**](GenerateVideoTokenResponseDto.md)
 
 ### Authorization
 
@@ -56,7 +56,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details

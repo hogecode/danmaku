@@ -13,7 +13,7 @@ All URIs are relative to *http://localhost*
 
 ## driveConnectionControllerDelete
 
-> driveConnectionControllerDelete(connectionId)
+> DriveConnectionDeleteResponseDto driveConnectionControllerDelete(connectionId)
 
 DELETE /api/drive-connections/:connectionId 接続を削除
 
@@ -56,7 +56,7 @@ example().catch(console.error);
 
 ### Return type
 
-`void` (Empty response body)
+[**DriveConnectionDeleteResponseDto**](DriveConnectionDeleteResponseDto.md)
 
 ### Authorization
 
@@ -65,7 +65,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details
@@ -78,7 +78,7 @@ No authorization required
 
 ## driveConnectionControllerHandleConnectionCallback
 
-> driveConnectionControllerHandleConnectionCallback(provider, code, state)
+> DriveConnectionCallbackResponseDto driveConnectionControllerHandleConnectionCallback(provider, code, state)
 
 GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
 
@@ -127,7 +127,7 @@ example().catch(console.error);
 
 ### Return type
 
-`void` (Empty response body)
+[**DriveConnectionCallbackResponseDto**](DriveConnectionCallbackResponseDto.md)
 
 ### Authorization
 
@@ -136,7 +136,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details
@@ -149,7 +149,7 @@ No authorization required
 
 ## driveConnectionControllerInitiateConnection
 
-> driveConnectionControllerInitiateConnection(provider)
+> DriveConnectionInitiateResponseDto driveConnectionControllerInitiateConnection(provider)
 
 POST /api/drive-connections/:provider Drive接続開始（OAuth認可URLを返す）
 
@@ -192,7 +192,7 @@ example().catch(console.error);
 
 ### Return type
 
-`void` (Empty response body)
+[**DriveConnectionInitiateResponseDto**](DriveConnectionInitiateResponseDto.md)
 
 ### Authorization
 
@@ -201,7 +201,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details
@@ -214,7 +214,7 @@ No authorization required
 
 ## driveConnectionControllerList
 
-> driveConnectionControllerList()
+> Array&lt;DriveConnectionDto&gt; driveConnectionControllerList()
 
 GET /api/drive-connections 接続済みドライブリストを取得
 
@@ -249,7 +249,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-`void` (Empty response body)
+[**Array&lt;DriveConnectionDto&gt;**](DriveConnectionDto.md)
 
 ### Authorization
 
@@ -258,7 +258,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details

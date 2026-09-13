@@ -14,6 +14,22 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  DriveConnectionCallbackResponseDto,
+  DriveConnectionDeleteResponseDto,
+  DriveConnectionDto,
+  DriveConnectionInitiateResponseDto,
+} from '../models/index';
+import {
+    DriveConnectionCallbackResponseDtoFromJSON,
+    DriveConnectionCallbackResponseDtoToJSON,
+    DriveConnectionDeleteResponseDtoFromJSON,
+    DriveConnectionDeleteResponseDtoToJSON,
+    DriveConnectionDtoFromJSON,
+    DriveConnectionDtoToJSON,
+    DriveConnectionInitiateResponseDtoFromJSON,
+    DriveConnectionInitiateResponseDtoToJSON,
+} from '../models/index';
 
 export interface DriveConnectionControllerDeleteRequest {
     connectionId: string;
@@ -64,18 +80,19 @@ export class DriveConnectionApi extends runtime.BaseAPI {
     /**
      * DELETE /api/drive-connections/:connectionId 接続を削除
      */
-    async driveConnectionControllerDeleteRaw(requestParameters: DriveConnectionControllerDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async driveConnectionControllerDeleteRaw(requestParameters: DriveConnectionControllerDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DriveConnectionDeleteResponseDto>> {
         const requestOptions = await this.driveConnectionControllerDeleteRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => DriveConnectionDeleteResponseDtoFromJSON(jsonValue));
     }
 
     /**
      * DELETE /api/drive-connections/:connectionId 接続を削除
      */
-    async driveConnectionControllerDelete(requestParameters: DriveConnectionControllerDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.driveConnectionControllerDeleteRaw(requestParameters, initOverrides);
+    async driveConnectionControllerDelete(requestParameters: DriveConnectionControllerDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DriveConnectionDeleteResponseDto> {
+        const response = await this.driveConnectionControllerDeleteRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -130,18 +147,19 @@ export class DriveConnectionApi extends runtime.BaseAPI {
     /**
      * GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
      */
-    async driveConnectionControllerHandleConnectionCallbackRaw(requestParameters: DriveConnectionControllerHandleConnectionCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async driveConnectionControllerHandleConnectionCallbackRaw(requestParameters: DriveConnectionControllerHandleConnectionCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DriveConnectionCallbackResponseDto>> {
         const requestOptions = await this.driveConnectionControllerHandleConnectionCallbackRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => DriveConnectionCallbackResponseDtoFromJSON(jsonValue));
     }
 
     /**
      * GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
      */
-    async driveConnectionControllerHandleConnectionCallback(requestParameters: DriveConnectionControllerHandleConnectionCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.driveConnectionControllerHandleConnectionCallbackRaw(requestParameters, initOverrides);
+    async driveConnectionControllerHandleConnectionCallback(requestParameters: DriveConnectionControllerHandleConnectionCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DriveConnectionCallbackResponseDto> {
+        const response = await this.driveConnectionControllerHandleConnectionCallbackRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -174,18 +192,19 @@ export class DriveConnectionApi extends runtime.BaseAPI {
     /**
      * POST /api/drive-connections/:provider Drive接続開始（OAuth認可URLを返す）
      */
-    async driveConnectionControllerInitiateConnectionRaw(requestParameters: DriveConnectionControllerInitiateConnectionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async driveConnectionControllerInitiateConnectionRaw(requestParameters: DriveConnectionControllerInitiateConnectionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DriveConnectionInitiateResponseDto>> {
         const requestOptions = await this.driveConnectionControllerInitiateConnectionRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => DriveConnectionInitiateResponseDtoFromJSON(jsonValue));
     }
 
     /**
      * POST /api/drive-connections/:provider Drive接続開始（OAuth認可URLを返す）
      */
-    async driveConnectionControllerInitiateConnection(requestParameters: DriveConnectionControllerInitiateConnectionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.driveConnectionControllerInitiateConnectionRaw(requestParameters, initOverrides);
+    async driveConnectionControllerInitiateConnection(requestParameters: DriveConnectionControllerInitiateConnectionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DriveConnectionInitiateResponseDto> {
+        const response = await this.driveConnectionControllerInitiateConnectionRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -210,18 +229,19 @@ export class DriveConnectionApi extends runtime.BaseAPI {
     /**
      * GET /api/drive-connections 接続済みドライブリストを取得
      */
-    async driveConnectionControllerListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async driveConnectionControllerListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DriveConnectionDto>>> {
         const requestOptions = await this.driveConnectionControllerListRequestOpts();
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DriveConnectionDtoFromJSON));
     }
 
     /**
      * GET /api/drive-connections 接続済みドライブリストを取得
      */
-    async driveConnectionControllerList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.driveConnectionControllerListRaw(initOverrides);
+    async driveConnectionControllerList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DriveConnectionDto>> {
+        const response = await this.driveConnectionControllerListRaw(initOverrides);
+        return await response.value();
     }
 
 }

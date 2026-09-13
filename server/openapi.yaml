@@ -106,6 +106,12 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DriveConnectionDto'
       summary: |-
         GET /api/drive-connections
         接続済みドライブリストを取得
@@ -123,6 +129,10 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriveConnectionInitiateResponseDto'
       summary: |-
         POST /api/drive-connections/:provider
         Drive接続開始（OAuth認可URLを返す）
@@ -150,6 +160,10 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriveConnectionCallbackResponseDto'
       summary: |-
         GET /api/drive-connections/:provider/callback
         Drive接続 callback（JSON返却）
@@ -167,6 +181,10 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriveConnectionDeleteResponseDto'
       summary: |-
         DELETE /api/drive-connections/:connectionId
         接続を削除
@@ -299,6 +317,10 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateVideoTokenResponseDto'
       summary: |-
         POST /api/player/token - 動画ストリーミング用トークン生成
 
@@ -403,6 +425,42 @@ components:
         - id
         - email
         - drives
+    DriveConnectionInitiateResponseDto:
+      type: object
+      properties:
+        authorize_url:
+          type: string
+          description: OAuth認可URL
+        state:
+          type: string
+          description: CSRF対策用ステート
+        expires_in:
+          type: number
+          description: ステート有効期限（秒）
+      required:
+        - authorize_url
+        - state
+        - expires_in
+    DriveConnectionCallbackResponseDto:
+      type: object
+      properties:
+        message:
+          type: string
+          description: 処理結果メッセージ
+        connectionId:
+          type: string
+          description: 接続したドライブの接続ID
+      required:
+        - message
+        - connectionId
+    DriveConnectionDeleteResponseDto:
+      type: object
+      properties:
+        message:
+          type: string
+          description: 処理結果メッセージ
+      required:
+        - message
     FileItemDto:
       type: object
       properties:
@@ -506,6 +564,13 @@ components:
             $ref: '#/components/schemas/DPlayerCommentDto'
       required:
         - comments
+    GenerateVideoTokenResponseDto:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
     DownloadCommentRequestDto:
       type: object
       properties:

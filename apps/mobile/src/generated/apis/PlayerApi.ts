@@ -16,10 +16,13 @@
 import * as runtime from '../runtime';
 import type {
   DPlayerCommentListDto,
+  GenerateVideoTokenResponseDto,
 } from '../models/index';
 import {
     DPlayerCommentListDtoFromJSON,
     DPlayerCommentListDtoToJSON,
+    GenerateVideoTokenResponseDtoFromJSON,
+    GenerateVideoTokenResponseDtoToJSON,
 } from '../models/index';
 
 export interface PlayerControllerGetCommentsRequest {
@@ -61,18 +64,19 @@ export class PlayerApi extends runtime.BaseAPI {
     /**
      * POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
      */
-    async playerControllerGenerateVideoTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async playerControllerGenerateVideoTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GenerateVideoTokenResponseDto>> {
         const requestOptions = await this.playerControllerGenerateVideoTokenRequestOpts();
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => GenerateVideoTokenResponseDtoFromJSON(jsonValue));
     }
 
     /**
      * POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
      */
-    async playerControllerGenerateVideoToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.playerControllerGenerateVideoTokenRaw(initOverrides);
+    async playerControllerGenerateVideoToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GenerateVideoTokenResponseDto> {
+        const response = await this.playerControllerGenerateVideoTokenRaw(initOverrides);
+        return await response.value();
     }
 
     /**

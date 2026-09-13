@@ -14,6 +14,11 @@ import { AuthGuard } from '../../auth/guards';
 import { DriveConnectionService } from '../services/drive-connection.service';
 import { DriveConnectionOAuthService } from '../services/drive-connection-oauth.service';
 import { DriveConnectionDto } from '../../auth/dto';
+import {
+  DriveConnectionInitiateResponseDto,
+  DriveConnectionCallbackResponseDto,
+  DriveConnectionDeleteResponseDto,
+} from '../dto';
 import { Express } from 'express';
 import { LoggerService } from '../../common/logger/logger.service';
 
@@ -36,10 +41,10 @@ export class DriveConnectionController {
   @Get()
   async list(
     @Session() session: Express.Session & { userId?: string },
-  ): Promise<{ connections: DriveConnectionDto[] }> {
+  ): Promise<DriveConnectionDto[] > {
     if (!session.userId) throw new BadRequestException('User ID not found');
     const connections = await this.driveConnectionService.listConnections(BigInt(session.userId));
-    return { connections };
+    return connections;
   }
 
   /**
@@ -51,9 +56,14 @@ export class DriveConnectionController {
   async initiateConnection(
     @Param('provider') provider: string,
     @Session() session: Express.Session & { userId?: string },
-  ): Promise<{ authorize_url: string; state: string; expires_in: number }> {
+  ): Promise<DriveConnectionInitiateResponseDto> {
     if (!session.userId) throw new BadRequestException('User ID not found');
-    return await this.driveConnectionOAuthService.generateDriveAuthorizationUrl(BigInt(session.userId), provider);
+    const result = await this.driveConnectionOAuthService.generateDriveAuthorizationUrl(BigInt(session.userId), provider);
+    return {
+      authorize_url: result.authorize_url,
+      state: result.state,
+      expires_in: result.expires_in,
+    };
   }
 
   /**
@@ -67,7 +77,7 @@ export class DriveConnectionController {
     @Query('code') code: string,
     @Query('state') state: string,
     @Session() session: Express.Session & { userId?: string },
-  ): Promise<{ message: string; connectionId: string }> {
+  ): Promise<DriveConnectionCallbackResponseDto> {
     if (!session.userId) {
       throw new BadRequestException('User ID not found in session');
     }
@@ -82,13 +92,16 @@ export class DriveConnectionController {
 
     try {
       const result = await this.driveConnectionOAuthService.handleDriveConnectionCallback(
-      provider,
-      code,
-      state,
-      BigInt(session.userId),
-    );
+        provider,
+        code,
+        state,
+        BigInt(session.userId),
+      );
 
-      return result;
+      return {
+        message: result.message,
+        connectionId: result.connectionId,
+      };
     } catch (error) {
       this.logger.error(`[DriveConnection] Callback error (${provider})`, error as Error);
       const errorMsg = error instanceof Error ? error.message : 'Connection failed';
@@ -104,7 +117,7 @@ export class DriveConnectionController {
   async delete(
     @Param('connectionId') connectionId: string,
     @Session() session: Express.Session & { userId?: string },
-  ): Promise<{ message: string }> {
+  ): Promise<DriveConnectionDeleteResponseDto> {
     if (!session.userId) throw new BadRequestException('User ID not found');
     await this.driveConnectionService.deleteConnection(BigInt(session.userId), BigInt(connectionId));
     return { message: 'Connection deleted successfully' };
