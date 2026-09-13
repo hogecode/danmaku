@@ -23,7 +23,8 @@ import { MicrosoftButton } from './MicrosoftButton';
 import { driveConnectionService } from '@/services/drive-connection-service';
 import { useDrivesStore } from '@/stores/drives-store';
 import { appLogger } from '@/utils/logger';
-import { DEEP_LINK_AUTH_CALLBACK } from '@/utils/constants';
+import { DEEP_LINK_AUTH_CALLBACK, DEEP_LINK_DRIVE_CALLBACK } from '@/utils/constants';
+import type { DriveConnectionDto } from '@/generated';
 
 if (Platform.OS === 'web') {
   WebBrowser.maybeCompleteAuthSession();
@@ -35,7 +36,7 @@ interface AddDriveModalProps {
 }
 
 export function AddDriveModal({ isOpen, onClose }: AddDriveModalProps) {
-  const { selectDrive } = useDrivesStore();
+  const { addDrive } = useDrivesStore();
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,20 +56,32 @@ export function AddDriveModal({ isOpen, onClose }: AddDriveModalProps) {
 
       if (queryParams) {
         const connectionId = queryParams.connectionId as string | undefined;
+        const provider = queryParams.provider as string | undefined;
+        const account = queryParams.account as string | undefined;
 
         appLogger.info(
-          `[AddDriveModal] Deep link パラメータ: connectionId=${!!connectionId}`
+          `[AddDriveModal] Deep link パラメータ: connectionId=${!!connectionId}, provider=${provider}, account=${account}`
         );
 
-        if (connectionId) {
+        if (connectionId && provider && account) {
           try {
             appLogger.info(
-              `[AddDriveModal] 新しいドライブが接続 (connectionId=${connectionId})`
+              `[AddDriveModal] 新しいドライブが接続 (connectionId=${connectionId}, provider=${provider}, account=${account})`
             );
 
-            // ✅ 新しいドライブを自動選択
-            selectDrive(connectionId);
+            // ✅ Deep Link から取得したデータでドライブオブジェクトを構築
+            const newDrive: DriveConnectionDto = {
+              id: connectionId,
+              provider: provider,
+              account: account, // サーバーから受け取ったメールアドレスを使用
+              status: 'connected',
+              connectedAt: new Date(),
+            };
 
+            // ✅ Zustand ストアに新しいドライブを追加
+            addDrive(newDrive);
+            appLogger.info(`[AddDriveModal] ドライブをストアに追加しました (id=${connectionId}, account=${account})`);
+            
             // ✅ 状態をリセット
             setSelectedProvider(null);
             setIsLoading(false);
@@ -77,8 +90,8 @@ export function AddDriveModal({ isOpen, onClose }: AddDriveModalProps) {
             appLogger.info('[AddDriveModal] モーダルを閉じます');
             onClose();
           } catch (e) {
-            appLogger.error('[AddDriveModal] ドライブ選択エラー', e);
-            setError('ドライブの選択に失敗しました');
+            appLogger.error('[AddDriveModal] ドライブ追加エラー', e);
+            setError('ドライブの追加に失敗しました');
           }
         }
       }
@@ -98,7 +111,7 @@ export function AddDriveModal({ isOpen, onClose }: AddDriveModalProps) {
     // リスナー登録
     const subscription = Linking.addEventListener('url', handleDeepLink);
     return () => subscription.remove();
-  }, [isOpen, onClose, selectDrive]);
+  }, [isOpen, onClose]);
 
   /**
    * ドライブ接続を開始
@@ -118,7 +131,7 @@ export function AddDriveModal({ isOpen, onClose }: AddDriveModalProps) {
         await driveConnectionService.initiateDriveConnection(providerId);
       appLogger.info('[AddDriveModal] OAuth URL 取得成功');
 
-      const authorizeUrl = result.authorize_url;
+      const authorizeUrl = result.authorizeUrl;
       if (!authorizeUrl) {
         throw new Error('authorize_url が含まれていません');
       }
@@ -128,16 +141,84 @@ export function AddDriveModal({ isOpen, onClose }: AddDriveModalProps) {
       );
 
       // ✅ Webブラウザでの認証セッションを開始
+      // ⚠️ redirectUrl（第2引数）はブラウザセッション完了検出用で、
+      // ディープリンク受信は Linking.addEventListener で別途処理
       const browserResult = await WebBrowser.openAuthSessionAsync(
         authorizeUrl,
-        DEEP_LINK_AUTH_CALLBACK
+        DEEP_LINK_DRIVE_CALLBACK
       );
 
       appLogger.info(
         `[AddDriveModal] ブラウザセッション結果: type=${browserResult.type}`
       );
 
-      if (browserResult.type === 'dismiss') {
+      // ✅ ブラウザセッション成功時に、URL から接続情報を抽出
+      if (browserResult.type === 'success') {
+        appLogger.info('[AddDriveModal] ブラウザセッション成功');
+
+        // WebBrowser がリダイレクト URL を受け取った場合
+        if ('url' in browserResult && browserResult.url) {
+          appLogger.info(`[AddDriveModal] Redirect URL 受信: ${browserResult.url}`);
+
+          // URL をパース
+          const parsed = Linking.parse(browserResult.url);
+          const { queryParams } = parsed;
+
+          if (queryParams) {
+            // バックエンドから送信されるパラメータ:
+            // ✅ sessionId: Express Session ID
+            // ✅ provider: プロバイダー名
+            // ✅ connectionId: ドライブ接続ID
+            const sessionId = queryParams.sessionId as string | undefined;
+            const provider = queryParams.provider as string | undefined;
+            const connectionId = queryParams.connectionId as string | undefined;
+            const account = queryParams.account as string | undefined;
+
+            appLogger.info(
+              `[AddDriveModal] クエリパラメータ: sessionId=${!!sessionId}, provider=${provider}, connectionId=${connectionId}`
+            );
+
+            if (connectionId && provider && account) {
+              try {
+                appLogger.info(
+                  `[AddDriveModal] 新しいドライブが接続 (connectionId=${connectionId}, provider=${provider}, account=${account})`
+                );
+
+                // ✅ Redirect URL から取得したデータでドライブオブジェクトを構築
+                const newDrive: DriveConnectionDto = {
+                  id: connectionId,
+                  provider: provider,
+                  account: account, // サーバーから受け取ったメールアドレスを使用
+                  status: 'connected',
+                  connectedAt: new Date(),
+                };
+
+                // ✅ Zustand ストアに新しいドライブを追加
+                addDrive(newDrive);
+                appLogger.info(`[AddDriveModal] ドライブをストアに追加しました (id=${connectionId}, account=${account})`);
+
+                // ✅ 状態をリセット
+                setSelectedProvider(null);
+                setIsLoading(false);
+                setError(null);
+
+                appLogger.info('[AddDriveModal] モーダルを閉じます');
+                onClose();
+              } catch (e) {
+                appLogger.error('[AddDriveModal] ドライブ追加エラー', e);
+                setError('ドライブの追加に失敗しました');
+                setIsLoading(false);
+                setSelectedProvider(null);
+              }
+            } else {
+              appLogger.warning('[AddDriveModal] connectionId がありません');
+              setError('接続ID を取得できませんでした');
+              setIsLoading(false);
+              setSelectedProvider(null);
+            }
+          }
+        }
+      } else if (browserResult.type === 'dismiss') {
         appLogger.warning('[AddDriveModal] ユーザーがブラウザを閉じた');
         setError('認証がキャンセルされました');
         setIsLoading(false);

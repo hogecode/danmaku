@@ -4,7 +4,7 @@
  */
 
 import { appLogger } from '@/utils/logger';
-import { DriveConnectionApi } from '@/generated';
+import { DriveConnectionApi, DriveConnectionInitiateResponseDto } from '@/generated';
 import { createApiConfiguration } from './api-config';
 
 export class DriveConnectionException extends Error {
@@ -35,11 +35,11 @@ export class DriveConnectionService {
    * ドライブ接続開始（OAuth認可URLを取得）
    * POST /api/drive-connections/:provider
    * @param provider - プロバイダー名 ('google', 'onedrive', etc.)
-   * @returns {authorize_url, state, expires_in}
+   * @returns DriveConnectionInitiateResponseDto (authorizeUrl, state, expiresIn)
    */
   async initiateDriveConnection(
     provider: string
-  ): Promise<{ authorize_url: string; state: string; expires_in: number }> {
+  ): Promise<DriveConnectionInitiateResponseDto> {
     try {
       appLogger.info(
         `[DriveConnectionService] ドライブ接続開始 (provider=${provider})`
@@ -47,17 +47,15 @@ export class DriveConnectionService {
 
       // ✅ OpenAPI 生成コードを直接呼び出し
       // POST /api/drive-connections/:provider
-      const response = await this.driveConnectionApi.driveConnectionControllerInitiateConnectionRaw(
+      const response = await this.driveConnectionApi.driveConnectionControllerInitiateConnection(
         { provider },
       );
 
-      // ✅ ApiResponse のボディをパース
-      const jsonResponse = await response.value.json();
-
       appLogger.info(
-        '[DriveConnectionService] OAuth URL取得成功',
+        '[DriveConnectionService] OAuth URL取得成功'
       );
-      return jsonResponse;
+
+      return response;
     } catch (error) {
       // エラーの詳細をログに出力
       const errorMsg = error instanceof Error ? error.message : String(error);

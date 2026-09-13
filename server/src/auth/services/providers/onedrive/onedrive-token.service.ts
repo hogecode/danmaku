@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import axios, { AxiosError } from 'axios';
+import * as jwt from 'jsonwebtoken';
 import { GoogleTokenDto } from '../../../dto';
 import { ProviderTokenService } from '../provider-token.interface';
 import { PKCEUtil } from '../../../utils/pkce.util';
@@ -113,6 +114,20 @@ export class OnedriveTokenService implements ProviderTokenService {
           },
         },
       );
+
+      // ✅ id_token からメールアドレスを抽出
+      if (response.data.id_token) {
+        try {
+          const decoded = jwt.decode(response.data.id_token) as any;
+          if (decoded?.email) {
+            response.data.email = decoded.email;
+          } else if (decoded?.preferred_username) {
+            response.data.email = decoded.preferred_username;
+          }
+        } catch (error) {
+          console.error('[OnedriveTokenService] Failed to decode id_token:', error);
+        }
+      }
 
       return response.data;
     } catch (error) {

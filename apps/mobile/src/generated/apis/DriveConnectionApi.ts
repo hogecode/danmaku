@@ -15,14 +15,11 @@
 
 import * as runtime from '../runtime';
 import type {
-  DriveConnectionCallbackResponseDto,
   DriveConnectionDeleteResponseDto,
   DriveConnectionDto,
   DriveConnectionInitiateResponseDto,
 } from '../models/index';
 import {
-    DriveConnectionCallbackResponseDtoFromJSON,
-    DriveConnectionCallbackResponseDtoToJSON,
     DriveConnectionDeleteResponseDtoFromJSON,
     DriveConnectionDeleteResponseDtoToJSON,
     DriveConnectionDtoFromJSON,
@@ -145,21 +142,20 @@ export class DriveConnectionApi extends runtime.BaseAPI {
     }
 
     /**
-     * GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+     * GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
      */
-    async driveConnectionControllerHandleConnectionCallbackRaw(requestParameters: DriveConnectionControllerHandleConnectionCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DriveConnectionCallbackResponseDto>> {
+    async driveConnectionControllerHandleConnectionCallbackRaw(requestParameters: DriveConnectionControllerHandleConnectionCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const requestOptions = await this.driveConnectionControllerHandleConnectionCallbackRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DriveConnectionCallbackResponseDtoFromJSON(jsonValue));
+        return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+     * GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
      */
-    async driveConnectionControllerHandleConnectionCallback(requestParameters: DriveConnectionControllerHandleConnectionCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DriveConnectionCallbackResponseDto> {
-        const response = await this.driveConnectionControllerHandleConnectionCallbackRaw(requestParameters, initOverrides);
-        return await response.value();
+    async driveConnectionControllerHandleConnectionCallback(requestParameters: DriveConnectionControllerHandleConnectionCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.driveConnectionControllerHandleConnectionCallbackRaw(requestParameters, initOverrides);
     }
 
     /**

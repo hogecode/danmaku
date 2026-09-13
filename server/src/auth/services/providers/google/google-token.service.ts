@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import axios, { AxiosError } from 'axios';
+import * as jwt from 'jsonwebtoken';
 import { GoogleTokenDto } from '../../../dto';
 import { ProviderTokenService } from '../provider-token.interface';
 import { PKCEUtil } from '../../../utils/pkce.util';
@@ -30,9 +31,12 @@ export class GoogleTokenService implements ProviderTokenService {
    */
   async generateAuthorizationUrl(
     userId?: bigint,
+    purpose: 'login' | 'drive' = 'login'
   ): Promise<{ authorize_url: string; state: string; expires_in: number }> {
     const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
-    const redirectUri = this.configService.get<string>('GOOGLE_REDIRECT_URI');
+    const redirectUri = purpose === 'login'
+      ? this.configService.get<string>('GOOGLE_REDIRECT_URI')
+      : this.configService.get<string>('GOOGLE_DRIVE_REDIRECT_URI');
     const scopes =
       this.configService.get<string>('GOOGLE_SCOPES') ||
       'openid email profile https://www.googleapis.com/auth/drive.readonly';
@@ -42,6 +46,9 @@ export class GoogleTokenService implements ProviderTokenService {
         'Google OAuth configuration missing',
       );
     }
+
+    // デバッグ: リダイレクト URI を確認
+    console.log(`[GoogleTokenService] generateAuthorizationUrl - purpose: ${purpose}, redirectUri: ${redirectUri}`);
 
     const { verifier, challenge } = PKCEUtil.generatePKCE();
     const state = PKCEUtil.generateState();
@@ -98,6 +105,9 @@ export class GoogleTokenService implements ProviderTokenService {
     }
 
     try {
+      // デバッグ: トークン交換時のリダイレクト URI を確認
+      console.log(`[GoogleTokenService] exchangeCodeForToken - redirectUri: ${redirectUri}, code: ${code.substring(0, 20)}...`);
+      
       const response = await axios.post<GoogleTokenDto>(
         this.tokenUrl,
         {
@@ -115,10 +125,25 @@ export class GoogleTokenService implements ProviderTokenService {
         },
       );
 
+       // ✅ id_token からメールアドレスを抽出
+       if (response.data.id_token) {
+         try {
+           const decoded = jwt.decode(response.data.id_token) as any;
+           if (decoded?.email) {
+             response.data.email = decoded.email;
+           }
+         } catch (error) {
+           console.error('[GoogleTokenService] Failed to decode id_token:', error);
+           // デコード失敗時も続行
+         }
+       }
+
+
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
         console.error('Google token exchange error:', error.response?.data);
+        console.error(`[GoogleTokenService] Failed request - redirectUri: ${redirectUri}`);
         throw new InternalServerErrorException(
           `Failed to exchange code for token: ${error.response?.data?.error_description || error.message}`,
         );

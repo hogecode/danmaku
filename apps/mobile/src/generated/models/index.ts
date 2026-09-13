@@ -3,7 +3,6 @@
 export * from './DPlayerCommentDto';
 export * from './DPlayerCommentListDto';
 export * from './DownloadCommentRequestDto';
-export * from './DriveConnectionCallbackResponseDto';
 export * from './DriveConnectionDeleteResponseDto';
 export * from './DriveConnectionDto';
 export * from './DriveConnectionInitiateResponseDto';

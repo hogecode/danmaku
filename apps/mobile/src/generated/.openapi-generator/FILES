@@ -11,7 +11,6 @@ docs/DPlayerCommentDto.md
 docs/DPlayerCommentListDto.md
 docs/DownloadCommentRequestDto.md
 docs/DriveConnectionApi.md
-docs/DriveConnectionCallbackResponseDto.md
 docs/DriveConnectionDeleteResponseDto.md
 docs/DriveConnectionDto.md
 docs/DriveConnectionInitiateResponseDto.md
@@ -27,7 +26,6 @@ index.ts
 models/DPlayerCommentDto.ts
 models/DPlayerCommentListDto.ts
 models/DownloadCommentRequestDto.ts
-models/DriveConnectionCallbackResponseDto.ts
 models/DriveConnectionDeleteResponseDto.ts
 models/DriveConnectionDto.ts
 models/DriveConnectionInitiateResponseDto.ts

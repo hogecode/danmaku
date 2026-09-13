@@ -9,6 +9,7 @@ export const API_TIMEOUT = 10000; // 10秒
 // Deep Link スキーム
 export const DEEP_LINK_SCHEME = 'danmaku://';
 export const DEEP_LINK_AUTH_CALLBACK = 'danmaku://auth-callback';
+export const DEEP_LINK_DRIVE_CALLBACK = 'danmaku://drive/callback';
 
 // トークン保存キー
 export const TOKEN_STORAGE_KEY = 'danmaku_access_token';

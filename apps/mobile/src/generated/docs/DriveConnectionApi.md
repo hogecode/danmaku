@@ -5,7 +5,7 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**driveConnectionControllerDelete**](DriveConnectionApi.md#driveconnectioncontrollerdelete) | **DELETE** /api/drive-connections/{connectionId} | DELETE /api/drive-connections/:connectionId 接続を削除 |
-| [**driveConnectionControllerHandleConnectionCallback**](DriveConnectionApi.md#driveconnectioncontrollerhandleconnectioncallback) | **GET** /api/drive-connections/{provider}/callback | GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却） |
+| [**driveConnectionControllerHandleConnectionCallback**](DriveConnectionApi.md#driveconnectioncontrollerhandleconnectioncallback) | **GET** /api/drive-connections/{provider}/callback | GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする |
 | [**driveConnectionControllerInitiateConnection**](DriveConnectionApi.md#driveconnectioncontrollerinitiateconnection) | **POST** /api/drive-connections/{provider} | POST /api/drive-connections/:provider Drive接続開始（OAuth認可URLを返す） |
 | [**driveConnectionControllerList**](DriveConnectionApi.md#driveconnectioncontrollerlist) | **GET** /api/drive-connections | GET /api/drive-connections 接続済みドライブリストを取得 |
 
@@ -78,9 +78,9 @@ No authorization required
 
 ## driveConnectionControllerHandleConnectionCallback
 
-> DriveConnectionCallbackResponseDto driveConnectionControllerHandleConnectionCallback(provider, code, state)
+> driveConnectionControllerHandleConnectionCallback(provider, code, state)
 
-GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
 
 ### Example
 
@@ -127,7 +127,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**DriveConnectionCallbackResponseDto**](DriveConnectionCallbackResponseDto.md)
+`void` (Empty response body)
 
 ### Authorization
 
@@ -136,7 +136,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: `application/json`
+- **Accept**: Not defined
 
 
 ### HTTP response details

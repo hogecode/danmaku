@@ -21,9 +21,11 @@ interface DrivesState {
 
   // アクション
   setDrives: (drives: DriveConnectionDto[]) => void;
+  addDrive: (drive: DriveConnectionDto) => void;
   selectDrive: (connectionId: string) => void;
   getSelectedDrive: () => DriveConnectionDto | null;
   isConnected: (provider: string) => boolean;
+  removeDrive: (connectionId: string) => void;
 }
 
 export const useDrivesStore = create<DrivesState>()(
@@ -57,6 +59,36 @@ export const useDrivesStore = create<DrivesState>()(
         }
       },
 
+      addDrive: (drive: DriveConnectionDto) => {
+        appLogger.info(
+          `[DrivesStore] Adding drive: id=${drive.id}, provider=${drive.provider}, account=${drive.account}`,
+        );
+        
+        // ✅ ドライブをマッピング（connected_at → connectedAt）
+        const mappedDrive = (drive as any).connected_at && !drive.connectedAt
+          ? DriveConnectionDtoFromJSON(drive)
+          : drive;
+
+        // ✅ 既に同じドライブが存在する場合はスキップ
+        const { drives } = get();
+        if (drives.some((d) => d.id === mappedDrive.id)) {
+          appLogger.warn(
+            `[DrivesStore] Drive already exists: id=${mappedDrive.id}`,
+          );
+          return;
+        }
+
+        // ✅ 新しいドライブを配列に追加
+        const updatedDrives = [...drives, mappedDrive];
+        set({ drives: updatedDrives });
+
+        // ✅ 新しく追加したドライブを自動選択
+        set({ selectedConnectionId: mappedDrive.id });
+        appLogger.info(
+          `[DrivesStore] Auto-selected newly added drive: id=${mappedDrive.id}`,
+        );
+      },
+
       selectDrive: (connectionId: string) => {
         const drive = get().drives.find((d) => d.id === connectionId);
         if (!drive) {
@@ -83,6 +115,24 @@ export const useDrivesStore = create<DrivesState>()(
         return get().drives.some(
           (d) => d.provider === provider && d.status === "connected",
         );
+      },
+
+      removeDrive: (connectionId: string) => {
+        appLogger.info(
+          `[DrivesStore] Removing drive: id=${connectionId}`,
+        );
+        const { drives, selectedConnectionId } = get();
+        const updatedDrives = drives.filter((d) => d.id !== connectionId);
+        set({ drives: updatedDrives });
+
+        // ✅ 削除したドライブが選択中だった場合、最初のドライブを選択
+        if (selectedConnectionId === connectionId) {
+          const newSelectedId = updatedDrives.length > 0 ? updatedDrives[0].id : null;
+          set({ selectedConnectionId: newSelectedId });
+          appLogger.info(
+            `[DrivesStore] Selected new drive after removal: id=${newSelectedId}`,
+          );
+        }
       },
     }),
     {

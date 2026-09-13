@@ -160,13 +160,12 @@ paths:
       responses:
         '200':
           description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DriveConnectionCallbackResponseDto'
       summary: |-
         GET /api/drive-connections/:provider/callback
-        Drive接続 callback（JSON返却）
+        Drive接続 callback
+
+        セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、
+        Webクライアントはフロントエンドにリダイレクトする
       tags:
         - DriveConnection
   /api/drive-connections/{connectionId}:
@@ -441,18 +440,6 @@ components:
         - authorize_url
         - state
         - expires_in
-    DriveConnectionCallbackResponseDto:
-      type: object
-      properties:
-        message:
-          type: string
-          description: 処理結果メッセージ
-        connectionId:
-          type: string
-          description: 接続したドライブの接続ID
-      required:
-        - message
-        - connectionId
     DriveConnectionDeleteResponseDto:
       type: object
       properties:

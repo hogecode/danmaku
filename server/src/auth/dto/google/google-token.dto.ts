@@ -8,4 +8,5 @@ export class GoogleTokenDto {
   scope?: string;
   token_type!: string;
   id_token?: string;
+  email?: string; // ✅ id_token から抽出されるメールアドレス
 }
