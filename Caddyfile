@@ -24,10 +24,4 @@ http://localhost:8080 {
     header_up Upgrade {http.request.header.Upgrade}
     header_up Connection {http.request.header.Connection}
   }
-
-  # ✅ ログ設定
-  log {
-    output stdout
-    format json
-  }
 }
