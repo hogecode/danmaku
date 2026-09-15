@@ -23,10 +23,10 @@ export interface DriveConnectionDto {
 }
 
 export const DriveConnectionDtoStatusEnum = {
+    Error: 'error',
     Connected: 'connected',
     Expired: 'expired',
     Revoked: 'revoked',
-    Error: 'error',
 } as const;
 
 export type DriveConnectionDtoStatusEnum = typeof DriveConnectionDtoStatusEnum[keyof typeof DriveConnectionDtoStatusEnum];

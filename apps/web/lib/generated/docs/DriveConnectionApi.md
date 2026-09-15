@@ -5,12 +5,12 @@ All URIs are relative to *http://localhost*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**driveConnectionControllerDelete**](#driveconnectioncontrollerdelete) | **DELETE** /api/drive-connections/{connectionId} | DELETE /api/drive-connections/:connectionId 接続を削除|
-|[**driveConnectionControllerHandleConnectionCallback**](#driveconnectioncontrollerhandleconnectioncallback) | **GET** /api/drive-connections/{provider}/callback | GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）|
+|[**driveConnectionControllerHandleConnectionCallback**](#driveconnectioncontrollerhandleconnectioncallback) | **GET** /api/drive-connections/{provider}/callback | GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする|
 |[**driveConnectionControllerInitiateConnection**](#driveconnectioncontrollerinitiateconnection) | **POST** /api/drive-connections/{provider} | POST /api/drive-connections/:provider Drive接続開始（OAuth認可URLを返す）|
 |[**driveConnectionControllerList**](#driveconnectioncontrollerlist) | **GET** /api/drive-connections | GET /api/drive-connections 接続済みドライブリストを取得|
 
 # **driveConnectionControllerDelete**
-> driveConnectionControllerDelete()
+> DriveConnectionDeleteResponseDto driveConnectionControllerDelete()
 
 
 ### Example
@@ -40,7 +40,7 @@ const { status, data } = await apiInstance.driveConnectionControllerDelete(
 
 ### Return type
 
-void (empty response body)
+**DriveConnectionDeleteResponseDto**
 
 ### Authorization
 
@@ -49,7 +49,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
@@ -116,7 +116,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **driveConnectionControllerInitiateConnection**
-> driveConnectionControllerInitiateConnection()
+> DriveConnectionInitiateResponseDto driveConnectionControllerInitiateConnection()
 
 
 ### Example
@@ -146,7 +146,7 @@ const { status, data } = await apiInstance.driveConnectionControllerInitiateConn
 
 ### Return type
 
-void (empty response body)
+**DriveConnectionInitiateResponseDto**
 
 ### Authorization
 
@@ -155,7 +155,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
@@ -166,7 +166,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **driveConnectionControllerList**
-> driveConnectionControllerList()
+> Array<DriveConnectionDto> driveConnectionControllerList()
 
 
 ### Example
@@ -189,7 +189,7 @@ This endpoint does not have any parameters.
 
 ### Return type
 
-void (empty response body)
+**Array<DriveConnectionDto>**
 
 ### Authorization
 
@@ -198,7 +198,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details

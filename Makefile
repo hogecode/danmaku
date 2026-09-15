@@ -2,8 +2,8 @@
 ## API コード生成 (Windows用)
 ## ========================
 
-.PHONY: generate-api-client
-generate-api-client: ## Axios TypeScriptクライアント生成 (Web用)
+.PHONY: generate-web-client
+generate-web-client: ## Axios TypeScriptクライアント生成 (Web用)
 	powershell -Command "$$pwd = pwd; docker run --rm -v \"$$pwd`:/local\" openapitools/openapi-generator-cli:latest generate -i /local/server/openapi.yaml -g typescript-axios -o /local/apps/web/lib/generated --additional-properties=typescriptThreePlus=true,supportsES6=true,hideGenerationTimestamp=true,withSeparateModelsAndApi=true,modelPackage=models,apiPackage=apis"
 
 .PHONY: generate-mobile-client
@@ -15,7 +15,7 @@ generate-flutter-client: ## Dart OpenAPIクライアント生成 (Flutter用 - D
 	powershell -Command "$$pwd = pwd; docker run --rm -v \"$$pwd`:/local\" openapitools/openapi-generator-cli:latest generate -i /local/server/openapi.yaml -g dart -o /local/apps/desktop/lib/data/client --additional-properties=hideGenerationTimestamp=true,pubName=desktop,pubVersion=1.0.0"
 
 .PHONY: generate-all-clients
-generate-all-clients: generate-api-client generate-mobile-client generate-flutter-client ## すべてのクライアント生成 (Web + Mobile + Flutter)
+generate-all-clients: generate-web-client generate-mobile-client generate-flutter-client ## すべてのクライアント生成 (Web + Mobile + Flutter)
 	@echo "All clients generated successfully!"
 
 

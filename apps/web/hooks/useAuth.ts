@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authClient } from '@/lib/auth-client';
+import { AuthApi, Configuration } from '@/lib/generated';
 import type { UserInfoDto, LoginResponseDto } from '@/lib/generated';
 
 /**
@@ -16,15 +16,21 @@ export type UserInfo = UserInfoDto;
 export type LoginResponse = LoginResponseDto;
 
 /**
- * 
- * 以下の機能を提供：
- * - ユーザー情報の自動取得・キャッシング
- * - ログイン・ログアウト・トークン更新
- * - 自動エラーハンドリング
- * - 手動リフレッシュ
+ * AuthApi インスタンスを作成
  */
+function createAuthApi(): AuthApi {
+  const configuration = new Configuration({
+    basePath: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001',
+    baseOptions: {
+      withCredentials: true,
+    },
+  });
+  return new AuthApi(configuration);
+}
+
 export function useAuth() {
   const queryClient = useQueryClient();
+  const authApi = createAuthApi();
 
   // ✅ ユーザー情報取得（自動キャッシング）
   const {
@@ -35,16 +41,8 @@ export function useAuth() {
   } = useQuery({
     queryKey: ['auth', 'user'],
     queryFn: async () => {
-      try {
-        const userData = await authClient.getUserInfo();
-        return userData;
-      } catch (err) {
-        // 401 Unauthorized の場合は null を返す
-        if (err instanceof Error && err.message.includes('401')) {
-          return null;
-        }
-        throw err;
-      }
+      const response = await authApi.authControllerGetUserInfo();
+      return response.data;
     },
     staleTime: 1000 * 60 * 5, // 5分
     gcTime: 1000 * 60 * 30,    // 30分
@@ -54,9 +52,9 @@ export function useAuth() {
 
   // ✅ ログイン mutation
   const loginMutation = useMutation({
-    mutationFn: async () => {
-      const response = await authClient.login();
-      return response;
+    mutationFn: async (provider: string) => {
+      const response = await authApi.authControllerLoginWithProvider(provider);
+      return response.data;
     },
     onSuccess: (response) => {
       const { authorize_url } = response;
@@ -71,7 +69,7 @@ export function useAuth() {
   // ✅ ログアウト mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await authClient.logout();
+      await authApi.authControllerLogout();
     },
     onSuccess: () => {
       // ✅ キャッシュをクリア
@@ -85,25 +83,18 @@ export function useAuth() {
     },
   });
 
-  // ✅ トークン更新 mutation
-  const refreshTokenMutation = useMutation({
-    mutationFn: async () => {
-      const response = await authClient.refreshToken();
-      return response;
-    },
-    onSuccess: () => {
-      // ✅ ユーザー情報を再取得
-      fetchUserInfo();
-    },
-    onError: (error) => {
-      console.error('[useAuth] Token refresh error:', error);
-    },
-  });
+
 
   // ✅ ログイン開始（mutation を実行）
   // TODO: tanstack queryを利用
-  const startLogin = useCallback(async () => {
-    await loginMutation.mutateAsync();
+  const startLogin = useCallback(async (provider: string = 'google') => {
+    try {
+      console.log('[useAuth] Cookies before login:', document.cookie);
+      await loginMutation.mutateAsync(provider);
+    } catch (error) {
+      console.error('[useAuth] Start login error:', error);
+      throw error;
+    }
   }, [loginMutation]);
 
   // ✅ ログアウト（mutation を実行）
@@ -111,10 +102,7 @@ export function useAuth() {
     await logoutMutation.mutateAsync();
   }, [logoutMutation]);
 
-  // ✅ トークン更新（mutation を実行）
-  const refreshToken = useCallback(async () => {
-    await refreshTokenMutation.mutateAsync();
-  }, [refreshTokenMutation]);
+
 
 
   return {
@@ -124,17 +112,15 @@ export function useAuth() {
 
     // ✅ ローディング・エラー状態
     loading: isLoading || loginMutation.isPending || logoutMutation.isPending,
-    error: (error instanceof Error ? error : null) || loginMutation.error || logoutMutation.error || refreshTokenMutation.error,
+    error: (error instanceof Error ? error : null) || loginMutation.error || logoutMutation.error,
 
     // ✅ アクション
     fetchUserInfo,
     startLogin,
     logout,
-    refreshToken,
 
     // ✅ 各 mutation の状態（細粒度制御用）
     loginPending: loginMutation.isPending,
     logoutPending: logoutMutation.isPending,
-    refreshTokenPending: refreshTokenMutation.isPending,
   };
 }

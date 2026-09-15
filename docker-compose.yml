@@ -2,6 +2,25 @@ version: '3.8'
 
 services:
   # ===================================================
+  # Caddy Reverse Proxy
+  # ===================================================
+  caddy:
+    image: caddy:latest
+    container_name: danmaku_caddy
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - danmaku_network
+    depends_on:
+      - web
+      - server
+    restart: unless-stopped
+
+  # ===================================================
   # PostgreSQL Database
   # ===================================================
   postgres:
@@ -142,6 +161,10 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
     driver: local
   web_node_modules:
     driver: local

@@ -12,6 +12,10 @@ export default function HomePage() {
   const { user, loading, isAuthenticated, logout } = useAuthContext();
 
   useEffect(() => {
+    // ✅ クッキーの確認用ログ
+    console.log('[HomePage] Current cookies:', document.cookie);
+    console.log('[HomePage] Auth state:', { isAuthenticated, loading });
+    
     if (!loading && !isAuthenticated) {
       router.push('/auth/login');
     }

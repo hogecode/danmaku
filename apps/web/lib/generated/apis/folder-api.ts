@@ -30,48 +30,6 @@ export const FolderApiAxiosParamCreator = function (configuration?: Configuratio
     return {
         /**
          * 
-         * @summary GET /api/drive/list フォルダ内容を取得
-         * @param {string} connectionId 
-         * @param {string} [folderId] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        folderControllerListFolder: async (connectionId: string, folderId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'connectionId' is not null or undefined
-            assertParamExists('folderControllerListFolder', 'connectionId', connectionId)
-            const localVarPath = `/api/drive/list`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (folderId !== undefined) {
-                localVarQueryParameter['folderId'] = folderId;
-            }
-
-            if (connectionId !== undefined) {
-                localVarQueryParameter['connectionId'] = connectionId;
-            }
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary GET /api/drive/connections/:connectionId/files  特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）
          * @param {string} connectionId 
          * @param {string} [folderId] 
@@ -111,58 +69,7 @@ export const FolderApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
-         * @summary GET /api/drive/search フォルダ内でキーワード検索
-         * @param {string} connectionId 
-         * @param {string} folderId 
-         * @param {string} query 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        folderControllerSearch: async (connectionId: string, folderId: string, query: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'connectionId' is not null or undefined
-            assertParamExists('folderControllerSearch', 'connectionId', connectionId)
-            // verify required parameter 'folderId' is not null or undefined
-            assertParamExists('folderControllerSearch', 'folderId', folderId)
-            // verify required parameter 'query' is not null or undefined
-            assertParamExists('folderControllerSearch', 'query', query)
-            const localVarPath = `/api/drive/search`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (connectionId !== undefined) {
-                localVarQueryParameter['connectionId'] = connectionId;
-            }
-
-            if (folderId !== undefined) {
-                localVarQueryParameter['folderId'] = folderId;
-            }
-
-            if (query !== undefined) {
-                localVarQueryParameter['query'] = query;
-            }
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary GET /api/drive/connections/:connectionId/search 特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
+         * @summary GET /api/drive/connections/:connectionId/search  特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
          * @param {string} connectionId 
          * @param {string} folderId 
          * @param {string} query 
@@ -219,20 +126,6 @@ export const FolderApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary GET /api/drive/list フォルダ内容を取得
-         * @param {string} connectionId 
-         * @param {string} [folderId] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async folderControllerListFolder(connectionId: string, folderId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FolderListDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.folderControllerListFolder(connectionId, folderId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['FolderApi.folderControllerListFolder']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary GET /api/drive/connections/:connectionId/files  特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）
          * @param {string} connectionId 
          * @param {string} [folderId] 
@@ -247,22 +140,7 @@ export const FolderApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary GET /api/drive/search フォルダ内でキーワード検索
-         * @param {string} connectionId 
-         * @param {string} folderId 
-         * @param {string} query 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async folderControllerSearch(connectionId: string, folderId: string, query: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FolderListDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.folderControllerSearch(connectionId, folderId, query, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['FolderApi.folderControllerSearch']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary GET /api/drive/connections/:connectionId/search 特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
+         * @summary GET /api/drive/connections/:connectionId/search  特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
          * @param {string} connectionId 
          * @param {string} folderId 
          * @param {string} query 
@@ -286,17 +164,6 @@ export const FolderApiFactory = function (configuration?: Configuration, basePat
     return {
         /**
          * 
-         * @summary GET /api/drive/list フォルダ内容を取得
-         * @param {string} connectionId 
-         * @param {string} [folderId] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        folderControllerListFolder(connectionId: string, folderId?: string, options?: RawAxiosRequestConfig): AxiosPromise<FolderListDto> {
-            return localVarFp.folderControllerListFolder(connectionId, folderId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary GET /api/drive/connections/:connectionId/files  特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）
          * @param {string} connectionId 
          * @param {string} [folderId] 
@@ -308,19 +175,7 @@ export const FolderApiFactory = function (configuration?: Configuration, basePat
         },
         /**
          * 
-         * @summary GET /api/drive/search フォルダ内でキーワード検索
-         * @param {string} connectionId 
-         * @param {string} folderId 
-         * @param {string} query 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        folderControllerSearch(connectionId: string, folderId: string, query: string, options?: RawAxiosRequestConfig): AxiosPromise<FolderListDto> {
-            return localVarFp.folderControllerSearch(connectionId, folderId, query, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary GET /api/drive/connections/:connectionId/search 特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
+         * @summary GET /api/drive/connections/:connectionId/search  特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
          * @param {string} connectionId 
          * @param {string} folderId 
          * @param {string} query 
@@ -339,18 +194,6 @@ export const FolderApiFactory = function (configuration?: Configuration, basePat
 export class FolderApi extends BaseAPI {
     /**
      * 
-     * @summary GET /api/drive/list フォルダ内容を取得
-     * @param {string} connectionId 
-     * @param {string} [folderId] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public folderControllerListFolder(connectionId: string, folderId?: string, options?: RawAxiosRequestConfig) {
-        return FolderApiFp(this.configuration).folderControllerListFolder(connectionId, folderId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary GET /api/drive/connections/:connectionId/files  特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）
      * @param {string} connectionId 
      * @param {string} [folderId] 
@@ -363,20 +206,7 @@ export class FolderApi extends BaseAPI {
 
     /**
      * 
-     * @summary GET /api/drive/search フォルダ内でキーワード検索
-     * @param {string} connectionId 
-     * @param {string} folderId 
-     * @param {string} query 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public folderControllerSearch(connectionId: string, folderId: string, query: string, options?: RawAxiosRequestConfig) {
-        return FolderApiFp(this.configuration).folderControllerSearch(connectionId, folderId, query, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary GET /api/drive/connections/:connectionId/search 特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
+     * @summary GET /api/drive/connections/:connectionId/search  特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
      * @param {string} connectionId 
      * @param {string} folderId 
      * @param {string} query 

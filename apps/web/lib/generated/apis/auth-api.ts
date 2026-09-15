@@ -32,7 +32,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
     return {
         /**
          * 
-         * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+         * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
          * @param {string} provider 
          * @param {string} code 
          * @param {string} state 
@@ -191,7 +191,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+         * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
          * @param {string} provider 
          * @param {string} code 
          * @param {string} state 
@@ -254,7 +254,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
     return {
         /**
          * 
-         * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+         * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
          * @param {string} provider 
          * @param {string} code 
          * @param {string} state 
@@ -303,7 +303,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
 export class AuthApi extends BaseAPI {
     /**
      * 
-     * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+     * @summary GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
      * @param {string} provider 
      * @param {string} code 
      * @param {string} state 

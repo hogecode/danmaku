@@ -1,0 +1,33 @@
+# Caddy リバースプロキシ設定
+# 開発環境でフロント・バックエンドを同一オリジン化
+
+# ✅ http://localhost:8080 で全アクセスを受け付ける（HTTP 明示指定）
+http://localhost:8080 {
+  # ✅ ヘルスチェック
+  handle /health {
+    respond "OK" 200
+  }
+
+  # ✅ API リクエスト → NestJS (localhost:3001)
+  handle /api* {
+    reverse_proxy http://server:3001 {
+      # ✅ X-Forwarded-* ヘッダーを正しく設定
+      header_up X-Forwarded-Proto {http.request.proto}
+      header_up X-Forwarded-Host {http.request.host}
+      header_up X-Forwarded-Port {http.request.port}
+    }
+  }
+
+  # ✅ その他のリクエスト → Next.js (localhost:3000)
+  reverse_proxy http://web:3000 {
+    # ✅ WebSocket 対応
+    header_up Upgrade {http.request.header.Upgrade}
+    header_up Connection {http.request.header.Connection}
+  }
+
+  # ✅ ログ設定
+  log {
+    output stdout
+    format json
+  }
+}

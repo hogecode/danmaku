@@ -9,7 +9,7 @@ All URIs are relative to *http://localhost*
 |[**playerControllerStreamVideo**](#playercontrollerstreamvideo) | **GET** /api/player/stream/{connectionId}/{fileId} | 動画ファイルをストリーミング再生（マルチプロバイダー対応）|
 
 # **playerControllerGenerateVideoToken**
-> playerControllerGenerateVideoToken()
+> GenerateVideoTokenResponseDto playerControllerGenerateVideoToken()
 
 
 ### Example
@@ -32,7 +32,7 @@ This endpoint does not have any parameters.
 
 ### Return type
 
-void (empty response body)
+**GenerateVideoTokenResponseDto**
 
 ### Authorization
 
@@ -41,7 +41,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details

@@ -16,10 +16,13 @@ docs/DPlayerCommentDto.md
 docs/DPlayerCommentListDto.md
 docs/DownloadCommentRequestDto.md
 docs/DriveConnectionApi.md
+docs/DriveConnectionDeleteResponseDto.md
 docs/DriveConnectionDto.md
+docs/DriveConnectionInitiateResponseDto.md
 docs/FileItemDto.md
 docs/FolderApi.md
 docs/FolderListDto.md
+docs/GenerateVideoTokenResponseDto.md
 docs/LoginResponseDto.md
 docs/NicovideoApi.md
 docs/PlayerApi.md
@@ -29,9 +32,12 @@ index.ts
 models/download-comment-request-dto.ts
 models/dplayer-comment-dto.ts
 models/dplayer-comment-list-dto.ts
+models/drive-connection-delete-response-dto.ts
 models/drive-connection-dto.ts
+models/drive-connection-initiate-response-dto.ts
 models/file-item-dto.ts
 models/folder-list-dto.ts
+models/generate-video-token-response-dto.ts
 models/index.ts
 models/login-response-dto.ts
 models/user-info-dto.ts

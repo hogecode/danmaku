@@ -7,7 +7,7 @@ import { useGDriveFolder, useGDriveSearch } from '@/hooks/useGDrive';
 import { FolderBreadcrumb } from '@/components/GDrive/FolderBreadcrumb';
 import { FileListView } from '@/components/GDrive/FileListView';
 import { FileSearchBar } from '@/components/GDrive/FileSearchBar';
-import { FileItem } from '@/lib/gdrive-client';
+import type { FileItemDto } from '@/lib/generated';
 
 /**
  * Google Drive ページ
@@ -17,7 +17,7 @@ export default function DrivePage() {
   const { user, loading: authLoading, isAuthenticated } = useAuthContext();
   const [folderId, setFolderId] = useState('root');
   const [folderName, setFolderName] = useState('My Drive');
-  const [searchResults, setSearchResults] = useState<FileItem[] | null>(null);
+  const [searchResults, setSearchResults] = useState<FileItemDto[] | null>(null);
 
   const { data: folderData, isLoading: isFolderLoading } =
     useGDriveFolder(folderId);

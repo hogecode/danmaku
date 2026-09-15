@@ -43,15 +43,18 @@ async function bootstrap() {
     session({
       store: redisStore,
       secret: sessionSecret,
-      resave: false,
-      saveUninitialized: false,
+      resave: true,  // クッキーを毎回更新（OAuth callback後の確実な設定）
+      saveUninitialized: true,  // 未初期化セッションも保存
       cookie: {
         secure: cookieSecure,
         httpOnly: true,
-        sameSite: 'lax',
+        // sameSite: クロスオリジン時は無効化（開発環境）、本番ではLax
+        sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax',
         maxAge: 14 * 24 * 60 * 60 * 1000, // 14日
+        path: '/',  // ルートパスでクッキーを共有
+        domain: process.env.NODE_ENV === 'production' ? '.danmaku.cloud' : undefined,  // 本番環境でのクロスオリジン対応
       },
-      name: 'danmaku.sid',
+      name: 'danmaku.session.id',
     }),
   );
 
@@ -60,8 +63,11 @@ async function bootstrap() {
   // Enable CORS
   const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:3001';
   app.enableCors({
-    origin: corsOrigin.split(','),
-    credentials: true,
+    origin: corsOrigin.split(',').map(origin => origin.trim()),
+    credentials: true,  // クッキーを許可
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Length'],
   });
 
   // Enable validation

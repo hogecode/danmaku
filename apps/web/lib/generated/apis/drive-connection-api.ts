@@ -21,6 +21,12 @@ import globalAxios from 'axios';
 import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction, replaceWithSerializableTypeIfNeeded } from '../common';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
+// @ts-ignore
+import type { DriveConnectionDeleteResponseDto } from '../models';
+// @ts-ignore
+import type { DriveConnectionDto } from '../models';
+// @ts-ignore
+import type { DriveConnectionInitiateResponseDto } from '../models';
 /**
  * DriveConnectionApi - axios parameter creator
  */
@@ -49,6 +55,7 @@ export const DriveConnectionApiAxiosParamCreator = function (configuration?: Con
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -61,7 +68,7 @@ export const DriveConnectionApiAxiosParamCreator = function (configuration?: Con
         },
         /**
          * 
-         * @summary GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+         * @summary GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
          * @param {string} provider 
          * @param {string} code 
          * @param {string} state 
@@ -129,6 +136,7 @@ export const DriveConnectionApiAxiosParamCreator = function (configuration?: Con
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -158,6 +166,7 @@ export const DriveConnectionApiAxiosParamCreator = function (configuration?: Con
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -184,7 +193,7 @@ export const DriveConnectionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async driveConnectionControllerDelete(connectionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async driveConnectionControllerDelete(connectionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DriveConnectionDeleteResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.driveConnectionControllerDelete(connectionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DriveConnectionApi.driveConnectionControllerDelete']?.[localVarOperationServerIndex]?.url;
@@ -192,7 +201,7 @@ export const DriveConnectionApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+         * @summary GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
          * @param {string} provider 
          * @param {string} code 
          * @param {string} state 
@@ -212,7 +221,7 @@ export const DriveConnectionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async driveConnectionControllerInitiateConnection(provider: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async driveConnectionControllerInitiateConnection(provider: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DriveConnectionInitiateResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.driveConnectionControllerInitiateConnection(provider, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DriveConnectionApi.driveConnectionControllerInitiateConnection']?.[localVarOperationServerIndex]?.url;
@@ -224,7 +233,7 @@ export const DriveConnectionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async driveConnectionControllerList(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async driveConnectionControllerList(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<DriveConnectionDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.driveConnectionControllerList(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DriveConnectionApi.driveConnectionControllerList']?.[localVarOperationServerIndex]?.url;
@@ -246,12 +255,12 @@ export const DriveConnectionApiFactory = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        driveConnectionControllerDelete(connectionId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        driveConnectionControllerDelete(connectionId: string, options?: RawAxiosRequestConfig): AxiosPromise<DriveConnectionDeleteResponseDto> {
             return localVarFp.driveConnectionControllerDelete(connectionId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @summary GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+         * @summary GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
          * @param {string} provider 
          * @param {string} code 
          * @param {string} state 
@@ -268,7 +277,7 @@ export const DriveConnectionApiFactory = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        driveConnectionControllerInitiateConnection(provider: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        driveConnectionControllerInitiateConnection(provider: string, options?: RawAxiosRequestConfig): AxiosPromise<DriveConnectionInitiateResponseDto> {
             return localVarFp.driveConnectionControllerInitiateConnection(provider, options).then((request) => request(axios, basePath));
         },
         /**
@@ -277,7 +286,7 @@ export const DriveConnectionApiFactory = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        driveConnectionControllerList(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        driveConnectionControllerList(options?: RawAxiosRequestConfig): AxiosPromise<Array<DriveConnectionDto>> {
             return localVarFp.driveConnectionControllerList(options).then((request) => request(axios, basePath));
         },
     };
@@ -300,7 +309,7 @@ export class DriveConnectionApi extends BaseAPI {
 
     /**
      * 
-     * @summary GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+     * @summary GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
      * @param {string} provider 
      * @param {string} code 
      * @param {string} state 

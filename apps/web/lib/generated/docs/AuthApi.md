@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**authControllerCallbackWithProvider**](#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする|
+|[**authControllerCallbackWithProvider**](#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す|
 |[**authControllerGetUserInfo**](#authcontrollergetuserinfo) | **GET** /api/auth/me | GET /api/auth/me - ユーザー情報取得|
 |[**authControllerLoginWithProvider**](#authcontrollerloginwithprovider) | **POST** /api/auth/login/{provider} | POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す|
 |[**authControllerLogout**](#authcontrollerlogout) | **POST** /api/auth/logout | POST /api/auth/logout - ログアウト|

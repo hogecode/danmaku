@@ -1,13 +1,13 @@
 'use client';
 
-import { FileItem } from '@/lib/gdrive-client';
+import type { FileItemDto } from '@/lib/generated';
 import { FileTypeIcon } from './FileTypeIcon';
 
 /**
  * ファイル/フォルダ一覧表示
  */
 interface FileListViewProps {
-  items: FileItem[];
+  items: FileItemDto[];
   isLoading?: boolean;
   onFolderClick: (folderId: string, folderName: string) => void;
   onVideoClick?: (fileId: string, fileName: string, folderId?: string) => void;
@@ -56,7 +56,7 @@ export function FileListView({
  * ファイル/フォルダ一覧アイテム
  */
 interface FileListItemProps {
-  item: FileItem;
+  item: FileItemDto;
   onFolderClick: (folderId: string, folderName: string) => void;
   onVideoClick?: (fileId: string, fileName: string, folderId?: string) => void;
 }

@@ -20,7 +20,6 @@ interface AuthContextType {
   isAuthenticated: boolean;
   startLogin: () => Promise<void>;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<void>;
   fetchUserInfo: () => Promise<void>;
 }
 
@@ -44,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: auth.isAuthenticated,
         startLogin: auth.startLogin,
         logout: auth.logout,
-        refreshToken: auth.refreshToken,
         fetchUserInfo: async () => {
           await auth.fetchUserInfo();
         },

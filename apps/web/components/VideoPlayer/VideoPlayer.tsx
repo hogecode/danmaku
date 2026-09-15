@@ -1,9 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { DPlayerComment } from '@/lib/api/dplayer-comment';
-import { generateVideoStreamUrl } from '@/lib/api/player-client';
+import type { DPlayerCommentDto } from '@/lib/generated';
 import { usePlayerComments } from '@/hooks';
+
+/**
+ * 動画ストリーミング URL を生成
+ */
+function generateVideoStreamUrl(videoFileId: string): string {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+  return `${baseUrl}/api/player/stream/${videoFileId}`;
+}
 
 interface VideoPlayerProps {
   /**
@@ -15,6 +22,11 @@ interface VideoPlayerProps {
    * 動画ファイルが存在するフォルダID
    */
   folderId?: string;
+
+  /**
+   * Drive接続 ID
+   */
+  connectionId?: string;
 
   /**
    * プレイヤーを表示する DOM コンテナ
@@ -52,6 +64,7 @@ interface VideoPlayerProps {
 export function VideoPlayer({
   videoFileId,
   folderId,
+  connectionId,
   containerClassName = 'w-full aspect-video bg-black',
   commentSettings = {
     speedRate: 1,
@@ -66,7 +79,7 @@ export function VideoPlayer({
 }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const dplayerRef = useRef<any>(null);
-  const commentListRef = useRef<DPlayerComment[]>([]);
+  const commentListRef = useRef<DPlayerCommentDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,6 +87,7 @@ export function VideoPlayer({
   const { data: dplayerComments = [], isLoading: commentsLoading, error: commentsError } = usePlayerComments(
     videoFileId,
     folderId,
+    connectionId,
   );
 
   /**
@@ -186,7 +200,7 @@ export function VideoPlayer({
         dplayerRef.current = null;
       }
     };
-  }, [videoFileId, folderId, dplayerComments, playerSettings, commentSettings]);
+  }, [videoFileId, folderId, connectionId, dplayerComments, playerSettings, commentSettings]);
 
   return (
     <div className={containerClassName} style={{ position: 'relative' }}>

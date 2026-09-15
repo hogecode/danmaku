@@ -68,5 +68,5 @@ export async function fetchFolderContents(folderId: string) {
  * ファイル・フォルダを検索（スタンドアロン関数）
  */
 export async function searchFiles(query: string, folderId?: string) {
-  return gdriveClient.searchFiles(query, folderId);
+  return gdriveClient.searchFiles(folderId ?? '', query);
 }

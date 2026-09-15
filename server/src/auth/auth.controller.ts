@@ -64,13 +64,13 @@ export class AuthController {
    * モバイルクライアントにはセッション ID を DeepLink で返す
    */
   @Get('callback/:provider')
+  @Redirect('http://localhost:8080/home', 302)  // デフォルトのリダイレクト（動的 URL で上書き可）
   async callbackWithProvider(
     @Param('provider') provider: ProviderType,
     @Query() query: CallbackQueryDto,
     @Session() session: Express.Session,
     @Req() request: Request,
-    @Res() response: Response,
-  ): Promise<void> {
+  ): Promise<{ url: string; statusCode?: number }> {
     if (query.error) {
       const errorMsg = `Authorization failed: ${query.error_description || query.error}`;
       this.logger.error(
@@ -125,21 +125,6 @@ export class AuthController {
         });
       });
 
-      // ✅ さらに Redis に直接キャッシュ（モバイルアプリ用）
-      // モバイルアプリが新しい Express Session を生成してもこのキーでアクセス可能
-      // キー形式: auth:session:<sessionId>
-      const TTL_SECONDS = 7 * 24 * 60 * 60; // 7 日間
-      await this.redis.setex(
-        `auth:session:${sessionId}`,
-        TTL_SECONDS,
-        JSON.stringify({ userId: userInfo.id, provider }),
-      );
-      this.logger.debug('[AUTH] Session cached in Redis with custom key', {
-        sessionId: sessionId.substring(0, 10) + '...',
-        userId: userInfo.id,
-        redisKey: `auth:session:${sessionId}`,
-      });
-
       // クライアントタイプを検出
       const clientType = this.authService.detectClientType(request);
 
@@ -149,11 +134,22 @@ export class AuthController {
         userInfo,
         provider,
         clientType,
-        sessionId, // ✅ sessionId を追加
+        sessionId, //  sessionId を追加
       );
 
-      // ディープリンク URL またはリダイレクト URL でリダイレクト
-      return response.redirect(302, callbackResponse.url);
+      // ✅ Express Session ミドルウェアが自動的にセッションクッキーをセット
+      // @Redirect() デコレータが { url } を HTTP 302 リダイレクトに変換
+      
+      this.logger.debug('[AUTH] Redirecting with session', {
+        sessionId: sessionId.substring(0, 10) + '...',
+        userId: userInfo.id,
+        redirectUrl: callbackResponse.url,
+        clientType,
+      });
+
+      // ✅ @Redirect() デコレータが { url } を HTTP 302 リダイレクトに変換
+      // Express Session ミドルウェアがセッションクッキーを自動設定
+      return { url: callbackResponse.url, statusCode: 302 };
     } catch (error) {
       this.logger.error(`[AUTH] Callback error (${provider})`, error as Error);
       const errorMsg =
