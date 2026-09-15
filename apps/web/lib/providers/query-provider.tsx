@@ -24,13 +24,6 @@ const queryClient = new QueryClient({
 
 /**
  * QueryClientProvider ラッパーコンポーネント
- * 
- * App ルートレイアウトで使用：
- * ```tsx
- * <QueryProvider>
- *   <YourApp />
- * </QueryProvider>
- * ```
  */
 export function QueryProvider({ children }: { children: ReactNode }) {
   return (

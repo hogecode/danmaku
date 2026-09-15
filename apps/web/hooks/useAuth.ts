@@ -4,6 +4,8 @@ import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AuthApi, Configuration } from '@/lib/generated';
 import type { UserInfoDto, LoginResponseDto } from '@/lib/generated';
+import { useAppDispatch } from '@/lib/store/hooks';
+import { setConnections, selectConnection } from '@/lib/store/slices/drivesSlice';
 
 /**
  * ユーザー情報型
@@ -31,6 +33,7 @@ function createAuthApi(): AuthApi {
 export function useAuth() {
   const queryClient = useQueryClient();
   const authApi = createAuthApi();
+  const dispatch = useAppDispatch();
 
   // ✅ ユーザー情報取得（自動キャッシング）
   const {
@@ -42,7 +45,17 @@ export function useAuth() {
     queryKey: ['auth', 'user'],
     queryFn: async () => {
       const response = await authApi.authControllerGetUserInfo();
-      return response.data;
+      const userInfo = response.data;
+      
+      // ✅ Redux にドライブ接続情報を保存
+      if (userInfo.drives && userInfo.drives.length > 0) {
+        dispatch(setConnections(userInfo.drives));
+        // 最初のドライブを選択
+        dispatch(selectConnection(userInfo.drives[0].id));
+        console.log(`[useAuth] Saved ${userInfo.drives.length} connections to Redux`);
+      }
+      
+      return userInfo;
     },
     staleTime: 1000 * 60 * 5, // 5分
     gcTime: 1000 * 60 * 30,    // 30分

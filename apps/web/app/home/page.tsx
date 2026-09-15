@@ -80,13 +80,6 @@ export default function HomePage() {
                 </h2>
                 <p className="text-gray-600 text-sm mb-4">{user.email}</p>
 
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                  <p className="text-xs text-gray-500 mb-2">プロバイダー</p>
-                  <p className="font-semibold text-gray-900 capitalize">
-                    {user.oauth_provider}
-                  </p>
-                </div>
-
                 {user.last_login && (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-xs text-gray-500 mb-2">最終ログイン</p>

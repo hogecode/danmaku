@@ -3,10 +3,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/AuthProvider';
-import { useGDriveFolder, useGDriveSearch } from '@/hooks/useGDrive';
-import { FolderBreadcrumb } from '@/components/GDrive/FolderBreadcrumb';
-import { FileListView } from '@/components/GDrive/FileListView';
-import { FileSearchBar } from '@/components/GDrive/FileSearchBar';
+import { useDriveConnections, useFolderList, useFolderSearch } from '@/hooks/useFolder';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { selectSelectedConnection, selectHydrated } from '@/lib/store/selectors';
+import { setConnections, selectConnection } from '@/lib/store/slices/drivesSlice';
+import { FolderBreadcrumb } from '@/components/drive/FolderBreadcrumb';
+import { FileListView } from '@/components/drive/FileListView';
+import { FileSearchBar } from '@/components/drive/FileSearchBar';
+import { DriveSelector } from '@/components/DriveSelector';
 import type { FileItemDto } from '@/lib/generated';
 
 /**
@@ -14,14 +18,34 @@ import type { FileItemDto } from '@/lib/generated';
  */
 export default function DrivePage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { user, loading: authLoading, isAuthenticated } = useAuthContext();
   const [folderId, setFolderId] = useState('root');
   const [folderName, setFolderName] = useState('My Drive');
   const [searchResults, setSearchResults] = useState<FileItemDto[] | null>(null);
 
+  // Redux から選択中のドライブと hydration 状態を取得
+  const selectedConnection = useAppSelector(selectSelectedConnection);
+  const hydrated = useAppSelector(selectHydrated);
+
+  // API からドライブ接続一覧を取得
+  const { data: connections, isLoading: isConnectionsLoading } = useDriveConnections();
+
+  // ドライブ接続一覧が取得できたら Redux に保存
+  useEffect(() => {
+    if (connections && connections.length > 0) {
+      dispatch(setConnections(connections));
+    }
+  }, [connections, dispatch]);
+
+  // 選択中の接続 ID を取得（Redux から、ない場合は最初の接続）
+  const connectionId = selectedConnection?.id || connections?.[0]?.id || '';
+
+  // 指定された接続のフォルダ内容を取得
   const { data: folderData, isLoading: isFolderLoading } =
-    useGDriveFolder(folderId);
-  const searchMutation = useGDriveSearch();
+    useFolderList(connectionId, folderId);
+
+  const searchMutation = useFolderSearch(connectionId);
 
   // 未認証の場合はログインページへリダイレクト
   useEffect(() => {
@@ -88,7 +112,7 @@ export default function DrivePage() {
   }
 
   const displayItems = searchResults || folderData?.items || [];
-  const isLoading = isFolderLoading || searchMutation.isPending;
+  const isLoading = isConnectionsLoading || isFolderLoading || searchMutation.isPending;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -110,6 +134,16 @@ export default function DrivePage() {
       {/* メインコンテンツ */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6">
+          {/* ドライブセレクター */}
+          {connections && connections.length > 1 && (
+            <div className="mb-6 flex items-center gap-4">
+              <label className="text-sm font-medium text-gray-700">
+                ドライブ:
+              </label>
+              <DriveSelector />
+            </div>
+          )}
+
           {/* パンくずナビゲーション */}
           <div className="mb-6">
             <FolderBreadcrumb

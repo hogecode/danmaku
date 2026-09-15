@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/AuthProvider";
 import { QueryProvider } from "@/lib/providers";
+import { StoreProvider } from "@/components/StoreProvider";
 import { Navigation } from "@/components/Navigation";
 import "./globals.css";
 
@@ -27,12 +28,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <QueryProvider>
-          <AuthProvider>
-            <Navigation />
-            {children}
-          </AuthProvider>
-        </QueryProvider>
+        <StoreProvider>
+          <QueryProvider>
+            <AuthProvider>
+              <Navigation />
+              {children}
+            </AuthProvider>
+          </QueryProvider>
+        </StoreProvider>
       </body>
     </html>
   );

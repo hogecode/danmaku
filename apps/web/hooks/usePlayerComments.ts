@@ -24,15 +24,6 @@ function createPlayerApi(): PlayerApi {
  * usePlayerComments
  * 
  * DPlayer 互換形式のコメントを TanStack Query で取得
- * 
- * @param videoFileId - 動画ファイル ID
- * @param folderId - フォルダ ID
- * @param connectionId - 接続 ID
- * @param options - useQuery オプション
- * @returns useQuery 結果
- * 
- * @example
- * const { data, isLoading, error } = usePlayerComments(videoFileId, folderId, connectionId);
  */
 export function usePlayerComments(
   videoFileId?: string,

@@ -4,6 +4,8 @@ import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/AuthProvider';
 import { VideoPlayer } from '@/components/VideoPlayer';
+import { useAppSelector } from '@/lib/store/hooks';
+import { selectSelectedConnectionId } from '@/lib/store/selectors';
 
 export default function WatchPage({
   searchParams,
@@ -12,6 +14,10 @@ export default function WatchPage({
 }) {
   const router = useRouter();
   const { user, loading: authLoading, isAuthenticated } = useAuthContext();
+  
+  // ✅ Redux ストアから選択中のドライブ接続ID を取得
+  const connectionId = useAppSelector(selectSelectedConnectionId);
+  
   const params = use(searchParams);
   const fileId = Array.isArray(params.fileId)
     ? params.fileId[0]
@@ -65,6 +71,17 @@ export default function WatchPage({
     );
   }
 
+  if (!connectionId) {
+    return (
+      <div className="w-full h-screen bg-gray-900 flex items-center justify-center text-white">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">ドライブが選択されていません</h1>
+          <p className="text-gray-400">ドライブを選択してから動画を再生してください</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full min-h-screen bg-gray-900 text-white p-4">
       <div className="max-w-7xl mx-auto">
@@ -72,6 +89,7 @@ export default function WatchPage({
           <VideoPlayer
             videoFileId={fileId}
             folderId={folderId}
+            connectionId={connectionId}
             containerClassName="w-full aspect-video bg-black"
             commentSettings={commentSettings}
             playerSettings={playerSettings}
