@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/provider/AuthProvider';
+import { Sidebar } from '@/components/Sidebar';
 import { useFolderList, useFolderSearch } from '@/hooks/useFolder';
 import { useDriveConnections } from '@/hooks/useDriveConnection';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
@@ -27,7 +28,9 @@ import {
   Stack,
   Button,
   Paper,
+  IconButton,
 } from '@mui/material';
+import { Menu as MenuIcon } from '@mui/icons-material';
 
 /**
  * Google Drive Page - MUI Version
@@ -39,6 +42,7 @@ export default function DrivePage() {
   const [folderId, setFolderId] = useState('root');
   const [folderName, setFolderName] = useState('My Drive');
   const [searchResults, setSearchResults] = useState<FileItemDto[] | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const selectedConnection = useAppSelector(selectSelectedConnection);
   const hydrated = useAppSelector(selectHydrated);
@@ -120,21 +124,36 @@ export default function DrivePage() {
   const isLoading = isConnectionsLoading || isFolderLoading || searchMutation.isPending;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      {/* AppBar */}
-      <AppBar position="static" elevation={1}>
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
-            Google Drive
-          </Typography>
-          <Button color="inherit" onClick={() => router.push('/home')}>
-            Home
-          </Button>
-        </Toolbar>
-      </AppBar>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Sidebar */}
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Mobile AppBar */}
+        <AppBar
+          position="static"
+          elevation={1}
+          sx={{ display: { xs: 'flex', md: 'none' } }}
+        >
+          <Toolbar>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={() => setSidebarOpen(true)}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              ドライブ
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
+        {/* Content */}
+        <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'background.default' }}>
+          <Container maxWidth="lg" sx={{ py: 4 }}>
         <Stack spacing={3}>
           {/* Drive Selector */}
           {connections && connections.length > 1 && (
@@ -193,8 +212,10 @@ export default function DrivePage() {
               )}
             </CardContent>
           </Card>
-        </Stack>
-      </Container>
+          </Stack>
+          </Container>
+        </Box>
+      </Box>
     </Box>
   );
 }

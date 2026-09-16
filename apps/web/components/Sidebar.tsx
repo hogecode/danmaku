@@ -39,7 +39,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'ホーム', icon: <HomeIcon />, path: '/' },
-  { label: 'Google Drive', icon: <CloudIcon />, path: '/drive' },
+  { label: 'ドライブ', icon: <CloudIcon />, path: '/drive' },
   { label: 'ネットワーク', icon: <FolderIcon />, path: '/network' },
   { label: 'プレイリスト', icon: <PlaylistIcon />, path: '/playlist' },
   { label: 'スクリーンショット', icon: <ImageIcon />, path: '/screenshot' },

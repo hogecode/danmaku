@@ -4,28 +4,24 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/provider/AuthProvider';
 import { Sidebar } from '@/components/Sidebar';
-import { DrivesManagement } from '@/components/DrivesManagement';
 import {
+  Box,
   AppBar,
   Toolbar,
-  Container,
-  Box,
-  CircularProgress,
-  Typography,
   IconButton,
+  Typography,
+  CircularProgress,
+  Container,
+  Card,
+  CardContent,
 } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
 
-/**
- * ネットワークページ
- * ドライブ接続の管理
- */
-export default function NetworkPage() {
+export default function SettingsPage() {
   const router = useRouter();
-  const { isAuthenticated, loading } = useAuthContext();
+  const { user, loading, isAuthenticated } = useAuthContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // 未認証の場合はログインページへリダイレクト
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.push('/auth/login');
@@ -52,18 +48,12 @@ export default function NetworkPage() {
     );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated || !user) return null;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Sidebar */}
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-      {/* Main Content */}
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Mobile AppBar */}
         <AppBar
           position="static"
           elevation={1}
@@ -79,15 +69,15 @@ export default function NetworkPage() {
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              ネットワーク
+              設定
             </Typography>
           </Toolbar>
         </AppBar>
-
-        {/* Content */}
         <Box sx={{ flex: 1, overflow: 'auto' }}>
-          <Container maxWidth="md" sx={{ py: 4 }}>
-            <DrivesManagement />
+          <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
+              設定
+            </Typography>
           </Container>
         </Box>
       </Box>
