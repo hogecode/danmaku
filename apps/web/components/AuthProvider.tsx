@@ -18,7 +18,7 @@ interface AuthContextType {
   loading: boolean;
   error: Error | null;
   isAuthenticated: boolean;
-  startLogin: () => Promise<void>;
+  startLogin: (provider?: string) => Promise<void>;
   logout: () => Promise<void>;
   fetchUserInfo: () => Promise<void>;
 }

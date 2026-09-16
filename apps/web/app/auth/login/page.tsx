@@ -2,16 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { useAuthContext } from '@/components/AuthProvider';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { GoogleButton } from '@/components/GoogleButton';
+import { MicrosoftButton } from '@/components/MicrosoftButton';
 
 /**
- * ログイン画面
- * TODO: 通常ログインフローの実装
+ * OAuth ログイン画面
+ * ✅ OAuth フロー、セッションベースの認証に対応
+ * マルチプロバイダー対応（OneDrive, Google Drive など）
  */
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, loading, startLogin } = useAuthContext();
+  const searchParams = useSearchParams();
+  const { isAuthenticated, loading, startLogin, user } = useAuthContext();
   const [loginLoading, setLoginLoading] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   // マウント時の初期化
@@ -19,32 +25,69 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
+  // ✅ OAuth コールバック（callback?sessionId=xxx&user=...）を処理
+  useEffect(() => {
+    if (!isMounted || loading) return;
+
+    // URLからセッション情報を確認
+    const sessionId = searchParams.get('sessionId');
+    const userParam = searchParams.get('user');
+
+    if (sessionId && userParam) {
+      try {
+        const userInfo = JSON.parse(userParam);
+        console.log('[LoginPage] OAuth コールバック成功:', { id: userInfo.id, name: userInfo.name });
+        // ✅ useAuthContextが自動的に処理
+        // 認証情報は AuthProvider で管理されるため、ここでは待機
+        setTimeout(() => {
+          if (isAuthenticated) {
+            router.replace('/home');
+          }
+        }, 500);
+      } catch (e) {
+        console.error('[LoginPage] ユーザー情報パース失敗:', e);
+        setError('認証情報が正しくありません');
+      }
+    }
+  }, [isMounted, searchParams, isAuthenticated, loading, router]);
+
   // すでに認証されていたらホームへリダイレクト
   useEffect(() => {
-    // useAuthContextがマウントされる前に実行されるのを防ぐため、isMountedをチェック
     if (!isMounted) return;
 
-    // TODO: ミドルウェアでの認証チェックを追加する
-    if (isAuthenticated && !loading) {
-      router.push('/home');
+    if (isAuthenticated && !loading && user) {
+      console.log('[LoginPage] 認証済み、ホームにリダイレクト');
+      router.replace('/home');
     }
-  }, [isMounted, isAuthenticated, loading, router]);
+  }, [isMounted, isAuthenticated, loading, user, router]);
 
-  // TODO: tanstack queryを利用してログイン状態を管理する
-  const handleGoogleLogin = async () => {
+  // ログインボタン押下時
+  const handleLogin = async (provider: string) => {
     try {
+      setError(null);
       setLoginLoading(true);
-      await startLogin();
-    } catch (error) {
-      console.error('Login error:', error);
+      setSelectedProvider(provider);
+
+      console.log(`[LoginPage] ログイン開始 (provider=${provider})`);
+
+      // startLogin を呼び出すと、OAuth フローに自動的にリダイレクト
+      await startLogin(provider);
+    } catch (err) {
+      console.error('[LoginPage] ログイン失敗:', err);
+      setError(
+        err instanceof Error
+          ? `ログイン失敗: ${err.message}`
+          : 'ログイン失敗'
+      );
       setLoginLoading(false);
+      setSelectedProvider(null);
     }
   };
 
   // ハイドレーション完了またはローディング中の場合
   if (!isMounted || loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-stone-100">
         <div className="animate-spin">
           <div className="border-4 border-gray-300 border-t-blue-500 rounded-full w-12 h-12"></div>
         </div>
@@ -54,47 +97,46 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-stone-100 px-6">
+      <div className="w-full max-w-md">
+        {/* ロゴ・タイトル */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Danmaku</h1>
-          <p className="text-gray-600">リアルタイムコメント配信プラットフォーム</p>
-        </div>
-
-        <div className="space-y-4">
-          <p className="text-center text-gray-600 text-sm mb-6">
-            Google アカウントでログインしてください
+          <h1 className="text-3xl font-bold mb-2 text-gray-900">Danmaku</h1>
+          <p className="text-sm text-gray-500">
+            クラウドストレージのビデオを弾幕付きで再生できるサービスです。
           </p>
-          
-          {/* サーバーで生成したURLにリダイレクトする */}
-          {/* TODO: Google ログインボタンのスタイルを改善する */}
-          <button
-            onClick={handleGoogleLogin}
-            disabled={loginLoading}
-            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 hover:border-blue-500 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M12.382 1.564a10.787 10.787 0 0110.787 10.787c0 5.955-4.832 10.787-10.787 10.787-5.954 0-10.787-4.832-10.787-10.787 0-5.954 4.833-10.787 10.787-10.787zm0 1.956c-4.865 0-8.831 3.966-8.831 8.831 0 4.866 3.966 8.831 8.831 8.831 4.866 0 8.831-3.965 8.831-8.831 0-4.865-3.965-8.831-8.831-8.831zm-4.364 5.277h1.956v3.912h-1.956v-3.912zm4.364-3.956a1.956 1.956 0 110 3.912 1.956 1.956 0 010-3.912zm0 1.956a1 1 0 100 2 1 1 0 000-2z"
-                clipRule="evenodd"
-              />
-            </svg>
-            {loginLoading ? 'リダイレクト中...' : 'Google でログイン'}
-          </button>
         </div>
 
+        {/* エラーメッセージ */}
+        {error && (
+          <div className="bg-red-50 rounded-lg p-3 mb-6 w-full">
+            <p className="text-red-900 text-xs text-center">{error}</p>
+          </div>
+        )}
+
+        {/* ✅ プロバイダー選択ボタン */}
+        <div className="flex flex-col gap-4">
+          <GoogleButton
+            onPress={() => handleLogin('google')}
+            disabled={loginLoading || loading}
+            loading={selectedProvider === 'google' && (loginLoading || loading)}
+            label="Google Drive でログイン"
+          />
+          <MicrosoftButton
+            onPress={() => handleLogin('onedrive')}
+            disabled={loginLoading || loading}
+            loading={selectedProvider === 'onedrive' && (loginLoading || loading)}
+            label="Microsoft OneDrive でログイン"
+          />
+        </div>
+
+        {/* 利用規約・プライバシー */}
         <div className="mt-8 pt-8 border-t border-gray-200">
           <p className="text-center text-xs text-gray-500">
             ログインすることで、利用規約とプライバシーポリシーに同意したものとします
           </p>
         </div>
       </div>
-
     </div>
   );
 }
