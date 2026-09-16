@@ -7,6 +7,7 @@ apis/drive-connection-api.ts
 apis/folder-api.ts
 apis/nicovideo-api.ts
 apis/player-api.ts
+apis/user-settings-api.ts
 base.ts
 common.ts
 configuration.ts
@@ -26,7 +27,10 @@ docs/GenerateVideoTokenResponseDto.md
 docs/LoginResponseDto.md
 docs/NicovideoApi.md
 docs/PlayerApi.md
+docs/UpdateUserSettingsDto.md
 docs/UserInfoDto.md
+docs/UserSettingsApi.md
+docs/UserSettingsDto.md
 git_push.sh
 index.ts
 models/download-comment-request-dto.ts
@@ -40,4 +44,6 @@ models/folder-list-dto.ts
 models/generate-video-token-response-dto.ts
 models/index.ts
 models/login-response-dto.ts
+models/update-user-settings-dto.ts
 models/user-info-dto.ts
+models/user-settings-dto.ts

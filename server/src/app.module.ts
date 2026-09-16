@@ -9,6 +9,7 @@ import { DriveModule } from './drive/drive.module';
 import { PlayerModule } from './player/player.module';
 import { CommonModule } from './common/common.module';
 import { NicovideoModule } from './nicovideo/nicovideo.module';
+import { UserSettingsModule } from './user-settings/user-settings.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { NicovideoModule } from './nicovideo/nicovideo.module';
     DriveModule,
     PlayerModule,
     NicovideoModule,
+    UserSettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

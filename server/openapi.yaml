@@ -353,6 +353,57 @@ paths:
         TODO: レスポンスDTOを定義
       tags:
         - Nicovideo
+  /api/user-settings:
+    get:
+      operationId: UserSettingsController_getSettings
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettingsDto'
+      summary: |-
+        GET /api/user-settings - ユーザー設定を取得
+
+        現在のユーザーの設定を取得します。
+        存在しない場合はデフォルト値で自動作成します。
+      tags:
+        - UserSettings
+    patch:
+      operationId: UserSettingsController_updateSettings
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettingsDto'
+      summary: |-
+        PATCH /api/user-settings - ユーザー設定を更新
+
+        指定されたフィールドのみを更新します。
+      tags:
+        - UserSettings
+  /api/user-settings/reset:
+    patch:
+      operationId: UserSettingsController_resetSettings
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettingsDto'
+      summary: |-
+        PATCH /api/user-settings/reset - ユーザー設定をリセット
+
+        すべての設定をデフォルト値に戻します。
+      tags:
+        - UserSettings
 info:
   title: danmaku API
   description: Danmaku API documentation
@@ -571,3 +622,49 @@ components:
           minimum: 0
       required:
         - videoId
+    UserSettingsDto:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        theme:
+          type: string
+        language:
+          type: string
+        auto_play_next:
+          type: boolean
+        playback_speed:
+          type: string
+        danmaku_enabled:
+          type: boolean
+        danmaku_opacity:
+          type: string
+        danmaku_max_count:
+          type: number
+        danmaku_display_duration:
+          type: number
+        ng_words_reg:
+          type: string
+          nullable: true
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - user_id
+        - theme
+        - language
+        - auto_play_next
+        - playback_speed
+        - danmaku_enabled
+        - danmaku_opacity
+        - danmaku_max_count
+        - danmaku_display_duration
+        - ng_words_reg
+        - created_at
+        - updated_at

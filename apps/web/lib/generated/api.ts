@@ -20,4 +20,5 @@ export * from './apis/drive-connection-api';
 export * from './apis/folder-api';
 export * from './apis/nicovideo-api';
 export * from './apis/player-api';
+export * from './apis/user-settings-api';
 

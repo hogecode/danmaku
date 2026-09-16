@@ -6,6 +6,7 @@ import { useAuthContext } from '@/components/provider/AuthProvider';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { useAppSelector } from '@/lib/store/hooks';
 import { selectSelectedConnectionId } from '@/lib/store/selectors';
+import { useUserSettingsQuery } from '@/hooks/useUserSettings';
 
 export default function WatchPage({
   searchParams,
@@ -18,6 +19,9 @@ export default function WatchPage({
   // ✅ Redux ストアから選択中のドライブ接続ID を取得
   const connectionId = useAppSelector(selectSelectedConnectionId);
   
+  // ✅ ユーザー設定を取得
+  const { data: userSettings, isLoading: settingsLoading } = useUserSettingsQuery();
+  
   const params = use(searchParams);
   const fileId = Array.isArray(params.fileId)
     ? params.fileId[0]
@@ -26,15 +30,33 @@ export default function WatchPage({
     ? params.folderId[0]
     : params.folderId;
 
-  const [commentSettings, setCommentSettings] = useState({
+  // ✅ ユーザー設定からコメント設定を構築
+  const commentSettings = userSettings ? {
+    speedRate: 1, // デフォルト値
+    fontSize: 25, // デフォルト値
+    opacity: parseFloat(userSettings.danmaku_opacity || '0.7'),
+    maxCount: userSettings.danmaku_max_count || 100,
+    displayDuration: userSettings.danmaku_display_duration || 5,
+    closeFormAfterSend: false,
+  } : {
     speedRate: 1,
     fontSize: 25,
-  });
+    opacity: 0.7,
+    maxCount: 100,
+    displayDuration: 5,
+    closeFormAfterSend: false,
+  };
 
-  const [playerSettings, setPlayerSettings] = useState({
+  // ✅ ユーザー設定からプレイヤー設定を構築
+  const playerSettings = userSettings ? {
+    theme: userSettings.theme || '#E64F97',
+    autoplay: true,
+    playbackSpeed: parseFloat(userSettings.playback_speed || '1'),
+  } : {
     theme: '#E64F97',
     autoplay: true,
-  });
+    playbackSpeed: 1,
+  };
 
   // 未認証の場合はログインページへリダイレクト
   useEffect(() => {
@@ -86,109 +108,31 @@ export default function WatchPage({
     <div className="w-full min-h-screen bg-gray-900 text-white p-4">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 rounded-lg overflow-hidden shadow-2xl">
-          <VideoPlayer
-            videoFileId={fileId}
-            folderId={folderId}
-            connectionId={connectionId}
-            containerClassName="w-full aspect-video bg-black"
-            commentSettings={commentSettings}
-            playerSettings={playerSettings}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">コメント設定</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  コメント速度: {commentSettings.speedRate.toFixed(1)}
-                </label>
-                <input
-                  type="range"
-                  min="0.25"
-                  max="2"
-                  step="0.25"
-                  value={commentSettings.speedRate}
-                  onChange={(e) =>
-                    setCommentSettings({
-                      ...commentSettings,
-                      speedRate: parseFloat(e.target.value),
-                    })
-                  }
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  フォントサイズ: {commentSettings.fontSize}px
-                </label>
-                <input
-                  type="range"
-                  min="12"
-                  max="48"
-                  step="2"
-                  value={commentSettings.fontSize}
-                  onChange={(e) =>
-                    setCommentSettings({
-                      ...commentSettings,
-                      fontSize: parseInt(e.target.value, 10),
-                    })
-                  }
-                  className="w-full"
-                />
+          {settingsLoading ? (
+            <div className="w-full aspect-video bg-black flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin mb-3">⏳</div>
+                <p>設定を読込中...</p>
               </div>
             </div>
-          </div>
-
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">プレイヤー設定</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">テーマカラー</label>
-                <div className="flex gap-2">
-                  {['#E64F97', '#00A0FF', '#FF5722', '#4CAF50'].map((color) => (
-                    <button
-                      key={color}
-                      onClick={() =>
-                        setPlayerSettings({
-                          ...playerSettings,
-                          theme: color,
-                        })
-                      }
-                      className={`w-8 h-8 rounded border-2 ${
-                        playerSettings.theme === color
-                          ? 'border-white'
-                          : 'border-transparent'
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={playerSettings.autoplay}
-                  onChange={(e) =>
-                    setPlayerSettings({
-                      ...playerSettings,
-                      autoplay: e.target.checked,
-                    })
-                  }
-                  className="rounded"
-                />
-                <span className="ml-2 text-sm">自動再生</span>
-              </label>
-            </div>
-          </div>
+          ) : (
+            <VideoPlayer
+              videoFileId={fileId}
+              folderId={folderId}
+              connectionId={connectionId}
+              containerClassName="w-full aspect-video bg-black"
+              commentSettings={commentSettings}
+              playerSettings={playerSettings}
+            />
+          )}
         </div>
 
         <div className="mt-6 bg-gray-800 rounded-lg p-6">
           <h2 className="text-xl font-bold mb-4">ファイル情報</h2>
           <p className="text-sm">ID: {fileId}</p>
+          <p className="text-sm text-gray-400 mt-2">
+            ※ ダンマク設定については [設定] ページから変更できます
+          </p>
         </div>
       </div>
     </div>

@@ -9,7 +9,6 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText,
   Avatar,
   Divider,
   Typography,
@@ -129,7 +128,6 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             <ListItem
               key={item.path}
               onClick={() => handleNavClick(item.path)}
-              selected={isActive}
               sx={{
                 mx: 1,
                 mb: 0.5,
@@ -138,12 +136,6 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 backgroundColor: isActive ? 'action.selected' : 'transparent',
                 '&:hover': {
                   backgroundColor: 'action.hover',
-                },
-                '&.Mui-selected': {
-                  backgroundColor: 'action.selected',
-                  '&:hover': {
-                    backgroundColor: 'action.selected',
-                  },
                 },
               }}
             >
@@ -155,16 +147,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               >
                 {item.icon}
               </ListItemIcon>
-              <ListItemText
-                primary={item.label}
-                primaryTypographyProps={{
-                  variant: 'body2',
-                  sx: {
-                    fontWeight: isActive ? 600 : 500,
-                    color: isActive ? 'primary.main' : 'text.primary',
-                  },
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: isActive ? 600 : 500,
+                  color: isActive ? 'primary.main' : 'text.primary',
                 }}
-              />
+              >
+                {item.label}
+              </Typography>
             </ListItem>
           );
         })}

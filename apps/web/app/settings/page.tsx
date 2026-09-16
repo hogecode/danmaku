@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/provider/AuthProvider';
+import { useUserSettings } from '@/hooks/useUserSettings';
 import { Sidebar } from '@/components/Sidebar';
 import {
   Box,
@@ -12,23 +13,31 @@ import {
   Typography,
   CircularProgress,
   Container,
-  Card,
-  CardContent,
 } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
+import SettingsForm from './SettingsForm';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, loading, isAuthenticated } = useAuthContext();
+  const { user, loading: authLoading, isAuthenticated } = useAuthContext();
+  const {
+    settings,
+    isLoading: settingsLoading,
+    error,
+    updateSettings,
+    resetSettings,
+  } = useUserSettings();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/auth/login');
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, authLoading, router]);
 
-  if (loading) {
+  const isLoading = authLoading || settingsLoading;
+
+  if (isLoading) {
     return (
       <Box
         sx={{
@@ -48,7 +57,7 @@ export default function SettingsPage() {
     );
   }
 
-  if (!isAuthenticated || !user) return null;
+  if (!isAuthenticated || !user || !settings) return null;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
@@ -78,6 +87,12 @@ export default function SettingsPage() {
             <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
               設定
             </Typography>
+            <SettingsForm
+              settings={settings}
+              error={error}
+              onUpdate={updateSettings}
+              onReset={resetSettings}
+            />
           </Container>
         </Box>
       </Box>

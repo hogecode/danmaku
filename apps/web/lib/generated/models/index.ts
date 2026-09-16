@@ -8,4 +8,6 @@ export * from './file-item-dto';
 export * from './folder-list-dto';
 export * from './generate-video-token-response-dto';
 export * from './login-response-dto';
+export * from './update-user-settings-dto';
 export * from './user-info-dto';
+export * from './user-settings-dto';
