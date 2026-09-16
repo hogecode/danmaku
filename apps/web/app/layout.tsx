@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AuthProvider } from "@/components/AuthProvider";
+import { AuthProvider } from "@/components/provider/AuthProvider";
 import { QueryProvider } from "@/lib/providers";
-import { StoreProvider } from "@/components/StoreProvider";
-import { MuiProvider } from "@/components/MuiProvider";
+import { StoreProvider } from "@/components/provider/StoreProvider";
+import { MuiProvider } from "@/components/provider/MuiProvider";
 import { EmotionCacheProvider } from "@/lib/emotion-cache";
 import { Navigation } from "@/components/Navigation";
 import "./globals.css";

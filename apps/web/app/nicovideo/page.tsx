@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/components/AuthProvider';
+import { useAuthContext } from '@/components/provider/AuthProvider';
 import {
   NicovideLoginForm,
   VideoDownloadForm,

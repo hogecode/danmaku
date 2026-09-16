@@ -2,7 +2,7 @@
 
 import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/components/AuthProvider';
+import { useAuthContext } from '@/components/provider/AuthProvider';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { useAppSelector } from '@/lib/store/hooks';
 import { selectSelectedConnectionId } from '@/lib/store/selectors';

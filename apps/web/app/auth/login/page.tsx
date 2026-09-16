@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuthContext } from '@/components/AuthProvider';
+import { useAuthContext } from '@/components/provider/AuthProvider';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { GoogleButton } from '@/components/GoogleButton';
-import { MicrosoftButton } from '@/components/MicrosoftButton';
+import { GoogleButton } from '@/components/button/GoogleButton';
+import { MicrosoftButton } from '@/components/button/MicrosoftButton';
 import {
   Box,
   Container,
@@ -145,7 +145,7 @@ export default function LoginPage() {
             <Stack spacing={3}>
               {/* サブタイトル */}
               <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                Real-time comment streaming platform for cloud storage videos
+                クラウドストレージの動画を弾幕付きで視聴できます
               </Typography>
 
               {/* エラーメッセージ */}
@@ -175,7 +175,7 @@ export default function LoginPage() {
               {/* 利用規約・プライバシー */}
               <Divider />
               <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-                By logging in, you agree to our Terms of Service and Privacy Policy
+                ログインすることで、利用規約およびプライバシーポリシーに同意したものとみなされます
               </Typography>
             </Stack>
           </CardContent>

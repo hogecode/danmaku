@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuthContext } from './AuthProvider';
+import { useAuthContext } from './provider/AuthProvider';
 
 export function Navigation() {
   const pathname = usePathname();
