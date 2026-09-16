@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/AuthProvider";
 import { QueryProvider } from "@/lib/providers";
 import { StoreProvider } from "@/components/StoreProvider";
+import { MuiProvider } from "@/components/MuiProvider";
+import { EmotionCacheProvider } from "@/lib/emotion-cache";
 import { Navigation } from "@/components/Navigation";
 import "./globals.css";
 
@@ -30,10 +32,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col">
         <StoreProvider>
           <QueryProvider>
-            <AuthProvider>
-              <Navigation />
-              {children}
-            </AuthProvider>
+            <EmotionCacheProvider>
+              <MuiProvider>
+                <AuthProvider>
+                  <Navigation />
+                  {children}
+                </AuthProvider>
+              </MuiProvider>
+            </EmotionCacheProvider>
           </QueryProvider>
         </StoreProvider>
       </body>

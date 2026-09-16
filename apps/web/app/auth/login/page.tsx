@@ -5,6 +5,19 @@ import { useAuthContext } from '@/components/AuthProvider';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { GoogleButton } from '@/components/GoogleButton';
 import { MicrosoftButton } from '@/components/MicrosoftButton';
+import {
+  Box,
+  Container,
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+  Alert,
+  AlertTitle,
+  Stack,
+  CircularProgress,
+  Divider,
+} from '@mui/material';
 
 /**
  * OAuth ログイン画面
@@ -87,56 +100,87 @@ export default function LoginPage() {
   // ハイドレーション完了またはローディング中の場合
   if (!isMounted || loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-stone-100">
-        <div className="animate-spin">
-          <div className="border-4 border-gray-300 border-t-blue-500 rounded-full w-12 h-12"></div>
-        </div>
-        <p className="mt-4 text-gray-600">読み込み中...</p>
-      </div>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          bgcolor: 'background.default',
+        }}
+      >
+        <CircularProgress />
+        <Typography sx={{ mt: 2, color: 'text.secondary' }}>
+          Loading...
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-stone-100 px-6">
-      <div className="w-full max-w-md">
-        {/* ロゴ・タイトル */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-gray-900">Danmaku</h1>
-          <p className="text-sm text-gray-500">
-            クラウドストレージのビデオを弾幕付きで再生できるサービスです。
-          </p>
-        </div>
-
-        {/* エラーメッセージ */}
-        {error && (
-          <div className="bg-red-50 rounded-lg p-3 mb-6 w-full">
-            <p className="text-red-900 text-xs text-center">{error}</p>
-          </div>
-        )}
-
-        {/* ✅ プロバイダー選択ボタン */}
-        <div className="flex flex-col gap-4">
-          <GoogleButton
-            onPress={() => handleLogin('google')}
-            disabled={loginLoading || loading}
-            loading={selectedProvider === 'google' && (loginLoading || loading)}
-            label="Google Drive でログイン"
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        bgcolor: 'background.default',
+        px: 2,
+      }}
+    >
+      <Container maxWidth="sm">
+        <Card sx={{ boxShadow: 4 }}>
+          {/* ヘッダー */}
+          <CardHeader
+            title="Danmaku"
+            titleTypographyProps={{ variant: 'h4', sx: { fontWeight: 700, textAlign: 'center' } }}
+            sx={{ pb: 1 }}
           />
-          <MicrosoftButton
-            onPress={() => handleLogin('onedrive')}
-            disabled={loginLoading || loading}
-            loading={selectedProvider === 'onedrive' && (loginLoading || loading)}
-            label="Microsoft OneDrive でログイン"
-          />
-        </div>
 
-        {/* 利用規約・プライバシー */}
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <p className="text-center text-xs text-gray-500">
-            ログインすることで、利用規約とプライバシーポリシーに同意したものとします
-          </p>
-        </div>
-      </div>
-    </div>
+          <Divider />
+
+          <CardContent sx={{ pt: 4 }}>
+            <Stack spacing={3}>
+              {/* サブタイトル */}
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                Real-time comment streaming platform for cloud storage videos
+              </Typography>
+
+              {/* エラーメッセージ */}
+              {error && (
+                <Alert severity="error">
+                  <AlertTitle>Login Error</AlertTitle>
+                  {error}
+                </Alert>
+              )}
+
+              {/* プロバイダー選択ボタン */}
+              <Stack spacing={2}>
+                <GoogleButton
+                  onPress={() => handleLogin('google')}
+                  disabled={loginLoading || loading}
+                  loading={selectedProvider === 'google' && (loginLoading || loading)}
+                  label="Google Drive Login"
+                />
+                <MicrosoftButton
+                  onPress={() => handleLogin('onedrive')}
+                  disabled={loginLoading || loading}
+                  loading={selectedProvider === 'onedrive' && (loginLoading || loading)}
+                  label="Microsoft OneDrive Login"
+                />
+              </Stack>
+
+              {/* 利用規約・プライバシー */}
+              <Divider />
+              <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+                By logging in, you agree to our Terms of Service and Privacy Policy
+              </Typography>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   );
 }

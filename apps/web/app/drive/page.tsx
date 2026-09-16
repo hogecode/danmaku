@@ -12,9 +12,24 @@ import { FileListView } from '@/components/drive/FileListView';
 import { FileSearchBar } from '@/components/drive/FileSearchBar';
 import { DriveSelector } from '@/components/DriveSelector';
 import type { FileItemDto } from '@/lib/generated';
+import {
+  AppBar,
+  Toolbar,
+  Container,
+  Box,
+  Card,
+  CardContent,
+  CircularProgress,
+  Typography,
+  Alert,
+  AlertTitle,
+  Stack,
+  Button,
+  Paper,
+} from '@mui/material';
 
 /**
- * Google Drive ページ
+ * Google Drive Page - MUI Version
  */
 export default function DrivePage() {
   const router = useRouter();
@@ -24,32 +39,24 @@ export default function DrivePage() {
   const [folderName, setFolderName] = useState('My Drive');
   const [searchResults, setSearchResults] = useState<FileItemDto[] | null>(null);
 
-  // Redux から選択中のドライブと hydration 状態を取得
   const selectedConnection = useAppSelector(selectSelectedConnection);
   const hydrated = useAppSelector(selectHydrated);
 
-  // API からドライブ接続一覧を取得
   const { data: connections, isLoading: isConnectionsLoading } = useDriveConnections();
 
-  // ドライブ接続一覧が取得できたら Redux に保存
   useEffect(() => {
     if (connections && connections.length > 0) {
       dispatch(setConnections(connections));
     }
   }, [connections, dispatch]);
 
-  // 選択中の接続 ID を取得（Redux から、ない場合は最初の接続）
   const connectionId = selectedConnection?.id || connections?.[0]?.id || '';
 
-  // 指定された接続のフォルダ内容を取得
-  const { data: folderData, isLoading: isFolderLoading } =
-    useFolderList(connectionId, folderId);
+  const { data: folderData, isLoading: isFolderLoading } = useFolderList(connectionId, folderId);
 
   const searchMutation = useFolderSearch(connectionId);
 
-  // 未認証の場合はログインページへリダイレクト
   useEffect(() => {
-    // TODO: ミドルウェアで認証を行うようにする
     if (!authLoading && !isAuthenticated) {
       router.push('/auth/login');
     }
@@ -85,7 +92,6 @@ export default function DrivePage() {
 
   const handleVideoClick = useCallback(
     (fileId: string, fileName: string, folderId?: string) => {
-      // /watch ページにナビゲート（fileId と folderId をクエリパラメータで渡す）
       const params = new URLSearchParams({
         fileId: encodeURIComponent(fileId),
       });
@@ -99,11 +105,9 @@ export default function DrivePage() {
 
   if (authLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin">
-          <div className="border-4 border-gray-300 border-t-blue-500 rounded-full w-12 h-12"></div>
-        </div>
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
@@ -115,71 +119,81 @@ export default function DrivePage() {
   const isLoading = isConnectionsLoading || isFolderLoading || searchMutation.isPending;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* ナビゲーションバー */}
-      <nav className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-blue-600">Danmaku Drive</h1>
-            <button
-              onClick={() => router.push('/home')}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              ホーム
-            </button>
-          </div>
-        </div>
-      </nav>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* AppBar */}
+      <AppBar position="static" elevation={1}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
+            Google Drive
+          </Typography>
+          <Button color="inherit" onClick={() => router.push('/home')}>
+            Home
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-      {/* メインコンテンツ */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          {/* ドライブセレクター */}
+      {/* Main Content */}
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Stack spacing={3}>
+          {/* Drive Selector */}
           {connections && connections.length > 1 && (
-            <div className="mb-6 flex items-center gap-4">
-              <label className="text-sm font-medium text-gray-700">
-                ドライブ:
-              </label>
-              <DriveSelector />
-            </div>
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  Drive:
+                </Typography>
+                <DriveSelector />
+              </Box>
+            </Paper>
           )}
 
-          {/* パンくずナビゲーション */}
-          <div className="mb-6">
+          {/* Breadcrumb */}
+          <Paper sx={{ p: 2 }}>
             <FolderBreadcrumb
               currentFolderId={folderId}
               currentFolderName={folderName}
               onNavigate={handleFolderClick}
             />
-          </div>
+          </Paper>
 
-          {/* 検索ボックス */}
-          <div className="mb-6">
-            <FileSearchBar
-              isLoading={searchMutation.isPending}
-              onSearch={handleSearch}
-              onClear={handleClearSearch}
-            />
-          </div>
+          {/* Search Box */}
+          <Card>
+            <CardContent>
+              <FileSearchBar
+                isLoading={searchMutation.isPending}
+                onSearch={handleSearch}
+                onClear={handleClearSearch}
+              />
+            </CardContent>
+          </Card>
 
-          {/* エラー表示 */}
+          {/* Error Alert */}
           {searchMutation.isError && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800">
-                検索に失敗しました。もう一度試してください。
-              </p>
-            </div>
+            <Alert severity="error">
+              <AlertTitle>Search Error</AlertTitle>
+              Failed to search files. Please try again.
+            </Alert>
           )}
 
-          {/* ファイル/フォルダ一覧 */}
-          <FileListView
-            items={displayItems}
-            isLoading={isLoading}
-            onFolderClick={handleFolderClick}
-            onVideoClick={handleVideoClick}
-          />
-        </div>
-      </main>
-    </div>
+          {/* File List */}
+          <Card>
+            <CardContent>
+              {isLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <FileListView
+                  items={displayItems}
+                  isLoading={false}
+                  onFolderClick={handleFolderClick}
+                  onVideoClick={handleVideoClick}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </Stack>
+      </Container>
+    </Box>
   );
 }

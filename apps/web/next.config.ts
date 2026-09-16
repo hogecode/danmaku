@@ -6,14 +6,6 @@ const nextConfig: NextConfig = {
     resolveAlias: {},
   },
 
-  // Enable experimental features for better hot-reload in containers
-  experimental: {
-    // Turbopack-specific settings
-    turbo: {
-      useSwc: true,
-    },
-  },
-
   // Enable Fast Refresh and React Strict Mode
   reactStrictMode: true,
 

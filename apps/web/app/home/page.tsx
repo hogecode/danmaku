@@ -3,157 +3,214 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/AuthProvider';
+import {
+  AppBar,
+  Toolbar,
+  Container,
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+  Button,
+  Box,
+  Avatar,
+  Stack,
+  Paper,
+  Alert,
+  AlertTitle,
+  CircularProgress,
+  Divider,
+} from '@mui/material';
 
-/**
- * ホーム画面
- */
+
 export default function HomePage() {
   const router = useRouter();
   const { user, loading, isAuthenticated, logout } = useAuthContext();
 
   useEffect(() => {
-    // ✅ クッキーの確認用ログ
-    console.log('[HomePage] Current cookies:', document.cookie);
-    console.log('[HomePage] Auth state:', { isAuthenticated, loading });
-    
     if (!loading && !isAuthenticated) {
-      router.push('/auth/login');
+      router.push("/auth/login");
     }
   }, [isAuthenticated, loading, router]);
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="animate-spin">
-          <div className="border-4 border-gray-300 border-t-blue-500 rounded-full w-12 h-12"></div>
-        </div>
-        <p className="mt-4 text-gray-600">読み込み中...</p>
-      </div>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          bgcolor: "background.default",
+        }}
+      >
+        <CircularProgress />
+        <Typography sx={{ mt: 2, color: "text.secondary" }}>
+          Loading...
+        </Typography>
+      </Box>
     );
   }
 
-  if (!isAuthenticated || !user) {
-    return null;
-  }
-
-  const handleLogout = async () => {
-    await logout();
-  };
+  if (!isAuthenticated || !user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* ナビゲーションバー */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-blue-600">Danmaku</h1>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors duration-200"
-            >
-              ログアウト
-            </button>
-          </div>
-        </div>
-      </nav>
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <AppBar position="static" elevation={1}>
+        <Toolbar>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ flexGrow: 1, fontWeight: 700 }}
+          >
+            dnmaku
+          </Typography>
+          <Button color="inherit" onClick={() => logout()}>
+            ログアウト
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-      {/* メインコンテンツ */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* ユーザープロフィールカード */}
-          <div className="md:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-8 sticky top-4">
-              <div className="text-center">
-                {user.picture_url && (
-                  <div className="mb-4 flex justify-center">
-                    <img
+      <Container maxWidth="lg" sx={{ py: 4, flex: 1 }}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 2fr" },
+            gap: 3,
+          }}
+        >
+          <Box>
+            <Card sx={{ position: "sticky", top: 24, boxShadow: 3 }}>
+              <CardContent>
+                <Box sx={{ textAlign: "center" }}>
+                  {user.picture_url && (
+                    <Avatar
                       src={user.picture_url}
-                      alt={user.name || 'User'}
-                      className="w-24 h-24 rounded-full border-4 border-blue-500"
+                      alt={user.name}
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        mx: "auto",
+                        mb: 2,
+                        border: "4px solid",
+                        borderColor: "primary.main",
+                      }}
                     />
-                  </div>
-                )}
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                  {user.name || 'ユーザー'}
-                </h2>
-                <p className="text-gray-600 text-sm mb-4">{user.email}</p>
+                  )}
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+                    {user.name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2 }}
+                  >
+                    {user.email}
+                  </Typography>
+                  {user.last_login && (
+                    <Paper
+                      variant="outlined"
+                      sx={{ p: 2, bgcolor: "background.default", mt: 2 }}
+                    >
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: "block" }}
+                      >
+                        Last Login
+                      </Typography>
+                      <Typography variant="body2">
+                        {new Date(user.last_login).toLocaleDateString()}
+                      </Typography>
+                    </Paper>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
 
-                {user.last_login && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-xs text-gray-500 mb-2">最終ログイン</p>
-                    <p className="text-sm text-gray-900">
-                      {/* TODO: dayjs などを使ってフォーマットを改善する */}
-                      {new Date(user.last_login).toLocaleDateString('ja-JP', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <Box>
+            <Stack spacing={3}>
+              <Card sx={{ boxShadow: 3 }}>
+                <CardHeader
+                  title="Google Drive"
+                  titleTypographyProps={{
+                    variant: "h5",
+                    sx: { fontWeight: 700 },
+                  }}
+                />
+                <Divider />
+                <CardContent>
+                  <Stack spacing={2}>
+                    <Typography variant="body1" color="text.secondary">
+                      Browse video files in Google Drive and stream MP4 files.
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      onClick={() => router.push("/drive")}
+                    >
+                      Open Drive →
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
 
-          {/* メインコンテンツ領域 */}
-          <div className="md:col-span-2 space-y-8">
-            {/* ウェルカムカード */}
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                ようこそ、{user.name || 'ユーザー'}さん！
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Danmaku はリアルタイムコメント配信プラットフォームです。
-                ライブストリーミングやイベントで、視聴者からのコメントをリアルタイムで
-                画面上に表示できます。
-              </p>
-              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                <p className="text-blue-900">
-                  💡 ヒント: サイドバーのメニューから、配信設定やコメント管理ページにアクセスできます。
-                </p>
-              </div>
-            </div>
+              {user.drives && user.drives.length > 0 && (
+                <Card sx={{ boxShadow: 3 }}>
+                  <CardHeader
+                    title={`Connected Drives (${user.drives.length})`}
+                    titleTypographyProps={{
+                      variant: "h6",
+                      sx: { fontWeight: 700 },
+                    }}
+                  />
+                  <Divider />
+                  <CardContent>
+                    <Stack spacing={1}>
+                      {user.drives.map((drive, idx) => (
+                        <Paper
+                          key={idx}
+                          variant="outlined"
+                          sx={{ p: 1.5, bgcolor: "background.default" }}
+                        >
+                          <Typography variant="body2">
+                            <strong>{drive.provider}</strong>:{" "}
+                            {drive.provider || "Unnamed"}
+                          </Typography>
+                        </Paper>
+                      ))}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              )}
+            </Stack>
+          </Box>
+        </Box>
+      </Container>
 
-             <div className="bg-white rounded-lg shadow-lg p-8">
-               <div className="flex items-start justify-between">
-                 <div>
-                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                     🎬 Google Drive
-                   </h3>
-                   <p className="text-gray-600 mb-4">
-                     Google Drive 内のビデオファイルを閲覧・検索できます。
-                     MP4 ファイルをストリーミング再生できるほか、
-                     関連するコメントファイルを表示できます。
-                   </p>
-                 </div>
-               </div>
-               <a
-                 href="/drive"
-                 className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
-               >
-                 Drive を開く →
-               </a>
-             </div>
-
-          </div>
-        </div>
-      </main>
-
-      {/* フッター */}
-      <footer className="bg-white border-t border-gray-200 mt-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-sm text-gray-600">
-            <p>© 2026 Danmaku All rights reserved.</p>
-            <p className="mt-2">
-              API: <span className="font-mono text-xs">{process.env.NEXT_PUBLIC_API_BASE_URL}</span>
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
+      <Box
+        sx={{
+          bgcolor: "background.paper",
+          borderTop: "1px solid",
+          borderColor: "divider",
+          py: 3,
+          mt: 4,
+        }}
+      >
+        <Container maxWidth="lg">
+          <Stack spacing={1} sx={{ textAlign: "center" }}>
+            <Typography variant="body2" color="text.secondary">
+              Copyright 2026 Danmaku
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              API: {process.env.NEXT_PUBLIC_API_BASE_URL}
+            </Typography>
+          </Stack>
+        </Container>
+      </Box>
+    </Box>
   );
 }
