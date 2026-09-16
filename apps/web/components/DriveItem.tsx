@@ -5,7 +5,6 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Avatar,
   IconButton,
   Box,
   Typography,
@@ -17,6 +16,8 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
+import { Delete as DeleteIcon } from '@mui/icons-material';
+import { ProviderIcon } from './icon/ProviderIcon';
 import type { DriveConnectionDto } from '@/lib/generated';
 
 interface DriveItemProps {
@@ -54,23 +55,9 @@ export function DriveItem({
     }
   };
 
-  // プロバイダーアイコンの色
-  const getAvatarColor = (provider: string): string => {
-    switch (provider) {
-      case 'google':
-        return '#4285F4';
-      case 'onedrive':
-        return '#0078D4';
-      case 'dropbox':
-        return '#0061FF';
-      default:
-        return '#1976d2';
-    }
-  };
-
   // プロバイダー表示名
   const getProviderLabel = (provider: string): string => {
-    switch (provider) {
+    switch (provider.toLowerCase()) {
       case 'google':
         return 'Google Drive';
       case 'onedrive':
@@ -124,22 +111,14 @@ export function DriveItem({
             }}
             disabled={isDeleting}
             size="small"
+            color="error"
           >
-            🗑️
+            <DeleteIcon fontSize="small" />
           </IconButton>
         }
       >
         <ListItemAvatar>
-          <Avatar
-            sx={{
-              bgcolor: getAvatarColor(drive.provider),
-              width: 56,
-              height: 56,
-              fontSize: '1.5rem',
-            }}
-          >
-            ☁️
-          </Avatar>
+          <ProviderIcon provider={drive.provider} size={56} />
         </ListItemAvatar>
 
         <ListItemText
