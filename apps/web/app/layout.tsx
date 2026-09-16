@@ -5,7 +5,6 @@ import { QueryProvider } from "@/lib/providers";
 import { StoreProvider } from "@/components/provider/StoreProvider";
 import { MuiProvider } from "@/components/provider/MuiProvider";
 import { EmotionCacheProvider } from "@/lib/emotion-cache";
-import { Navigation } from "@/components/Navigation";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -35,7 +34,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <EmotionCacheProvider>
               <MuiProvider>
                 <AuthProvider>
-                  <Navigation />
                   {children}
                 </AuthProvider>
               </MuiProvider>

@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/components/provider/AuthProvider';
-import { useDriveConnections, useFolderList, useFolderSearch } from '@/hooks/useFolder';
+import { useFolderList, useFolderSearch } from '@/hooks/useFolder';
+import { useDriveConnections } from '@/hooks/useDriveConnection';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { selectSelectedConnection, selectHydrated } from '@/lib/store/selectors';
 import { setConnections, selectConnection } from '@/lib/store/slices/drivesSlice';

@@ -136,7 +136,7 @@ export default function LoginPage() {
           <CardHeader
             title="Danmaku"
             titleTypographyProps={{ variant: 'h4', sx: { fontWeight: 700, textAlign: 'center' } }}
-            sx={{ pb: 1 }}
+            sx={{ pb: 1, textAlign: 'center' }}
           />
 
           <Divider />
@@ -162,21 +162,16 @@ export default function LoginPage() {
                   onPress={() => handleLogin('google')}
                   disabled={loginLoading || loading}
                   loading={selectedProvider === 'google' && (loginLoading || loading)}
-                  label="Google Drive Login"
+                  label="Googleでログイン"
                 />
                 <MicrosoftButton
                   onPress={() => handleLogin('onedrive')}
                   disabled={loginLoading || loading}
                   loading={selectedProvider === 'onedrive' && (loginLoading || loading)}
-                  label="Microsoft OneDrive Login"
+                  label="Microsoftでログイン"
                 />
               </Stack>
-
-              {/* 利用規約・プライバシー */}
               <Divider />
-              <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-                ログインすることで、利用規約およびプライバシーポリシーに同意したものとみなされます
-              </Typography>
             </Stack>
           </CardContent>
         </Card>
