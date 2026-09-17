@@ -38,8 +38,8 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'ホーム', icon: <HomeIcon />, path: '/' },
-  { label: 'ドライブ', icon: <CloudIcon />, path: '/drive' },
   { label: 'ネットワーク', icon: <FolderIcon />, path: '/network' },
+  { label: 'ドライブ', icon: <CloudIcon />, path: '/drive' },
   { label: 'プレイリスト', icon: <PlaylistIcon />, path: '/playlist' },
   { label: 'スクリーンショット', icon: <ImageIcon />, path: '/screenshot' },
   { label: 'ダウンロード', icon: <DownloadIcon />, path: '/download' },
