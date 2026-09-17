@@ -1,5 +1,5 @@
 /**
- * Redux Store（localStorage 永続化付き）
+ * Redux Store（localStorage 永続化付き + Redux DevTools）
  */
 
 import { configureStore } from '@reduxjs/toolkit';
@@ -14,6 +14,7 @@ import {
   REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // localStorage を使用
+import { composeWithDevTools } from 'redux-devtools-extension';
 import drivesReducer from './slices/drivesSlice';
 
 // ✅ Redux Persist 設定
@@ -35,6 +36,12 @@ export const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
+  enhancers: (getDefaultEnhancers) =>
+    process.env.NODE_ENV === 'development'
+      ? getDefaultEnhancers().concat(
+          composeWithDevTools() as unknown as ReturnType<typeof getDefaultEnhancers>
+        )
+      : getDefaultEnhancers(),
 });
 
 export const persistor = persistStore(store);
