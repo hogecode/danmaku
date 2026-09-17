@@ -2,7 +2,7 @@
  * Redux Store（localStorage 永続化付き + Redux DevTools）
  */
 
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import {
   persistStore,
   persistReducer,
@@ -14,34 +14,33 @@ import {
   REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // localStorage を使用
-import { composeWithDevTools } from 'redux-devtools-extension';
 import drivesReducer from './slices/drivesSlice';
+import authReducer from './slices/authSlice';
+
+// ✅ Root Reducer を作成（combineReducers）
+const rootReducer = combineReducers({
+  drives: drivesReducer,
+  auth: authReducer,
+});
 
 // ✅ Redux Persist 設定
 const persistConfig = {
   key: 'danmaku-web-store',
   storage,
-  whitelist: ['drives'], // 永続化するスライス
+  whitelist: ['drives', 'auth'], // 永続化するスライス
 };
 
-const persistedDrivesReducer = persistReducer(persistConfig, drivesReducer);
+// ✅ Root Reducer に persistReducer を適用
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-  reducer: {
-    drives: persistedDrivesReducer,
-  },
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
-  enhancers: (getDefaultEnhancers) =>
-    process.env.NODE_ENV === 'development'
-      ? getDefaultEnhancers().concat(
-          composeWithDevTools() as unknown as ReturnType<typeof getDefaultEnhancers>
-        )
-      : getDefaultEnhancers(),
 });
 
 export const persistor = persistStore(store);

@@ -2,7 +2,7 @@
 
 import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/components/provider/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { useAppSelector } from '@/lib/store/hooks';
 import { selectSelectedConnectionId } from '@/lib/store/selectors';
@@ -14,7 +14,7 @@ export default function WatchPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const router = useRouter();
-  const { user, loading: authLoading, isAuthenticated } = useAuthContext();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   
   // ✅ Redux ストアから選択中のドライブ接続ID を取得
   const connectionId = useAppSelector(selectSelectedConnectionId);

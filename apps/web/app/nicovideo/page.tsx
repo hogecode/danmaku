@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/components/provider/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import {
   NicovideLoginForm,
   VideoDownloadForm,
@@ -12,7 +12,7 @@ import {
 
 export default function NicovideDownloadPage() {
   const router = useRouter();
-  const { user, loading: authLoading, isAuthenticated } = useAuthContext();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [isNicovideLoggedIn, setIsNicovideLoggedIn] = useState(true);
   const [currentTask, setCurrentTask] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'video' | 'comments'>('video');

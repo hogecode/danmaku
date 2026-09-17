@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/components/provider/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from '@/components/Sidebar';
 import { useFolderList, useFolderSearch } from '@/hooks/useFolder';
 import { useDriveConnections } from '@/hooks/useDriveConnection';
@@ -38,7 +38,7 @@ import { Menu as MenuIcon } from '@mui/icons-material';
 export default function DrivePage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user, loading: authLoading, isAuthenticated } = useAuthContext();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [folderId, setFolderId] = useState('root');
   const [folderName, setFolderName] = useState('My Drive');
   const [searchResults, setSearchResults] = useState<FileItemDto[] | null>(null);

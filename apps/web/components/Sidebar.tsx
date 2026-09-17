@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuthContext } from './provider/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Box,
   Drawer,
@@ -59,7 +59,7 @@ interface SidebarProps {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout, isAuthenticated } = useAuthContext();
+  const { user, logout, isAuthenticated } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleNavClick = (path: NavPath) => {

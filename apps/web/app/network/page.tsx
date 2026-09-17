@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/components/provider/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from '@/components/Sidebar';
 import { DrivesManagement } from '@/components/DrivesManagement';
 import {
@@ -22,7 +22,7 @@ import { Menu as MenuIcon } from '@mui/icons-material';
  */
 export default function NetworkPage() {
   const router = useRouter();
-  const { isAuthenticated, loading } = useAuthContext();
+  const { isAuthenticated, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // 未認証の場合はログインページへリダイレクト

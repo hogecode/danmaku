@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuthContext } from '@/components/provider/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { GoogleButton } from '@/components/button/GoogleButton';
 import { MicrosoftButton } from '@/components/button/MicrosoftButton';
@@ -27,7 +27,7 @@ import {
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, loading, startLogin, user } = useAuthContext();
+  const { isAuthenticated, loading, startLogin, user } = useAuth();
   const [loginLoading, setLoginLoading] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

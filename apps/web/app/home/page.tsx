@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/components/provider/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from '@/components/Sidebar';
 import {
   Container,
@@ -25,7 +25,7 @@ import { Menu as MenuIcon } from '@mui/icons-material';
 
 export default function HomePage() {
   const router = useRouter();
-  const { user, loading, isAuthenticated } = useAuthContext();
+  const { user, loading, isAuthenticated } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {

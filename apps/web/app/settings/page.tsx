@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/components/provider/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { Sidebar } from '@/components/Sidebar';
 import {
@@ -19,7 +19,7 @@ import SettingsForm from './SettingsForm';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, loading: authLoading, isAuthenticated } = useAuthContext();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const {
     settings,
     isLoading: settingsLoading,
