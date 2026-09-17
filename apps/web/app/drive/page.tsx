@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { selectSelectedConnection, selectHydrated } from '@/lib/store/selectors';
 import { setConnections, selectConnection } from '@/lib/store/slices/drivesSlice';
 import { FolderBreadcrumb } from '@/components/drive/FolderBreadcrumb';
-import { FileListView } from '@/components/drive/FileListView';
+import { FileGridView } from '@/components/drive/FileGridView';
 import { FileSearchBar } from '@/components/drive/FileSearchBar';
 import { DriveSelector } from '@/components/DriveSelector';
 import type { FileItemDto } from '@/lib/generated';
@@ -21,12 +21,10 @@ import {
   Box,
   Card,
   CardContent,
-  CircularProgress,
   Typography,
   Alert,
   AlertTitle,
   Stack,
-  Button,
   Paper,
   IconButton,
 } from '@mui/material';
@@ -38,10 +36,12 @@ import { Menu as MenuIcon } from '@mui/icons-material';
 export default function DrivePage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [folderId, setFolderId] = useState('root');
   const [folderName, setFolderName] = useState('My Drive');
   const [searchResults, setSearchResults] = useState<FileItemDto[] | null>(null);
+  
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const selectedConnection = useAppSelector(selectSelectedConnection);
@@ -111,7 +111,6 @@ export default function DrivePage() {
   if (authLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <CircularProgress />
       </Box>
     );
   }
@@ -195,21 +194,15 @@ export default function DrivePage() {
             </Alert>
           )}
 
-          {/* File List */}
+          {/* File Grid */}
           <Card>
             <CardContent>
-              {isLoading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                  <CircularProgress />
-                </Box>
-              ) : (
-                <FileListView
-                  items={displayItems}
-                  isLoading={false}
-                  onFolderClick={handleFolderClick}
-                  onVideoClick={handleVideoClick}
-                />
-              )}
+              <FileGridView
+                items={displayItems}
+                isLoading={isLoading}
+                onFolderClick={handleFolderClick}
+                onVideoClick={handleVideoClick}
+              />
             </CardContent>
           </Card>
           </Stack>
