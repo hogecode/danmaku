@@ -13,6 +13,7 @@ import { EncryptionService } from '../../common/encryption/encryption.service';
 import { LoggerService } from '../../common/logger/logger.service';
 import { GoogleTokenService } from '../../auth/services/providers/google/google-token.service';
 import { OnedriveTokenService } from '../../auth/services/providers/onedrive/onedrive-token.service';
+import { TokenService } from '../../auth/services/token.service';
 import { ProviderType } from '../constants';
 
 /**
@@ -28,6 +29,7 @@ export class DriveConnectionOAuthService {
     private encryptionService: EncryptionService,
     private googleTokenService: GoogleTokenService,
     private onedriveTokenService: OnedriveTokenService,
+    private tokenService: TokenService,
     private logger: LoggerService,
   ) {}
 
@@ -163,6 +165,15 @@ export class DriveConnectionOAuthService {
     provider: string,
     tokenResponse: any,
   ): Promise<bigint> {
+    // ✅ トークン有効期限を計算
+    const accessTokenExpiresAt = tokenResponse.expires_in
+      ? this.tokenService.calculateTokenExpiration(tokenResponse.expires_in)
+      : null;
+    
+    const refreshTokenExpiresAt = tokenResponse.refresh_token
+      ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+      : null;
+
     const encryptedAccessToken = this.encryptionService.encrypt(tokenResponse.access_token);
     const encryptedRefreshToken = tokenResponse.refresh_token
       ? this.encryptionService.encrypt(tokenResponse.refresh_token)
@@ -193,7 +204,9 @@ export class DriveConnectionOAuthService {
         .update(driveConnections)
         .set({
           access_token_encrypted: encryptedAccessToken,
-          refresh_token_encrypted: encryptedRefreshToken,
+          refresh_token_encrypted: encryptedRefreshToken || existing.refresh_token_encrypted,
+          access_token_expires_at: accessTokenExpiresAt,
+          refresh_token_expires_at: refreshTokenExpiresAt,
           provider_account_email: providerAccountEmail,
           is_active: true,
           last_accessed_at: new Date(),
@@ -216,7 +229,12 @@ export class DriveConnectionOAuthService {
       provider_account_email: providerAccountEmail,
       access_token_encrypted: encryptedAccessToken,
       refresh_token_encrypted: encryptedRefreshToken,
+      scopes: JSON.stringify(tokenResponse.scopes || ['drive.readonly']),
+      access_token_expires_at: accessTokenExpiresAt,
+      refresh_token_expires_at: refreshTokenExpiresAt,
       is_active: true,
+      created_at: new Date(),
+      updated_at: new Date(),
       last_accessed_at: new Date(),
     }).returning();
 

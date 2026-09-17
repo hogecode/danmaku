@@ -191,9 +191,11 @@ export class UserService {
     tokenData: any,
     provider: string = ProviderType.GOOGLE
   ) {
-    const accessTokenExpiresAt = this.tokenService.calculateTokenExpiration(
-      tokenData.expires_in
-    );
+
+    const accessTokenExpiresAt = tokenData.expires_in 
+      ? this.tokenService.calculateTokenExpiration(tokenData.expires_in)
+      : null;
+    
     const refreshTokenExpiresAt = tokenData.refresh_token
       ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
       : null;

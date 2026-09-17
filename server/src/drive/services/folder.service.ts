@@ -39,6 +39,7 @@ export class FolderService {
     connectionId: bigint,
     folderId: string = 'root',
   ): Promise<FolderListDto> {
+    
     // 接続情報を取得
     const connection = await this.db.query.driveConnections.findFirst({
       where: and(
@@ -69,31 +70,43 @@ export class FolderService {
         await this.redis.del(cacheKey);
       }
     }
-
+    
     // 有効なアクセストークンを取得（自動リフレッシュ対応）
-    const accessToken = await this.tokenService.getValidAccessToken(
-      userId,
-      connection.provider_name,
-      connectionId,
-    );
+    let accessToken: string;
+    try {
+      accessToken = await this.tokenService.getValidAccessToken(
+        userId,
+        connection.provider_name,
+        connectionId,
+      );
+    } catch (err) {
+      throw err;
+    }
 
     let result: FolderListDto;
-    if (connection.provider_name === ProviderType.GOOGLE) {
-      result = await this.googleDriveProvider.listFiles(accessToken, folderId);
-    } else if (connection.provider_name === ProviderType.ONEDRIVE) {
-      result = await this.onedriveProvider.listFiles(accessToken, folderId);
-    } else {
-      throw new InternalServerErrorException(
-        `Unsupported provider: ${connection.provider_name}`,
-      );
+    try {
+      if (connection.provider_name === ProviderType.GOOGLE) {
+         result = await this.googleDriveProvider.listFiles(accessToken, folderId);
+      } else if (connection.provider_name === ProviderType.ONEDRIVE) {
+        result = await this.onedriveProvider.listFiles(accessToken, folderId);
+      } else {
+        throw new InternalServerErrorException(
+          `Unsupported provider: ${connection.provider_name}`,
+        );
+      }
+    } catch (err) {
+      throw err;
     }
 
     // キャッシュに保存（共通定数を使用）
-    await this.redis.setex(
-      cacheKey,
-      DriveConstants.CACHE.TTL_SECONDS,
-      JSON.stringify(result),
-    );
+    try {
+      await this.redis.setex(
+        cacheKey,
+        DriveConstants.CACHE.TTL_SECONDS,
+        JSON.stringify(result),
+      );
+    } catch (err) {
+    }
 
     return result;
   }

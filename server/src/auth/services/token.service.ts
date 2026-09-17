@@ -164,20 +164,24 @@ export class TokenService {
     }
 
     // トークンを復号
-    const accessToken = this.encryptionService.decrypt(
-      conn.access_token_encrypted
-    );
-
+    let accessToken: string;
+    try {
+      accessToken = this.encryptionService.decrypt(
+        conn.access_token_encrypted
+      );
+    } catch (err) {
+      throw new InternalServerErrorException('Failed to decrypt access token');
+    }
     if (
       conn.access_token_expires_at &&
       this.isTokenExpiringSoon(conn.access_token_expires_at)
     ) {
-      const newToken = await this.refreshAccessToken(
-        userId,
-        providerName,
-        connectionId
-      );
-      return newToken.access_token;
+        const newToken = await this.refreshAccessToken(
+          userId,
+          providerName,
+          connectionId
+        );
+        return newToken.access_token;
     }
 
     return accessToken;

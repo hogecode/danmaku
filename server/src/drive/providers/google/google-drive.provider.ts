@@ -25,20 +25,19 @@ export class GoogleDriveProvider implements DriveProvider {
     // ✅ フォルダと動画ファイルのみをフィルタリング
     const filterQuery = GoogleDriveConstants.getFilterQuery();
     const query = `'${folderId}' in parents and trashed=false and (${filterQuery})`;
+    
+      const response = await google
+        .drive({ version: 'v3', auth: client })
+        .files.list({
+          q: query,
+          spaces: 'drive',
+          fields:
+            'files(id,name,mimeType,size,modifiedTime,webViewLink,thumbnailLink),nextPageToken',
+          pageSize: 50,
+          pageToken: pageToken || undefined,
+        });
 
-    const response = await google
-      .drive({ version: 'v3', auth: client })
-      .files.list({
-        q: query,
-        spaces: 'drive',
-        fields:
-          'files(id,name,mimeType,size,modifiedTime,webViewLink,thumbnailLink),nextPageToken',
-        pageSize: 50,
-        pageToken: pageToken || undefined,
-      });
-
-    return {
-      items: (response.data.files || []).map((file) => ({
+      const items = (response.data.files || []).map((file) => ({
         id: file.id!,
         name: file.name!,
         mimeType: file.mimeType!,
@@ -47,10 +46,14 @@ export class GoogleDriveProvider implements DriveProvider {
         webViewLink: file.webViewLink!,
         thumbnailLink: file.thumbnailLink || undefined,
         parentId: folderId,
-      })),
-      nextPageToken: response.data.nextPageToken || undefined,
-    };
-  }
+      }));      
+      return {
+        items,
+        nextPageToken: response.data.nextPageToken || undefined,
+      };
+    } catch (err: Error) {
+       throw err;
+    }
 
   /**
    * フォルダ内でキーワード検索

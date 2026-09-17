@@ -163,11 +163,10 @@ export function DriveItem({
         open={deleteDialogOpen}
         onClose={() => !isDeleting && setDeleteDialogOpen(false)}
       >
-        <DialogTitle>Delete Drive Connection</DialogTitle>
+        <DialogTitle>ドライブ接続の削除</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete the connection to <strong>{getProviderLabel(drive.provider)}</strong>? This
-            action cannot be undone.
+            本当に <strong>{getProviderLabel(drive.provider)}</strong> への接続を削除してもよろしいですか？ 
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -175,7 +174,7 @@ export function DriveItem({
             onClick={() => setDeleteDialogOpen(false)}
             disabled={isDeleting}
           >
-            Cancel
+            キャンセル
           </Button>
           <Button
             onClick={handleDeleteConfirm}
@@ -183,7 +182,7 @@ export function DriveItem({
             variant="contained"
             disabled={isDeleting}
           >
-            {isDeleting ? 'Deleting...' : 'Delete'}
+            {isDeleting ? '削除中...' : '削除'}
           </Button>
         </DialogActions>
       </Dialog>
