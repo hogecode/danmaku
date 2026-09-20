@@ -1,0 +1,44 @@
+name: Manual Database Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to migrate"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      migration_type:
+        description: "Migration type"
+        required: true
+        type: choice
+        options:
+          - migrate
+          - rollback
+      image_tag:
+        description: "Image tag (optional, defaults to latest)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  db-migrate:
+    uses: ./.github/workflows/db-migrate.yml
+    with:
+      environment: ${{ github.event.inputs.environment }}
+      migration_type: ${{ github.event.inputs.migration_type }}
+      image_tag: ${{ github.event.inputs.image_tag || github.sha }}
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      ECR_NESTJS_REPOSITORY_NAME: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+      ECS_CLUSTER_NAME: ${{ secrets.ECS_CLUSTER_NAME }}
+      DB_SUBNET_IDS: ${{ secrets.DB_SUBNET_IDS }}
+      NESTJS_SECURITY_GROUP_ID: ${{ secrets.NESTJS_SECURITY_GROUP_ID }}
