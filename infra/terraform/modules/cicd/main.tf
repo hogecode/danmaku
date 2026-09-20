@@ -103,8 +103,10 @@ resource "aws_iam_role_policy" "ecs_update_policy" {
         Action = [
           "ecs:DescribeServices",
           "ecs:DescribeTaskDefinition",
+          "ecs:DescribeTasks",
           "ecs:RegisterTaskDefinition",
-          "ecs:UpdateService"
+          "ecs:UpdateService",
+          "ecs:RunTask"
         ]
         Resource = "*"
       },
@@ -119,6 +121,14 @@ resource "aws_iam_role_policy" "ecs_update_policy" {
             "iam:PassedToService" = "ecs-tasks.amazonaws.com"
           }
         }
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/*"
       }
     ]
   })

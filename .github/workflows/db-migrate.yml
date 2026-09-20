@@ -6,16 +6,13 @@ on:
       environment:
         required: true
         type: string
-        description: "Environment (dev, staging, prod)"
       migration_type:
         required: false
         type: string
-        default: "migrate"
-        description: "Migration type: migrate (forward) or rollback (backward)"
+        default: migrate
       image_tag:
         required: false
         type: string
-        description: "Image tag (optional, defaults to latest commit SHA)"
     secrets:
       AWS_REGION:
         required: true
@@ -40,207 +37,40 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@v4
+      
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Get image tag
-        id: image-tag
+      - name: 🔄 Dry-Run Migration
         run: |
-          if [ -z "${{ inputs.image_tag }}" ]; then
-            TAG="${{ github.sha }}"
-          else
-            TAG="${{ inputs.image_tag }}"
-          fi
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          chmod +x scripts/run-db-migration.sh
+          scripts/run-db-migration.sh \
+            "${{ inputs.environment }}" \
+            "dry" \
+            "${{ inputs.image_tag || github.sha }}"
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          ECR_NESTJS_REPOSITORY: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+          ECS_CLUSTER: ${{ secrets.ECS_CLUSTER_NAME }}
+          DB_SUBNET_IDS: ${{ secrets.DB_SUBNET_IDS }}
+          NESTJS_SECURITY_GROUP_ID: ${{ secrets.NESTJS_SECURITY_GROUP_ID }}
 
-      - name: Get current NestJS task definition
-        id: task-def
-        run: |
-          TASK_DEF_ARN=$(aws ecs describe-services \
-            --cluster "${{ secrets.ECS_CLUSTER_NAME }}" \
-            --services "ecs-sample-nestjs-service" \
-            --region ${{ secrets.AWS_REGION }} \
-            --query 'services[0].taskDefinition' \
-            --output text)
-          echo "task_def_arn=${TASK_DEF_ARN}" >> $GITHUB_OUTPUT
-
-      - name: 📋 Pre-migration validation
-        run: |
-          echo "🔍 Validating environment: ${{ inputs.environment }}"
-          echo "📦 Image tag: ${{ steps.image-tag.outputs.tag }}"
-          echo "📝 Migration type: ${{ inputs.migration_type }}"
-          echo "✅ Validation passed"
-
-      - name: 🔄 Run Dry-Run migration
-        id: dry-run
-        timeout-minutes: 10
-        run: |
-          echo "🚀 Starting Dry-Run migration for ${{ inputs.environment }}..."
-          
-          TASK_DEF_ARN="${{ steps.task-def.outputs.task_def_arn }}"
-          NESTJS_REPO_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}:${{ steps.image-tag.outputs.tag }}"
-          
-          # Get task definition and update for migration
-          TASK_DEFINITION=$(aws ecs describe-task-definition \
-            --task-definition "$TASK_DEF_ARN" \
-            --region ${{ secrets.AWS_REGION }} \
-            --query 'taskDefinition' \
-            --output json)
-          
-          # Update image and override command for dry-run
-          NEW_TASK_DEF=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "$NESTJS_REPO_URI" \
-            '.containerDefinitions[0].image = $IMAGE | 
-             .containerDefinitions[0].command = ["sh", "-c", "yarn db:migrate --dry"] | 
-             del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
-          
-          # Register new task definition
-          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
-            --cli-input-json "$(echo "$NEW_TASK_DEF" | jq -c .)" \
-            --region ${{ secrets.AWS_REGION }} \
-            --query 'taskDefinition.taskDefinitionArn' \
-            --output text)
-          
-          echo "📋 Registered task definition: $NEW_TASK_DEF_ARN"
-          
-          # Run task
-          TASK_ARN=$(aws ecs run-task \
-            --cluster "${{ secrets.ECS_CLUSTER_NAME }}" \
-            --task-definition "$NEW_TASK_DEF_ARN" \
-            --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.DB_SUBNET_IDS }}],securityGroups=[${{ secrets.NESTJS_SECURITY_GROUP_ID }}],assignPublicIp=DISABLED}" \
-            --region ${{ secrets.AWS_REGION }} \
-            --query 'tasks[0].taskArn' \
-            --output text)
-          
-          echo "🚀 Started task: $TASK_ARN"
-          echo "task_arn=${TASK_ARN}" >> $GITHUB_OUTPUT
-          
-          # Wait for task completion
-          echo "⏳ Waiting for dry-run to complete (max 10 min)..."
-          aws ecs wait tasks-stopped \
-            --cluster "${{ secrets.ECS_CLUSTER_NAME }}" \
-            --tasks "$TASK_ARN" \
-            --region ${{ secrets.AWS_REGION }} || echo "⚠️ Timeout waiting for task"
-          
-          # Check task exit code
-          EXIT_CODE=$(aws ecs describe-tasks \
-            --cluster "${{ secrets.ECS_CLUSTER_NAME }}" \
-            --tasks "$TASK_ARN" \
-            --region ${{ secrets.AWS_REGION }} \
-            --query 'tasks[0].containers[0].exitCode' \
-            --output text)
-          
-          echo "✅ Dry-run completed with exit code: $EXIT_CODE"
-          
-          if [ "$EXIT_CODE" != "0" ]; then
-            echo "❌ Dry-run failed!"
-            exit 1
-          fi
-
-      - name: 📊 Show migration preview log
-        if: always() && steps.dry-run.outcome != 'skipped'
-        run: |
-          TASK_ARN="${{ steps.dry-run.outputs.task_arn }}"
-          LOG_GROUP="/ecs/ecs-sample-nestjs-${{ inputs.environment }}"
-          
-          echo "📋 Migration preview log:"
-          aws logs tail "$LOG_GROUP" --follow --region ${{ secrets.AWS_REGION }} 2>/dev/null || echo "⚠️ Could not retrieve logs"
-
-      - name: ✅ Confirm migration ready
-        run: |
-          echo "✅ Dry-run successful!"
-          echo "Ready to apply migrations to ${{ inputs.environment }}"
-          echo ""
-          echo "Next: Running actual migration..."
-
-      - name: 🚀 Run actual migration
+      - name: 🚀 Run Migration
         if: inputs.migration_type == 'migrate'
-        timeout-minutes: 10
         run: |
-          echo "🚀 Starting actual migration for ${{ inputs.environment }}..."
-          
-          TASK_DEF_ARN="${{ steps.task-def.outputs.task_def_arn }}"
-          NESTJS_REPO_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}:${{ steps.image-tag.outputs.tag }}"
-          
-          # Get task definition
-          TASK_DEFINITION=$(aws ecs describe-task-definition \
-            --task-definition "$TASK_DEF_ARN" \
-            --region ${{ secrets.AWS_REGION }} \
-            --query 'taskDefinition' \
-            --output json)
-          
-          # Update image and command for actual migration
-          NEW_TASK_DEF=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "$NESTJS_REPO_URI" \
-            '.containerDefinitions[0].image = $IMAGE | 
-             .containerDefinitions[0].command = ["sh", "-c", "yarn db:migrate"] | 
-             del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
-          
-          # Register new task definition
-          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
-            --cli-input-json "$(echo "$NEW_TASK_DEF" | jq -c .)" \
-            --region ${{ secrets.AWS_REGION }} \
-            --query 'taskDefinition.taskDefinitionArn' \
-            --output text)
-          
-          echo "📋 Task definition: $NEW_TASK_DEF_ARN"
-          
-          # Run task
-          TASK_ARN=$(aws ecs run-task \
-            --cluster "${{ secrets.ECS_CLUSTER_NAME }}" \
-            --task-definition "$NEW_TASK_DEF_ARN" \
-            --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.DB_SUBNET_IDS }}],securityGroups=[${{ secrets.NESTJS_SECURITY_GROUP_ID }}],assignPublicIp=DISABLED}" \
-            --region ${{ secrets.AWS_REGION }} \
-            --query 'tasks[0].taskArn' \
-            --output text)
-          
-          echo "🚀 Migration task: $TASK_ARN"
-          
-          # Wait for completion
-          echo "⏳ Waiting for migration..."
-          aws ecs wait tasks-stopped \
-            --cluster "${{ secrets.ECS_CLUSTER_NAME }}" \
-            --tasks "$TASK_ARN" \
-            --region ${{ secrets.AWS_REGION }} || echo "⚠️ Timeout"
-          
-          # Check exit code
-          EXIT_CODE=$(aws ecs describe-tasks \
-            --cluster "${{ secrets.ECS_CLUSTER_NAME }}" \
-            --tasks "$TASK_ARN" \
-            --region ${{ secrets.AWS_REGION }} \
-            --query 'tasks[0].containers[0].exitCode' \
-            --output text)
-          
-          echo "✅ Migration completed with exit code: $EXIT_CODE"
-          
-          if [ "$EXIT_CODE" != "0" ]; then
-            echo "❌ Migration failed!"
-            exit 1
-          fi
-
-      - name: ✅ Success
-        if: success()
-        run: |
-          echo "✅ Database migration completed successfully!"
-          echo "Environment: ${{ inputs.environment }}"
-          echo "Type: ${{ inputs.migration_type }}"
-          echo "Time: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-
-      - name: ❌ Failure notification
-        if: failure()
-        run: |
-          echo "❌ Migration failed!"
-          echo ""
-          echo "To rollback (manual):"
-          echo "  1. Check the migration history"
-          echo "  2. Write a rollback migration SQL"
-          echo "  3. Deploy with the rollback migration"
-          exit 1
-
-          echo "task_def_arn=${NEW_TASK_DEF_ARN}" >> $GITHUB_OUTPUT
+          chmod +x scripts/run-db-migration.sh
+          scripts/run-db-migration.sh \
+            "${{ inputs.environment }}" \
+            "migrate" \
+            "${{ inputs.image_tag || github.sha }}"
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          ECR_NESTJS_REPOSITORY: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+          ECS_CLUSTER: ${{ secrets.ECS_CLUSTER_NAME }}
+          DB_SUBNET_IDS: ${{ secrets.DB_SUBNET_IDS }}
+          NESTJS_SECURITY_GROUP_ID: ${{ secrets.NESTJS_SECURITY_GROUP_ID }}
