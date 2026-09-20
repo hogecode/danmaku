@@ -9,13 +9,9 @@ variable "environment" {
 }
 
 variable "domain_name" {
-  description = "Primary domain name"
+  description = "Domain name for ACM certificate"
   type        = string
-}
-
-variable "route53_zone_id" {
-  description = "Route53 hosted zone ID"
-  type        = string
+  default     = ""
 }
 
 variable "common_tags" {

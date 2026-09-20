@@ -70,28 +70,22 @@ module "kms" {
 # ========================================
 # Phase 3: SSL/TLS Certificates (ACM)
 # ========================================
-/*
 module "certificates" {
   source = "./modules/cdn/certificates"
 
   app_name                  = var.project_name
   environment               = var.environment
   domain_name              = var.domain_name
-  # TODO: zone_idを渡すのではなく、Route53のゾーンを作成して、そのゾーンIDを渡すようにする
-  # data "aws_route53_zone" で取得するのが基本
-  # あるいはzone_id = aws_route53_zone.this.zone_id
-  route53_zone_id          = var.route53_zone_id
   common_tags              = local.common_tags
 
   depends_on = [module.vpc]
 }
-*/
+
 
 
 # ========================================
 # Phase 3: Application Load Balancer Configuration
 # ========================================
-# TODO: ALBでHTTPSを有効にする場合は、ACMで作成した証明書のARNを渡すようにする
 module "alb" {
   source = "./modules/network/alb"
 
@@ -102,15 +96,15 @@ module "alb" {
   alb_public_security_group_id   = module.security_group.alb_public_security_group_id
 
   # HTTPS configuration (optional)
-  enable_https       = var.enable_https
-  # TODO: 現在は.tfvarsで直接ARNを渡しているが、ACMモジュールで作成した証明書のARNを渡すようにする
-  alb_certificate_arn = var.alb_certificate_arn
+  enable_https        = var.enable_https
+  # Use ACM certificate from certificates module
+  alb_certificate_arn = var.enable_https ? module.certificates.certificate_arn : ""
 
   # Access logs (optional)
   enable_alb_access_logs = var.enable_alb_access_logs
   alb_access_logs_bucket = var.alb_access_logs_bucket
 
-  depends_on = [module.security_group, module.vpc]
+  depends_on = [module.security_group, module.vpc, module.certificates]
 }
 
 

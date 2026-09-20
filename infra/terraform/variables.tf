@@ -34,6 +34,16 @@ variable "environment" {
   }
 }
 
+variable "domain_name" {
+  description = "Domain name for ALB, ACM certificate, and S3 bucket naming"
+  type        = string
+  default     = ""
+  
+  validation {
+    condition     = var.domain_name == "" || can(regex("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$", var.domain_name))
+    error_message = "Domain name must be a valid domain name or empty string."
+  }
+}
 
 # ========================================
 # Network Configuration (VPC & Subnets)
@@ -369,21 +379,6 @@ variable "s3_filesystem_kms_key_arn" {
   default     = ""
 }
 
-# ========================================
-# Domain & Route53 Configuration
-# ========================================
-
-variable "domain_name" {
-  description = "Primary domain name for the application (e.g., example.com)"
-  type        = string
-  default     = ""
-}
-
-variable "route53_zone_id" {
-  description = "Route53 Hosted Zone ID for DNS management"
-  type        = string
-  default     = ""
-}
 
 # ========================================
 # Email Service Configuration (SES)

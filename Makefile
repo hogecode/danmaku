@@ -50,3 +50,8 @@ tf.plan.dev: ## Dev環境のTerraform計画を実行
 tf.apply.dev: ## Dev環境のTerraform変更を適用
 	@echo "Applying Terraform changes for dev environment..."
 	@cd infra/terraform && terraform apply tfplan
+
+.PHONY: tf.destroy.dev
+tf.destroy.dev: ## Dev環境のTerraformリソースを破棄
+	@echo "Destroying Terraform resources for dev environment..."
+	@cd infra/terraform && terraform destroy -var-file="environments/dev.tfvars" -auto-approve

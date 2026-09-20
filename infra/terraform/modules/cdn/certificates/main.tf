@@ -1,21 +1,19 @@
 # ========================================
-# SSL Certificate (using terraform-aws-modules)
+# SSL/TLS Certificate (ACM)
 # ========================================
 
-# TODO: 証明書を作成しているだけなのでALBかCFNにアタッチする必要
-# これだけではHTTPS対応しない
+# ACM Certificate for HTTPS listener on ALB
+# - Certificate is created with DNS validation
+# - Domain and wildcard (*.domain) are included
+# - Certificate will be attached to ALB via ALB module
 module "acm_certificate" {
-  source = "terraform-aws-modules/acm/aws"
+  source  = "terraform-aws-modules/acm/aws"
   version = "~> 4.0"
 
-  domain_name           = var.domain_name != "" ? var.domain_name : "example.com"
+  domain_name               = var.domain_name != "" ? var.domain_name : "example.com"
   subject_alternative_names = var.domain_name != "" ? ["*.${var.domain_name}"] : []
-  validation_method     = "DNS" # Emailも選べるが、DNSの方が自動化しやすい
-  # TODO: route53_zone_idは環境変数から取得するようにする
-  #route53_zone_id      = var.route53_zone_id != "" ? var.route53_zone_id : null
+  validation_method         = "DNS"
 
-  # Disable automatic validation - manual validation via Route53 will be done separately
-  # when route53_zone_id is provided
   create_certificate   = true
   validate_certificate = true
 
