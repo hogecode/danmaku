@@ -1,11 +1,17 @@
 # Optimized multi-stage build for NestJS production image
 # Stage 1: Builder
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+# Install git (needed for GitHub package installation)
+RUN apk add --no-cache git
+
 # Copy package files
 COPY package.json yarn.lock ./
+
+# Configure yarn for better network stability
+RUN yarn config set network-timeout 600000
 
 # Install all dependencies (including dev)
 RUN yarn install --frozen-lockfile
@@ -20,7 +26,7 @@ RUN yarn build
 RUN yarn install --frozen-lockfile --production=true
 
 # Stage 2: Production runtime
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 

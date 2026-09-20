@@ -4,21 +4,30 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Install git (needed for GitHub package installation)
+RUN apk add --no-cache git
+
 # Copy package files
 COPY package.json package-lock.json ./
 
+# Configure npm for better network stability
+RUN npm config set fetch-timeout 600000 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000
+
 # Install all dependencies (including dev)
-RUN npm install --frozen-lockfile --ignore-scripts
+# Using npm ci for more reliable installation with lock file
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .
 
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build
+RUN npm run build --legacy-peer-deps
 
 # Prune dev dependencies for production
-RUN npm prune --production
+RUN npm prune --omit=dev --legacy-peer-deps
 
 # Stage 2: Production runtime
 FROM node:20-alpine
