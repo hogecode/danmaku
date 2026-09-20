@@ -60,7 +60,7 @@ enable_enhanced_monitoring = true          # Enable RDS Enhanced Monitoring
 
 # ECR (Elastic Container Registry)
 ecr_nextjs_repository_name   = "ecs-nextjs"       # Repository name for Next.js service
-ecr_go_server_repository_name = "ecs-go-server"   # Repository name for Go server service
+ecr_go_server_repository_name = "ecs-nestjs"   # Repository name for Go server service
 ecr_image_scan_on_push       = true               # Scan images for vulnerabilities on push
 ecr_image_tag_mutability     = "MUTABLE"          # MUTABLE for dev/staging, IMMUTABLE for prod
 

@@ -136,7 +136,7 @@ After (最適化):
 ```bash
 # CloudWatch Logs ライフサイクルポリシー設定
 aws logs put-retention-policy \
-  --log-group-name /ecs/go-server \
+  --log-group-name /ecs/nestjs \
   --retention-in-days 14
 ```
 

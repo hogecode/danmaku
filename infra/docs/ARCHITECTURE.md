@@ -103,7 +103,7 @@ Private Subnets (Data Layer):
 - イメージソース: ECR (プライベートリポジトリ)
 - ルートファイルシステム: 読み取り専用
 - ネットワーク: awsvpc モード
-- ロギング: CloudWatch Logs (/ecs/go-server)
+- ロギング: CloudWatch Logs (/ecs/nestjs)
 - X-Ray Daemon: サイドカー構成（CPU 32, Memory 256）
 - 配置: Private Subnet 2 (API)
 ```
@@ -305,7 +305,7 @@ Outbound:
 **CloudWatch Logs**:
 - **ECS ログ**: `/ecs/{app}-{env}` グループ
   - Next.js: `/ecs/nextjs-{env}` (保持: 14日)
-  - Go Server: `/ecs/go-server-{env}` (保持: 14日)
+  - Go Server: `/ecs/nestjs-{env}` (保持: 14日)
   - Bastion: `/ecs/bastion-{env}` (保持: 30日・監査用)
 - **RDS ログ**: `rds/{db-instance}/error`, `rds/{db-instance}/slowquery` (保持: 7日)
 - **Lambda ログ**: `/aws/lambda/{function-name}` (保持: 3-14日)

@@ -53,7 +53,7 @@ phases:
       - |
         printf '[
           {"name":"nextjs-container","imageUri":"%s"},
-          {"name":"go-server-container","imageUri":"%s"}
+          {"name":"nestjs-container","imageUri":"%s"}
         ]' $NEXTJS_REPO_URI:$IMAGE_TAG $GO_SERVER_REPO_URI:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
       
@@ -64,9 +64,9 @@ phases:
 artifacts:
   files:
     - appspec-nextjs.yaml
-    - appspec-go-server.yaml
+    - appspec-nestjs.yaml
     - nextjs-taskdef.json
-    - go-server-taskdef.json
+    - nestjs-taskdef.json
   name: build_output
 
 cache:
@@ -80,4 +80,4 @@ cache:
 # - AWS_DEFAULT_REGION: ap-northeast-1
 # - AWS_ACCOUNT_ID: 885545925004
 # - NEXTJS_REPO_NAME: ecs-nextjs
-# - GO_SERVER_REPO_NAME: ecs-go-server
+# - GO_SERVER_REPO_NAME: ecs-nestjs

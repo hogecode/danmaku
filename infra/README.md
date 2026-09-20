@@ -233,7 +233,7 @@ make tf.plan.prod
   
 - **Go Server タスク定義**
   - CPU: 512 mCU, メモリ: 1024 MB
-  - ロギング: CloudWatch Logs (`/ecs/go-server-{env}`)
+  - ロギング: CloudWatch Logs (`/ecs/nestjs-{env}`)
   - ポート: 8080
   - X-Ray Daemon: サイドカー構成（CPU 32, Memory 256）
   - 環境変数: RDS 接続情報等
@@ -355,7 +355,7 @@ make tf.plan.prod
 **CloudWatch Logs**:
 - ECS ログ: `/ecs/{app}-{env}` グループ
   - Next.js: `/ecs/nextjs-{env}` (保持: 14日)
-  - Go Server: `/ecs/go-server-{env}` (保持: 14日)
+  - Go Server: `/ecs/nestjs-{env}` (保持: 14日)
   - Bastion: `/ecs/bastion-{env}` (保持: 30日・監査用)
 - RDS ログ: `rds/{db-instance}/error`, slowquery (保持: 7日)
 - Lambda ログ: `/aws/lambda/{function-name}` (保持: 3-14日)

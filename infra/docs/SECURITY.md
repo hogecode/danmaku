@@ -562,7 +562,7 @@ KMS キー: カスタマーマネージド
   ├── prod-nextjs-002
   └── prod-nextjs-003
 
-/ecs/go-server/
+/ecs/nestjs/
   ├── prod-go-001
   ├── prod-go-002
   └── prod-go-003
@@ -590,7 +590,7 @@ KMS キー: カスタマーマネージド
 {
   "filterName": "ErrorPattern",
   "filterPattern": "[ERROR]",
-  "logGroupName": "/ecs/go-server",
+  "logGroupName": "/ecs/nestjs",
   "destinationArn": "arn:aws:lambda:ap-northeast-1:123456789012:function:ProcessErrorLog"
 }
 ```

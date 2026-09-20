@@ -33,7 +33,7 @@ variable "ecr_nextjs_repository_name" {
 variable "ecr_go_server_repository_name" {
   description = "ECR repository name for Go server"
   type        = string
-  default     = "ecs-go-server"
+  default     = "ecs-nestjs"
 }
 
 variable "ecr_image_scan_on_push" {

@@ -103,7 +103,7 @@ module "go_server_sg" {
   source = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
-  name        = "${var.project_name}-go-server-sg-${var.environment}"
+  name        = "${var.project_name}-nestjs-sg-${var.environment}"
   description = "Security group for Go Server ECS tasks"
   vpc_id      = var.vpc_id
 
@@ -114,7 +114,7 @@ module "go_server_sg" {
   egress_cidr_blocks = ["0.0.0.0/0"]
 
   tags = {
-    Name = "${var.project_name}-go-server-sg-${var.environment}"
+    Name = "${var.project_name}-nestjs-sg-${var.environment}"
   }
 }
 

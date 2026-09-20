@@ -15,16 +15,16 @@
         }
       ],
       "essential": true,
-      "image": "885545925004.dkr.ecr.ap-northeast-1.amazonaws.com/ecs-go-server:latest",
+      "image": "885545925004.dkr.ecr.ap-northeast-1.amazonaws.com/ecs-nestjs:latest",
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/ecs-sample-go-server-dev",
+          "awslogs-group": "/ecs/ecs-sample-nestjs-dev",
           "awslogs-region": "ap-northeast-1",
           "awslogs-stream-prefix": "ecs"
         }
       },
-      "name": "ecs-sample-go-server",
+      "name": "ecs-sample-nestjs",
       "portMappings": [
         { "containerPort": 8080, "hostPort": 8080, "protocol": "tcp" }
       ]
@@ -33,9 +33,9 @@
   "cpu": "256",
   "enableExecuteCommand": true,
   "executionRoleArn": "arn:aws:iam::885545925004:role/ecs-sample-ecs-task-execution-role-dev",
-  "family": "ecs-sample-go-server",
+  "family": "ecs-sample-nestjs",
   "memory": "512",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
-  "taskRoleArn": "arn:aws:iam::885545925004:role/ecs-sample-ecs-task-role-go-server-dev"
+  "taskRoleArn": "arn:aws:iam::885545925004:role/ecs-sample-ecs-task-role-nestjs-dev"
 }

@@ -21,7 +21,7 @@
   - CloudTrail（異常なAPI呼び出し）
 
 □ ログ確認
-  - エラーログ（/ecs/go-server）
+  - エラーログ（/ecs/nestjs）
   - 4xx/5xx エラー率
   - DB 接続エラー
 
@@ -230,7 +230,7 @@ aws ecs describe-tasks \
 
 2. **ログ確認**
 ```bash
-aws logs tail /ecs/go-server --follow --filter-pattern "ERROR"
+aws logs tail /ecs/nestjs --follow --filter-pattern "ERROR"
 ```
 
 3. **タスク定義確認**
@@ -389,7 +389,7 @@ watch -n 5 'aws ecs describe-services \
   --output table'
 
 # ログ確認
-aws logs tail /ecs/go-server --follow
+aws logs tail /ecs/nestjs --follow
 ```
 
 4. **デプロイ完了確認**
@@ -433,7 +433,7 @@ aws ecs update-service \
   --task-definition ecs-sample-go:10  # 前バージョン
 
 # 3. 状態監視
-aws logs tail /ecs/go-server --follow --filter-pattern "ERROR"
+aws logs tail /ecs/nestjs --follow --filter-pattern "ERROR"
 
 # 4. 完了確認
 aws ecs describe-services \

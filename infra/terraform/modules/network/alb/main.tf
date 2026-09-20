@@ -116,15 +116,15 @@ module "private_alb" {
       port        = 8080
       protocol    = "HTTP"
       forward = {
-        target_group_key = "go-server-blue"
+        target_group_key = "nestjs-blue"
       }
     }
   }
 
    # Target groups for Go Server (Blue/Green)
    target_groups = {
-     go-server-blue = {
-       name             = "${var.project_name}-go-server-blue-${var.environment}"
+     nestjs-blue = {
+       name             = "${var.project_name}-nestjs-blue-${var.environment}"
        backend_protocol = "HTTP"
        backend_port     = 8080
        target_type      = "ip"
@@ -145,11 +145,11 @@ module "private_alb" {
          cookie_duration = 86400
        }
        tags = {
-         Name = "${var.project_name}-go-server-blue-tg-${var.environment}"
+         Name = "${var.project_name}-nestjs-blue-tg-${var.environment}"
        }
      }
-     go-server-green = {
-       name             = "${var.project_name}-go-server-green-${var.environment}"
+     nestjs-green = {
+       name             = "${var.project_name}-nestjs-green-${var.environment}"
        backend_protocol = "HTTP"
        backend_port     = 8080
        target_type      = "ip"
@@ -170,7 +170,7 @@ module "private_alb" {
          cookie_duration = 86400
        }
        tags = {
-         Name = "${var.project_name}-go-server-green-tg-${var.environment}"
+         Name = "${var.project_name}-nestjs-green-tg-${var.environment}"
        }
      }
    }

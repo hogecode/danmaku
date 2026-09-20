@@ -55,7 +55,7 @@ phases:
       - echo "=========================================="
       - echo "Scanning Go Server Image"
       - echo "=========================================="
-      - "trivy image --severity HIGH,CRITICAL --exit-code 0 --format json --output go-server-scan-results.json $GO_SERVER_REPO_URI:$IMAGE_TAG"
+      - "trivy image --severity HIGH,CRITICAL --exit-code 0 --format json --output nestjs-scan-results.json $GO_SERVER_REPO_URI:$IMAGE_TAG"
       - "trivy image --severity HIGH,CRITICAL --exit-code 0 $GO_SERVER_REPO_URI:$IMAGE_TAG"
       - |
         GO_CRITICAL=$(trivy image --severity CRITICAL --format json --exit-code 0 $GO_SERVER_REPO_URI:$IMAGE_TAG | jq '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "CRITICAL")] | length')
@@ -80,12 +80,12 @@ phases:
       - echo "Phase Post-Build Scan Complete"
       - echo "=========================================="
       - echo "Scan completed successfully on $(date)"
-      - ls -la nextjs-scan-results.json go-server-scan-results.json
+      - ls -la nextjs-scan-results.json nestjs-scan-results.json
 
 artifacts:
   files:
     - nextjs-scan-results.json
-    - go-server-scan-results.json
+    - nestjs-scan-results.json
   name: ScanArtifact
 
 # ========================================
@@ -95,4 +95,4 @@ artifacts:
 # - AWS_DEFAULT_REGION: ap-northeast-1
 # - AWS_ACCOUNT_ID: 885545925004
 # - NEXTJS_REPO_NAME: ecs-nextjs
-# - GO_SERVER_REPO_NAME: ecs-go-server
+# - GO_SERVER_REPO_NAME: ecs-nestjs

@@ -172,7 +172,7 @@ aws ecs describe-tasks \
   --query 'tasks[0].{stoppedReason,stoppedCode,exitCode}'
 
 # ログ確認
-aws logs tail /ecs/go-server --follow --filter-pattern "ERROR"
+aws logs tail /ecs/nestjs --follow --filter-pattern "ERROR"
 ```
 
 2. **問題の根本原因特定**
@@ -234,7 +234,7 @@ aws ecs update-service \
 2. **検証**
 ```bash
 # トラフィック復旧確認
-aws logs tail /ecs/go-server --follow --filter-pattern "ERROR|WARN"
+aws logs tail /ecs/nestjs --follow --filter-pattern "ERROR|WARN"
 
 # メトリクス確認
 aws cloudwatch get-metric-statistics \

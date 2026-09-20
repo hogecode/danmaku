@@ -69,7 +69,7 @@
 
 - **CloudWatch Log Groups**
   - `/ecs/{project}-nextjs-{env}`
-  - `/ecs/{project}-go-server-{env}`
+  - `/ecs/{project}-nestjs-{env}`
   - `/ecs/{project}-xray-{env}`
 
 - **IAM Roles**
