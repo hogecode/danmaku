@@ -279,7 +279,7 @@ Resources:
               - "PRIVATE_API_SUBNET_1"
               - "PRIVATE_API_SUBNET_2"
             SecurityGroups:
-              - "GO_SERVER_SECURITY_GROUP"
+              - "nestjs_SECURITY_GROUP"
             AssignPublicIp: "DISABLED"
 ```
 

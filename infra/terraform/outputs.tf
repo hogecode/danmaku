@@ -85,9 +85,9 @@ output "private_alb_security_group_id" {
   value       = module.security_group.private_alb_security_group_id
 }
 
-output "go_server_security_group_id" {
+output "nestjs_security_group_id" {
   description = "Go Server ECS security group ID"
-  value       = module.security_group.go_server_security_group_id
+  value       = module.security_group.nestjs_security_group_id
 }
 
 output "rds_security_group_id" {
@@ -125,9 +125,9 @@ output "nextjs_target_group_arn" {
   value       = module.alb.nextjs_target_group_arn
 }
 
-output "go_server_target_group_arn" {
+output "nestjs_target_group_arn" {
   description = "ARN of the Go Server target group"
-  value       = module.alb.go_server_target_group_arn
+  value       = module.alb.nestjs_target_group_arn
 }
 
 output "target_group_arn" {
@@ -159,9 +159,9 @@ output "nextjs_log_group_name" {
   value       = module.ecs.nextjs_log_group_name
 }
 
-output "go_server_log_group_name" {
+output "nestjs_log_group_name" {
   description = "CloudWatch Log Group name for Go server"
-  value       = module.ecs.go_server_log_group_name
+  value       = module.ecs.nestjs_log_group_name
 }
 
 

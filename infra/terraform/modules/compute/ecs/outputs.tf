@@ -5,9 +5,9 @@ output "nextjs_log_group_name" {
   value       = aws_cloudwatch_log_group.nextjs.name
 }
 
-output "go_server_log_group_name" {
+output "nestjs_log_group_name" {
   description = "CloudWatch Log Group name for Go server"
-  value       = aws_cloudwatch_log_group.go_server.name
+  value       = aws_cloudwatch_log_group.nestjs.name
 }
 
 output "ecs_cluster_id" {
@@ -35,9 +35,9 @@ output "ecs_task_role_nextjs_arn" {
   value       = aws_iam_role.ecs_task_role_nextjs.arn
 }
 
-output "ecs_task_role_go_server_arn" {
+output "ecs_task_role_nestjs_arn" {
   description = "ECS Task Role ARN for Go Server"
-  value       = aws_iam_role.ecs_task_role_go_server.arn
+  value       = aws_iam_role.ecs_task_role_nestjs.arn
 }
 
 # ========================================
@@ -59,19 +59,19 @@ output "nextjs_task_definition_revision" {
   value       = aws_ecs_task_definition.nextjs.revision
 }
 
-output "go_server_task_definition_arn" {
+output "nestjs_task_definition_arn" {
   description = "ARN of Go Server task definition"
-  value       = aws_ecs_task_definition.go_server.arn
+  value       = aws_ecs_task_definition.nestjs.arn
 }
 
-output "go_server_task_definition_family" {
+output "nestjs_task_definition_family" {
   description = "Family of Go Server task definition"
-  value       = aws_ecs_task_definition.go_server.family
+  value       = aws_ecs_task_definition.nestjs.family
 }
 
-output "go_server_task_definition_revision" {
+output "nestjs_task_definition_revision" {
   description = "Revision of Go Server task definition"
-  value       = aws_ecs_task_definition.go_server.revision
+  value       = aws_ecs_task_definition.nestjs.revision
 }
 
 # ========================================
@@ -88,12 +88,12 @@ output "nextjs_service_cluster" {
   value       = aws_ecs_service.nextjs.cluster
 }
 
-output "go_server_service_name" {
+output "nestjs_service_name" {
   description = "Name of Go Server ECS service"
-  value       = aws_ecs_service.go_server.name
+  value       = aws_ecs_service.nestjs.name
 }
 
-output "go_server_service_cluster" {
+output "nestjs_service_cluster" {
   description = "Cluster of Go Server ECS service"
-  value       = aws_ecs_service.go_server.cluster
+  value       = aws_ecs_service.nestjs.cluster
 }

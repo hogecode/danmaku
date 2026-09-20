@@ -8,7 +8,7 @@ variable "ecr_nextjs_repository_name" {
   default     = ""
 }
 
-variable "ecr_go_server_repository_name" {
+variable "ecr_nestjs_repository_name" {
   description = "ECR repository name for Go server application"
   type        = string
   default     = ""

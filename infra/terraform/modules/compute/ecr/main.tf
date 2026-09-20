@@ -49,11 +49,11 @@ module "nextjs_ecr" {
   }
 }
 
-module "go_server_ecr" {
+module "nestjs_ecr" {
   source  = "terraform-aws-modules/ecr/aws"
   version = "~> 1.0"
 
-  repository_name                = var.ecr_go_server_repository_name
+  repository_name                = var.ecr_nestjs_repository_name
   repository_type                = "private"
   repository_image_tag_mutability = var.ecr_image_tag_mutability
   
@@ -92,6 +92,6 @@ module "go_server_ecr" {
   })
 
   tags = {
-    Name = var.ecr_go_server_repository_name
+    Name = var.ecr_nestjs_repository_name
   }
 }

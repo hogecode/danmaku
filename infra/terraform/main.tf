@@ -99,9 +99,7 @@ module "alb" {
   environment                     = var.environment
   vpc_id                          = module.vpc.vpc_id
   public_subnet_ids              = module.vpc.public_subnets
-  private_api_subnet_ids         = module.vpc.private_api_subnets
   alb_public_security_group_id   = module.security_group.alb_public_security_group_id
-  private_alb_security_group_id  = module.security_group.private_alb_security_group_id
 
   # HTTPS configuration (optional)
   enable_https       = var.enable_https
@@ -124,7 +122,7 @@ module "ecr" {
   
   # ECR Configuration
   ecr_nextjs_repository_name     = var.ecr_nextjs_repository_name
-  ecr_go_server_repository_name  = var.ecr_nestjs_repository_name
+  ecr_nestjs_repository_name  = var.ecr_nestjs_repository_name
   ecr_image_scan_on_push         = var.ecr_image_scan_on_push
   ecr_image_tag_mutability       = var.ecr_image_tag_mutability
 }
@@ -212,9 +210,9 @@ module "ecs" {
 
   # ECR Configuration
   ecr_nextjs_repository_name     = var.ecr_nextjs_repository_name
-  ecr_go_server_repository_name  = var.ecr_nestjs_repository_name
+  ecr_nestjs_repository_name  = var.ecr_nestjs_repository_name
   ecr_nextjs_repository_url      = module.ecr.nextjs_repository_url
-  ecr_go_server_repository_url   = module.ecr.go_server_repository_url
+  ecr_nestjs_repository_url   = module.ecr.nestjs_repository_url
   ecr_image_scan_on_push         = var.ecr_image_scan_on_push
   ecr_image_tag_mutability       = var.ecr_image_tag_mutability
 
@@ -231,14 +229,11 @@ module "ecs" {
   private_app_subnet_ids    = module.vpc.private_app_subnets
   private_api_subnet_ids    = module.vpc.private_api_subnets
   nextjs_security_group_id  = module.security_group.nextjs_security_group_id
-  go_server_security_group_id = module.security_group.go_server_security_group_id
+  nestjs_security_group_id = module.security_group.nestjs_security_group_id
 
   # Load Balancer Target Groups
   nextjs_target_group_arn   = module.alb.nextjs_target_group_arn
-  go_server_target_group_arn = module.alb.go_server_target_group_arn
-
-  # Internal Communication Configuration
-  private_alb_dns_name = module.alb.private_alb_dns_name
+  nestjs_target_group_arn   = module.alb.nestjs_target_group_arn
 
   # RDS Database Configuration
   rds_endpoint        = module.rds.db_instance_address

@@ -15,11 +15,11 @@ phases:
       - "echo \"Logging in to ECR at $(date)\""
       - "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
       - "NEXTJS_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$NEXTJS_REPO_NAME"
-      - "GO_SERVER_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$GO_SERVER_REPO_NAME"
+      - "nestjs_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$nestjs_REPO_NAME"
       - "COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)"
       - "IMAGE_TAG=${COMMIT_HASH:=latest}"
       - "echo \"Next.js Repository URI - $NEXTJS_REPO_URI\""
-      - "echo \"Go Server Repository URI - $GO_SERVER_REPO_URI\""
+      - "echo \"Go Server Repository URI - $nestjs_REPO_URI\""
       - "echo \"Image Tag - $IMAGE_TAG\""
 
   build:
@@ -31,7 +31,7 @@ phases:
       - "docker build -t $NEXTJS_REPO_URI:$IMAGE_TAG -t $NEXTJS_REPO_URI:latest ./web"
       - echo "Next.js Docker image built successfully"
       - "echo \"Building Go Server Docker image on $(date)\""
-      - "docker build -t $GO_SERVER_REPO_URI:$IMAGE_TAG -t $GO_SERVER_REPO_URI:latest ./server"
+      - "docker build -t $nestjs_REPO_URI:$IMAGE_TAG -t $nestjs_REPO_URI:latest ./server"
       - echo "Go Server Docker image built successfully"
       - echo "All images built successfully"
       - docker images
@@ -46,15 +46,15 @@ phases:
       - docker push $NEXTJS_REPO_URI:latest
       - echo "Next.js Docker image pushed successfully"
       - echo "Pushing Go Server Docker image to ECR on $(date)"
-      - docker push $GO_SERVER_REPO_URI:$IMAGE_TAG
-      - docker push $GO_SERVER_REPO_URI:latest
+      - docker push $nestjs_REPO_URI:$IMAGE_TAG
+      - docker push $nestjs_REPO_URI:latest
       - echo "Go Server Docker image pushed successfully"
       - echo "Generating imagedefinitions.json for ECS deployment"
       - |
         printf '[
           {"name":"nextjs-container","imageUri":"%s"},
           {"name":"nestjs-container","imageUri":"%s"}
-        ]' $NEXTJS_REPO_URI:$IMAGE_TAG $GO_SERVER_REPO_URI:$IMAGE_TAG > imagedefinitions.json
+        ]' $NEXTJS_REPO_URI:$IMAGE_TAG $nestjs_REPO_URI:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
       
       - echo "=========================================="
@@ -80,4 +80,4 @@ cache:
 # - AWS_DEFAULT_REGION: ap-northeast-1
 # - AWS_ACCOUNT_ID: 885545925004
 # - NEXTJS_REPO_NAME: ecs-nextjs
-# - GO_SERVER_REPO_NAME: ecs-nestjs
+# - nestjs_REPO_NAME: ecs-nestjs

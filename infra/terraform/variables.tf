@@ -145,36 +145,36 @@ variable "nextjs_max_capacity" {
 }
 
 # Go Server Backend Service
-variable "go_server_task_cpu" {
+variable "nestjs_task_cpu" {
   description = "CPU units for Go server task (256 = 0.25 vCPU, 512 = 0.5 vCPU, 1024 = 1 vCPU)"
   type        = number
   default     = 512
   
   validation {
-    condition     = contains([256, 512, 1024, 2048, 4096], var.go_server_task_cpu)
+    condition     = contains([256, 512, 1024, 2048, 4096], var.nestjs_task_cpu)
     error_message = "CPU must be one of: 256, 512, 1024, 2048, 4096."
   }
 }
 
-variable "go_server_task_memory" {
+variable "nestjs_task_memory" {
   description = "Memory (MB) for Go server task. Must be compatible with selected CPU."
   type        = number
   default     = 1024
 }
 
-variable "go_server_desired_count" {
+variable "nestjs_desired_count" {
   description = "Desired number of Go server tasks. Automatically overridden by environment (Dev: 1, Staging: 2, Prod: 3)."
   type        = number
   default     = 2
 }
 
-variable "go_server_min_capacity" {
+variable "nestjs_min_capacity" {
   description = "Minimum number of Go server tasks for auto scaling"
   type        = number
   default     = 1
 }
 
-variable "go_server_max_capacity" {
+variable "nestjs_max_capacity" {
   description = "Maximum number of Go server tasks for auto scaling"
   type        = number
   default     = 10

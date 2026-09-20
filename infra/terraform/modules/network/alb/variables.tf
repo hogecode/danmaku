@@ -25,18 +25,8 @@ variable "public_subnet_ids" {
   type        = list(string)
 }
 
-variable "private_api_subnet_ids" {
-  description = "List of private API layer subnet IDs for Private ALB"
-  type        = list(string)
-}
-
 variable "alb_public_security_group_id" {
   description = "Security group ID for public ALB"
-  type        = string
-}
-
-variable "private_alb_security_group_id" {
-  description = "Security group ID for private ALB"
   type        = string
 }
 

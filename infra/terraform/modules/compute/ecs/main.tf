@@ -18,7 +18,7 @@ resource "aws_cloudwatch_log_group" "nextjs" {
   }
 }
 
-resource "aws_cloudwatch_log_group" "go_server" {
+resource "aws_cloudwatch_log_group" "nestjs" {
   name              = "/ecs/${var.project_name}-nestjs-${var.environment}"
   retention_in_days = var.logs_retention_days
   tags = {
@@ -165,7 +165,7 @@ resource "aws_iam_role_policy" "ecs_task_role_nextjs" {
 }
 
 # Go Server Task Role
-resource "aws_iam_role" "ecs_task_role_go_server" {
+resource "aws_iam_role" "ecs_task_role_nestjs" {
   name = "${var.project_name}-ecs-task-role-nestjs-${var.environment}"
 
   assume_role_policy = jsonencode({
@@ -184,9 +184,9 @@ resource "aws_iam_role" "ecs_task_role_go_server" {
   }
 }
 
-resource "aws_iam_role_policy" "ecs_task_role_go_server" {
+resource "aws_iam_role_policy" "ecs_task_role_nestjs" {
   name = "${var.project_name}-ecs-task-role-nestjs-policy-${var.environment}"
-  role = aws_iam_role.ecs_task_role_go_server.id
+  role = aws_iam_role.ecs_task_role_nestjs.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -277,38 +277,38 @@ resource "aws_ecs_task_definition" "nextjs" {
 }
 
 # Go Server Task Definition
-resource "aws_ecs_task_definition" "go_server" {
+resource "aws_ecs_task_definition" "nestjs" {
   family                   = "${var.project_name}-nestjs"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = var.go_server_task_cpu
-  memory                   = var.go_server_task_memory
+  cpu                      = var.nestjs_task_cpu
+  memory                   = var.nestjs_task_memory
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn            = aws_iam_role.ecs_task_role_go_server.arn
+  task_role_arn            = aws_iam_role.ecs_task_role_nestjs.arn
 
   container_definitions = jsonencode([
     {
       name                 = "${var.project_name}-nestjs"
-      image                = "${var.ecr_go_server_repository_url}:${var.go_server_image_tag}"
+      image                = "${var.ecr_nestjs_repository_url}:${var.nestjs_image_tag}"
       essential            = true
       enableExecuteCommand = true
       portMappings = [
         {
-          containerPort = var.go_server_container_port
-          hostPort      = var.go_server_container_port
+          containerPort = var.nestjs_container_port
+          hostPort      = var.nestjs_container_port
           protocol      = "tcp"
         }
       ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.go_server.name
+          "awslogs-group"         = aws_cloudwatch_log_group.nestjs.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
         }
       }
       environment = concat(
-        var.go_server_environment_variables,
+        var.nestjs_environment_variables,
         var.rds_endpoint != "" ? [
           {
             name  = "DB_HOST"
@@ -334,7 +334,7 @@ resource "aws_ecs_task_definition" "go_server" {
           }
         ] : []
       )
-      # secrets = var.go_server_secrets
+      # secrets = var.nestjs_secrets
     }
   ])
 
@@ -396,39 +396,39 @@ resource "local_file" "nextjs_taskdef_json" {
 }
 
 # Generate Go Server Task Definition JSON
-resource "local_file" "go_server_taskdef_json" {
+resource "local_file" "nestjs_taskdef_json" {
   filename = "${path.module}/../../../../nestjs-taskdef.json"
   content = jsonencode({
-    family                  = aws_ecs_task_definition.go_server.family
+    family                  = aws_ecs_task_definition.nestjs.family
     networkMode             = "awsvpc"
     enableExecuteCommand    = true
     requiresCompatibilities = ["FARGATE"]
-    cpu                     = tostring(var.go_server_task_cpu)
-    memory                  = tostring(var.go_server_task_memory)
+    cpu                     = tostring(var.nestjs_task_cpu)
+    memory                  = tostring(var.nestjs_task_memory)
     executionRoleArn        = aws_iam_role.ecs_task_execution_role.arn
-    taskRoleArn             = aws_iam_role.ecs_task_role_go_server.arn
+    taskRoleArn             = aws_iam_role.ecs_task_role_nestjs.arn
     containerDefinitions = [
       {
         name      = "${var.project_name}-nestjs"
-        image     = "${var.ecr_go_server_repository_url}:${var.go_server_image_tag}"
+        image     = "${var.ecr_nestjs_repository_url}:${var.nestjs_image_tag}"
         essential = true
         portMappings = [
           {
-            containerPort = var.go_server_container_port
-            hostPort      = var.go_server_container_port
+            containerPort = var.nestjs_container_port
+            hostPort      = var.nestjs_container_port
             protocol      = "tcp"
           }
         ]
         logConfiguration = {
           logDriver = "awslogs"
           options = {
-            "awslogs-group"         = aws_cloudwatch_log_group.go_server.name
+            "awslogs-group"         = aws_cloudwatch_log_group.nestjs.name
             "awslogs-region"        = var.aws_region
             "awslogs-stream-prefix" = "ecs"
           }
         }
         environment = concat(
-          var.go_server_environment_variables,
+          var.nestjs_environment_variables,
            [
             {
               name  = "DB_HOST"
@@ -454,7 +454,7 @@ resource "local_file" "go_server_taskdef_json" {
             }
           ] : []
         )
-        # secrets = var.go_server_secrets
+        # secrets = var.nestjs_secrets
       }
     ]
   })
@@ -503,23 +503,23 @@ resource "aws_ecs_service" "nextjs" {
 }
 
 # Go Server Service
-resource "aws_ecs_service" "go_server" {
+resource "aws_ecs_service" "nestjs" {
   name            = "${var.project_name}-nestjs-service"
   cluster         = module.ecs_cluster.cluster_id
-  task_definition = aws_ecs_task_definition.go_server.arn
-  desired_count   = var.go_server_desired_count
+  task_definition = aws_ecs_task_definition.nestjs.arn
+  desired_count   = var.nestjs_desired_count
   launch_type     = "FARGATE"
 
   network_configuration {
     subnets          = var.private_api_subnet_ids
-    security_groups  = [var.go_server_security_group_id]
+    security_groups  = [var.nestjs_security_group_id]
     assign_public_ip = false
   }
 
   load_balancer {
-    target_group_arn = var.go_server_target_group_arn
+    target_group_arn = var.nestjs_target_group_arn
     container_name   = "${var.project_name}-nestjs"
-    container_port   = var.go_server_container_port
+    container_port   = var.nestjs_container_port
   }
 
   deployment_controller {
@@ -532,7 +532,7 @@ resource "aws_ecs_service" "go_server" {
 
   depends_on = [
     aws_iam_role_policy.ecs_task_execution_custom,
-    aws_iam_role_policy.ecs_task_role_go_server
+    aws_iam_role_policy.ecs_task_role_nestjs
   ]
 
   tags = {

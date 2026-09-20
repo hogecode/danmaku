@@ -76,7 +76,7 @@ mysql -h ecs-sample-db-dev.c1234567890.ap-northeast-1.rds.amazonaws.com -P 3306 
 aws ssm start-session --target i-xxxxxxxxx
 
 # Bastionから Go Server にアクセス
-curl http://<GO_SERVER_PRIVATE_IP>:8080/health
+curl http://<nestjs_PRIVATE_IP>:8080/health
 ```
 
 #### Next.js への接続

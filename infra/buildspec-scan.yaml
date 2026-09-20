@@ -21,7 +21,7 @@ phases:
       - echo "Trivy installed successfully"
       - trivy --version
       - "NEXTJS_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$NEXTJS_REPO_NAME"
-      - "GO_SERVER_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$GO_SERVER_REPO_NAME"
+      - "nestjs_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$nestjs_REPO_NAME"
       - "COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)"
       - "IMAGE_TAG=${COMMIT_HASH:=latest}"
 
@@ -33,7 +33,7 @@ phases:
       - 'echo "Scanning Docker images for vulnerabilities on $(date)"'
 
       - 'echo "Scanning Next.js image - $NEXTJS_REPO_URI:$IMAGE_TAG"'
-      - 'echo "Scanning Go Server image - $GO_SERVER_REPO_URI:$IMAGE_TAG"'
+      - 'echo "Scanning Go Server image - $nestjs_REPO_URI:$IMAGE_TAG"'
 
       - echo "=========================================="
       - echo "Scanning Next.js Image"
@@ -55,17 +55,17 @@ phases:
       - echo "=========================================="
       - echo "Scanning Go Server Image"
       - echo "=========================================="
-      - "trivy image --severity HIGH,CRITICAL --exit-code 0 --format json --output nestjs-scan-results.json $GO_SERVER_REPO_URI:$IMAGE_TAG"
-      - "trivy image --severity HIGH,CRITICAL --exit-code 0 $GO_SERVER_REPO_URI:$IMAGE_TAG"
+      - "trivy image --severity HIGH,CRITICAL --exit-code 0 --format json --output nestjs-scan-results.json $nestjs_REPO_URI:$IMAGE_TAG"
+      - "trivy image --severity HIGH,CRITICAL --exit-code 0 $nestjs_REPO_URI:$IMAGE_TAG"
       - |
-        GO_CRITICAL=$(trivy image --severity CRITICAL --format json --exit-code 0 $GO_SERVER_REPO_URI:$IMAGE_TAG | jq '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "CRITICAL")] | length')
+        GO_CRITICAL=$(trivy image --severity CRITICAL --format json --exit-code 0 $nestjs_REPO_URI:$IMAGE_TAG | jq '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "CRITICAL")] | length')
         echo "Go Server Critical vulnerabilities found: $GO_CRITICAL"
         # 閾値で制御、あるいはLambdaで通知するなどの対応を検討
         if [ "$GO_CRITICAL" -gt 10 ]; then
           echo "CRITICAL vulnerabilities detected in Go Server!."
         fi
       - |
-        GO_HIGH=$(trivy image --severity HIGH --format json  --exit-code 0 $GO_SERVER_REPO_URI:$IMAGE_TAG | jq '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH")] | length')
+        GO_HIGH=$(trivy image --severity HIGH --format json  --exit-code 0 $nestjs_REPO_URI:$IMAGE_TAG | jq '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH")] | length')
         echo "Go Server High vulnerabilities found: $GO_HIGH"
 
       - echo "=========================================="
@@ -95,4 +95,4 @@ artifacts:
 # - AWS_DEFAULT_REGION: ap-northeast-1
 # - AWS_ACCOUNT_ID: 885545925004
 # - NEXTJS_REPO_NAME: ecs-nextjs
-# - GO_SERVER_REPO_NAME: ecs-nestjs
+# - nestjs_REPO_NAME: ecs-nestjs

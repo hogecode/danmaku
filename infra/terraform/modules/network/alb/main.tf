@@ -17,14 +17,23 @@ module "public_alb" {
   enable_http2               = true
   enable_cross_zone_load_balancing = true
 
-  # Listeners configuration
+  # Listeners configuration with path-based routing
   listeners = merge(
     {
       http = {
-        port        = 80
-        protocol    = "HTTP"
-        forward = {
-          target_group_key = "nextjs-blue"
+        port     = 80
+        protocol = "HTTP"
+        rules = {
+          nextjs = {
+            priority        = 100
+            path_patterns   = ["/"]
+            target_group_key = "nextjs-blue"
+          }
+          nestjs = {
+            priority        = 200
+            path_patterns   = ["/api/*"]
+            target_group_key = "nestjs-blue"
+          }
         }
       }
     },
@@ -33,149 +42,77 @@ module "public_alb" {
         port            = 443
         protocol        = "HTTPS"
         certificate_arn = var.alb_certificate_arn
-        forward = {
-          target_group_key = "nextjs-blue"
+        rules = {
+          nextjs = {
+            priority        = 100
+            path_patterns   = ["/"]
+            target_group_key = "nextjs-blue"
+          }
+          nestjs = {
+            priority        = 200
+            path_patterns   = ["/api/*"]
+            target_group_key = "nestjs-blue"
+          }
         }
       }
     } : {}
   )
 
-    # Target groups for Next.js (Blue/Green)
-    target_groups = {
-       nextjs-blue = {
-         name             = "${var.project_name}-nextjs-blue-${var.environment}"
-         backend_protocol = "HTTP"
-         backend_port     = 3000
-         target_type      = "ip"
-         create_attachment = false
-         health_check = {
-           healthy_threshold   = 2
-           unhealthy_threshold = 2
-           timeout             = 5
-           interval            = 30
-           path                = "/api/health"
-           matcher             = "200"
-         }
-        stickiness = {
-          type            = "lb_cookie"
-          enabled         = true
-          cookie_duration = 86400
-        }
-        tags = {
-          Name = "${var.project_name}-nextjs-blue-tg-${var.environment}"
-        }
+  # Target groups for Next.js and NestJS
+  target_groups = {
+    # Next.js Target Group (Blue/Green)
+    nextjs-blue = {
+      name             = "${var.project_name}-nextjs-blue-${var.environment}"
+      backend_protocol = "HTTP"
+      backend_port     = 3000
+      target_type      = "ip"
+      create_attachment = false
+      health_check = {
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        timeout             = 5
+        interval            = 30
+        path                = "/"
+        matcher             = "200"
       }
-      nextjs-green = {
-        name             = "${var.project_name}-nextjs-green-${var.environment}"
-        backend_protocol = "HTTP"
-        backend_port     = 3000
-        target_type      = "ip"
-        create_attachment = false
-        health_check = {
-          healthy_threshold   = 2
-          unhealthy_threshold = 2
-          timeout             = 5
-          interval            = 30
-          path                = "/api/health"
-          matcher             = "200"
-        }
-        stickiness = {
-          type            = "lb_cookie"
-          enabled         = true
-          cookie_duration = 86400
-        }
-        tags = {
-          Name = "${var.project_name}-nextjs-green-tg-${var.environment}"
-        }
+      stickiness = {
+        type            = "lb_cookie"
+        enabled         = true
+        cookie_duration = 86400
+      }
+      tags = {
+        Name = "${var.project_name}-nextjs-blue-tg-${var.environment}"
       }
     }
+
+    # NestJS Target Group (Blue/Green)
+    nestjs-blue = {
+      name             = "${var.project_name}-nestjs-blue-${var.environment}"
+      backend_protocol = "HTTP"
+      backend_port     = 8080
+      target_type      = "ip"
+      create_attachment = false
+      health_check = {
+        healthy_threshold   = 2
+        unhealthy_threshold = 3
+        timeout             = 5
+        interval            = 30
+        path                = "/api/health"
+        matcher             = "200-399"
+      }
+      stickiness = {
+        type            = "lb_cookie"
+        enabled         = true
+        cookie_duration = 86400
+      }
+      tags = {
+        Name = "${var.project_name}-nestjs-blue-tg-${var.environment}"
+      }
+    }
+  }
 
   tags = {
     Name = "${var.project_name}-public-alb-${var.environment}"
   }
 }
 
-module "private_alb" {
-  source  = "terraform-aws-modules/alb/aws"
-  version = "~> 9.0"
-
-  name            = "${var.project_name}-private-alb-${var.environment}"
-  internal        = true
-  load_balancer_type = "application"
-  vpc_id          = var.vpc_id
-  subnets         = var.private_api_subnet_ids
-  security_groups = [var.private_alb_security_group_id]
-
-  enable_deletion_protection = var.environment == "prod" ? true : false
-  enable_http2               = true
-  enable_cross_zone_load_balancing = true
-
-  # Listeners configuration for internal service
-  listeners = {
-    http = {
-      port        = 8080
-      protocol    = "HTTP"
-      forward = {
-        target_group_key = "nestjs-blue"
-      }
-    }
-  }
-
-   # Target groups for Go Server (Blue/Green)
-   target_groups = {
-     nestjs-blue = {
-       name             = "${var.project_name}-nestjs-blue-${var.environment}"
-       backend_protocol = "HTTP"
-       backend_port     = 8080
-       target_type      = "ip"
-       create_attachment = false
-       health_check = {
-         enabled             = true
-         healthy_threshold   = 2
-         unhealthy_threshold = 3
-         timeout             = 5
-         interval            = 30
-         path                = "/api/health"
-         matcher             = "200-399"
-         port                = "traffic-port"
-       }
-       stickiness = {
-         type            = "lb_cookie"
-         enabled         = true
-         cookie_duration = 86400
-       }
-       tags = {
-         Name = "${var.project_name}-nestjs-blue-tg-${var.environment}"
-       }
-     }
-     nestjs-green = {
-       name             = "${var.project_name}-nestjs-green-${var.environment}"
-       backend_protocol = "HTTP"
-       backend_port     = 8080
-       target_type      = "ip"
-       create_attachment = false
-       health_check = {
-         enabled             = true
-         healthy_threshold   = 2
-         unhealthy_threshold = 3
-         timeout             = 5
-         interval            = 30
-         path                = "/api/health"
-         matcher             = "200-399"
-         port                = "traffic-port"
-       }
-       stickiness = {
-         type            = "lb_cookie"
-         enabled         = true
-         cookie_duration = 86400
-       }
-       tags = {
-         Name = "${var.project_name}-nestjs-green-tg-${var.environment}"
-       }
-     }
-   }
-
-  tags = {
-    Name = "${var.project_name}-private-alb-${var.environment}"
-  }
-}

@@ -35,13 +35,13 @@ nextjs_max_capacity = 5        # Maximum for auto-scaling
 nextjs_environment_variables = []
 
 # ECS - Go Server Service
-go_server_task_cpu      = 512  # CPU units: 256=0.25vCPU, 512=0.5vCPU, 1024=1vCPU
-go_server_task_memory   = 1024 # Memory in MB
-go_server_desired_count = 1    # Desired number of tasks
-go_server_min_capacity  = 1    # Minimum for auto-scaling
-go_server_max_capacity  = 5    # Maximum for auto-scaling
-go_server_environment_variables = []
-go_server_secrets = []
+nestjs_task_cpu      = 512  # CPU units: 256=0.25vCPU, 512=0.5vCPU, 1024=1vCPU
+nestjs_task_memory   = 1024 # Memory in MB
+nestjs_desired_count = 1    # Desired number of tasks
+nestjs_min_capacity  = 1    # Minimum for auto-scaling
+nestjs_max_capacity  = 5    # Maximum for auto-scaling
+nestjs_environment_variables = []
+nestjs_secrets = []
 
 # RDS Database
 rds_engine                = "mysql"       # or "postgres"
@@ -60,7 +60,7 @@ enable_enhanced_monitoring = true          # Enable RDS Enhanced Monitoring
 
 # ECR (Elastic Container Registry)
 ecr_nextjs_repository_name   = "ecs-nextjs"       # Repository name for Next.js service
-ecr_go_server_repository_name = "ecs-nestjs"   # Repository name for Go server service
+ecr_nestjs_repository_name = "ecs-nestjs"   # Repository name for Go server service
 ecr_image_scan_on_push       = true               # Scan images for vulnerabilities on push
 ecr_image_tag_mutability     = "MUTABLE"          # MUTABLE for dev/staging, IMMUTABLE for prod
 

@@ -10,14 +10,9 @@ output "nextjs_security_group_id" {
   value       = module.nextjs_sg.security_group_id
 }
 
-output "private_alb_security_group_id" {
-  description = "Private ALB Security Group ID"
-  value       = module.private_alb_sg.security_group_id
-}
-
-output "go_server_security_group_id" {
+output "nestjs_security_group_id" {
   description = "Go Server ECS Security Group ID"
-  value       = module.go_server_sg.security_group_id
+  value       = module.nestjs_sg.security_group_id
 }
 
 output "rds_security_group_id" {

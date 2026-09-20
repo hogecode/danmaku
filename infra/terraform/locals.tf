@@ -48,9 +48,9 @@ locals {
   nextjs_max_capacity  = local.is_dev ? 5 : (local.is_staging ? 5 : 10)
 
   # Go Server Service
-  go_server_desired_count = local.is_dev ? 1 : (local.is_staging ? 2 : 3)
-  go_server_min_capacity  = local.is_dev ? 1 : (local.is_staging ? 1 : 2)
-  go_server_max_capacity  = local.is_dev ? 5 : (local.is_staging ? 5 : 10)
+  nestjs_desired_count = local.is_dev ? 1 : (local.is_staging ? 2 : 3)
+  nestjs_min_capacity  = local.is_dev ? 1 : (local.is_staging ? 1 : 2)
+  nestjs_max_capacity  = local.is_dev ? 5 : (local.is_staging ? 5 : 10)
 
   # ========================================
   # Database Configuration

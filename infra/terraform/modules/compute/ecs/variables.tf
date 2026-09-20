@@ -30,7 +30,7 @@ variable "ecr_nextjs_repository_name" {
   default     = "ecs-nextjs"
 }
 
-variable "ecr_go_server_repository_name" {
+variable "ecr_nestjs_repository_name" {
   description = "ECR repository name for Go server"
   type        = string
   default     = "ecs-nestjs"
@@ -147,37 +147,37 @@ variable "nextjs_secrets" {
 # Go Server Task Definition Configuration
 # ========================================
 
-variable "go_server_task_cpu" {
+variable "nestjs_task_cpu" {
   description = "CPU units for Go server task (256, 512, 1024, 2048, 4096)"
   type        = string
   default     = "256"
 }
 
-variable "go_server_task_memory" {
+variable "nestjs_task_memory" {
   description = "Memory (MB) for Go server task"
   type        = string
   default     = "512"
 }
 
-variable "go_server_container_port" {
+variable "nestjs_container_port" {
   description = "Container port for Go server"
   type        = number
   default     = 8080
 }
 
-variable "go_server_image_tag" {
+variable "nestjs_image_tag" {
   description = "ECR image tag for Go server"
   type        = string
   default     = "latest"
 }
 
-variable "go_server_desired_count" {
+variable "nestjs_desired_count" {
   description = "Desired number of Go server tasks"
   type        = number
   default     = 2
 }
 
-variable "go_server_environment_variables" {
+variable "nestjs_environment_variables" {
   description = "Environment variables for Go server container"
   type = list(object({
     name  = string
@@ -186,7 +186,7 @@ variable "go_server_environment_variables" {
   default = []
 }
 
-variable "go_server_secrets" {
+variable "nestjs_secrets" {
   description = "Secrets from Secrets Manager for Go server container"
   type = list(object({
     name      = string
@@ -204,7 +204,7 @@ variable "ecr_nextjs_repository_url" {
   type        = string
 }
 
-variable "ecr_go_server_repository_url" {
+variable "ecr_nestjs_repository_url" {
   description = "ECR repository URL for Go server"
   type        = string
 }
@@ -228,7 +228,7 @@ variable "nextjs_security_group_id" {
   type        = string
 }
 
-variable "go_server_security_group_id" {
+variable "nestjs_security_group_id" {
   description = "Security group ID for Go Server ECS tasks"
   type        = string
 }
@@ -242,8 +242,8 @@ variable "nextjs_target_group_arn" {
   type        = string
 }
 
-variable "go_server_target_group_arn" {
-  description = "ARN of the target group for Go Server ALB"
+variable "nestjs_target_group_arn" {
+  description = "ARN of the target group for NestJS ALB"
   type        = string
 }
 
@@ -285,12 +285,3 @@ variable "rds_master_user_secret_arn" {
   default     = ""
 }
 
-# ========================================
-# Internal Communication Configuration
-# ========================================
-
-variable "private_alb_dns_name" {
-  description = "Private ALB DNS name for internal service communication"
-  type        = string
-  default     = ""
-}
