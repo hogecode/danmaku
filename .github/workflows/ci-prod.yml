@@ -130,7 +130,7 @@ jobs:
     needs: [build, scan]
     uses: ./.github/workflows/deploy.yml
     with:
-      environment: ${{ env.ENVIRONMENT }}
+      environment: prod
       image_tag: ${{ needs.build.outputs.image_tag }}
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}

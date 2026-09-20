@@ -72,7 +72,7 @@ jobs:
     needs: test
     uses: ./.github/workflows/build.yml
     with:
-      image_tag: ${{ env.IMAGE_TAG }}
+      image_tag: dev-${{ github.sha }}
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -84,7 +84,7 @@ jobs:
     needs: build
     uses: ./.github/workflows/scan.yml
     with:
-      image_tag: ${{ env.IMAGE_TAG }}
+      image_tag: dev-${{ github.sha }}
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -96,8 +96,8 @@ jobs:
     needs: scan
     uses: ./.github/workflows/deploy.yml
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      image_tag: ${{ env.IMAGE_TAG }}
+      environment: dev
+      image_tag: dev-${{ github.sha }}
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
