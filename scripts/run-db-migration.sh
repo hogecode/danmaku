@@ -27,14 +27,10 @@ TASK_DEF_ARN=$(aws ecs describe-services \
 
 echo "📋 Current task definition: $TASK_DEF_ARN"
 
-# Repository URI
-REPO_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_NESTJS_REPOSITORY}:${IMAGE_TAG}"
-echo "📦 Requested image tag: $IMAGE_TAG"
-echo "📦 Image URI: $REPO_URI"
-
 # Check if image exists in ECR
 echo ""
 echo "🔍 Checking if image exists in ECR..."
+echo "📦 Requested image tag: $IMAGE_TAG"
 
 # First, list all available images to debug
 echo "📋 All images in repository:"
@@ -82,6 +78,10 @@ else
   IMAGE_TAG=$(echo "$AVAILABLE" | tail -1)
   echo "✅ Using image tag: $IMAGE_TAG"
 fi
+
+# Now construct Repository URI with the final IMAGE_TAG
+REPO_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_NESTJS_REPOSITORY}:${IMAGE_TAG}"
+echo "📦 Final image URI: $REPO_URI"
 
 # Get current task definition
 TASK_DEF=$(aws ecs describe-task-definition \
