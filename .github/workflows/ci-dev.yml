@@ -10,6 +10,7 @@ env:
 permissions:
   contents: read # Read-only access to repository contents
   id-token: write # Required for OIDC authentication with cloud providers
+  security-events: write # Required for security scanning (SARIF upload)
 
 jobs:
   test:
