@@ -2,7 +2,7 @@
 # Root Module - Infrastructure Orchestration
 # VPC, SG, ACM, ALB, ECS, Bastion, S3, RDS,  CloudWatch, CI/CD, ElastiCache, Lambda, SES, SQS,
 # ========================================
-# TODO: cloudfrontも追加する
+# TODO: cloudflareも追加する
 
 
 # Get current AWS account ID

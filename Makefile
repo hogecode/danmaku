@@ -19,6 +19,9 @@ generate-all-clients: generate-web-client generate-mobile-client generate-flutte
 	@echo "All clients generated successfully!"
 
 
+## ========================
+## ビルド関連 (Windows用)
+## ========================
 # desktop (Flutter)
 .PHONY: flutter-build-runner
 flutter-build-runner: ## Flutter build_runner 実行
@@ -29,3 +32,21 @@ flutter-build-runner: ## Flutter build_runner 実行
 .PHONY: run-android-local
 run-android-local: ## ローカルで Android ビルド実行
 	cd apps/mobile && eas build --platform android --local
+
+
+## ========================
+## Terraform関連 (Windows用)
+## ========================
+.PHONY: tf.init
+tf.init:
+	cd infra/terraform && terraform init -input=false
+
+.PHONY: tf.plan.dev
+tf.plan.dev: ## Dev環境のTerraform計画を実行
+	@echo "Running Terraform plan for dev environment..."
+	@cd infra/terraform && terraform plan -var-file="environments/dev.tfvars" -out=tfplan
+
+.PHONY: tf.apply.dev
+tf.apply.dev: ## Dev環境のTerraform変更を適用
+	@echo "Applying Terraform changes for dev environment..."
+	@cd infra/terraform && terraform apply tfplan
