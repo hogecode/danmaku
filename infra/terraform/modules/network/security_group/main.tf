@@ -251,3 +251,18 @@ resource "aws_security_group_rule" "vpc_endpoints_from_bastion" {
   security_group_id        = module.vpc_endpoints_sg.security_group_id
   description              = "HTTPS from Bastion EC2 for VPC Endpoints (SSM, ECR, Secrets Manager)"
 }
+
+# ========================================
+# Redis Security Group Rules
+# ========================================
+
+# Redis <- NestJS ECS
+resource "aws_security_group_rule" "redis_from_nestjs" {
+  type                     = "ingress"
+  from_port                = 6379
+  to_port                  = 6379
+  protocol                 = "tcp"
+  source_security_group_id = module.nestjs_sg.security_group_id
+  security_group_id        = module.redis_sg.security_group_id
+  description              = "Redis from NestJS ECS"
+}

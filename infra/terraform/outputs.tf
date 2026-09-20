@@ -174,6 +174,29 @@ output "rds_instance_name" {
   value       = module.rds.db_instance_name
 }
 
+# ========================================
+# Phase 6: ElastiCache (Redis) Configuration
+# ========================================
+
+output "redis_endpoint" {
+  description = "Redis cluster primary endpoint address"
+  value       = module.cache.redis_endpoint
+}
+
+output "redis_port" {
+  description = "Redis cluster port"
+  value       = module.cache.redis_port
+}
+
+output "redis_replication_group_id" {
+  description = "Redis Replication Group ID"
+  value       = module.cache.redis_replication_group_id
+}
+
+output "redis_engine_version" {
+  description = "Redis Engine Version"
+  value       = module.cache.redis_engine_version
+}
 
 # ========================================
 # Environment Information

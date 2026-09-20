@@ -293,20 +293,21 @@ module "bastion_ec2" {
 # ========================================
 # Phase 6: ElastiCache (Redis) Configuration
 # ========================================
-#module "cache" {
-#  source = "./modules/database/cache"
-#
-#  app_name              = var.project_name
-#  environment           = var.environment
-#  private_subnets      = module.vpc.private_app_subnets
-#  redis_security_group_id = module.security_group.redis_security_group_id
-#  redis_node_type      = "cache.t3.micro"
-#  snapshot_retention_limit = 5
-#  snapshot_window      = "03:00-05:00"
-#  maintenance_window   = "sun:05:00-sun:06:00"
-#  common_tags          = local.common_tags
-#  depends_on = [module.vpc, module.security_group]
-#}
+module "cache" {
+  source = "./modules/database/cache"
+
+  app_name              = var.project_name
+  environment           = var.environment
+  private_subnets      = module.vpc.private_app_subnets
+  redis_security_group_id = module.security_group.redis_security_group_id
+  redis_node_type      = "cache.t3.micro"
+  snapshot_retention_limit = 5
+  snapshot_window      = "03:00-05:00"
+  maintenance_window   = "sun:05:00-sun:06:00"
+  common_tags          = local.common_tags
+  
+  depends_on = [module.vpc, module.security_group]
+}
 
 
 
