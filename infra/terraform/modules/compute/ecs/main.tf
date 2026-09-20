@@ -365,11 +365,11 @@ resource "aws_ecs_service" "nextjs" {
   ]
 
   deployment_controller {
-    type = "CODE_DEPLOY"
+    type = "ECS"
   }
 
   lifecycle {
-    ignore_changes = [task_definition, desired_count]
+    ignore_changes = [desired_count]
   }
 
   tags = {
@@ -398,11 +398,11 @@ resource "aws_ecs_service" "nestjs" {
   }
 
   deployment_controller {
-    type = "CODE_DEPLOY"
+    type = "ECS"
   }
 
   lifecycle {
-    ignore_changes = [task_definition, desired_count]
+    ignore_changes = [desired_count]
   }
 
   depends_on = [
