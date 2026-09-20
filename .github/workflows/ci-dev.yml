@@ -1,14 +1,6 @@
 name: CI/CD - Dev Environment
 
 on:
-#  push:
-#    branches:
-#      - main
-#    paths-ignore:
-#      - 'docs/**'
-#      - 'infra/**'
-#      - '.github/**'
-#      - '*.md'
   workflow_dispatch:
 
 env:

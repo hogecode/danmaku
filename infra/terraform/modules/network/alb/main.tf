@@ -18,6 +18,7 @@ module "public_alb" {
   enable_cross_zone_load_balancing = true
 
   # Listeners configuration with default forward to Next.js
+  # Note: Rules for routing to NestJS are created via separate aws_lb_listener_rule resources below
   listeners = merge(
     {
       http = {
@@ -96,6 +97,7 @@ module "public_alb" {
   tags = {
     Name = "${var.project_name}-public-alb-${var.environment}"
   }
+
 }
 
 

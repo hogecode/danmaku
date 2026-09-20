@@ -268,7 +268,7 @@ resource "aws_ecs_task_definition" "nextjs" {
   }
 }
 
-# Go Server Task Definition
+# NestJS Task Definition
 resource "aws_ecs_task_definition" "nestjs" {
   family                   = "${var.project_name}-nestjs"
   network_mode             = "awsvpc"
@@ -333,115 +333,6 @@ resource "aws_ecs_task_definition" "nestjs" {
   tags = {
     Name = "${var.project_name}-nestjs-task-${var.environment}"
   }
-}
-
-# ========================================
-# Generate Task Definition JSON Files for CodeDeploy
-# ========================================
-
-# Generate Next.js Task Definition JSON
-# local_fileリソースを使用して、CodeDeployで使用するタスク定義のJSONファイルを生成
-resource "local_file" "nextjs_taskdef_json" {
-  filename = "${path.module}/../../../../nextjs-taskdef.json"
-  content = jsonencode({
-    family                  = aws_ecs_task_definition.nextjs.family
-    networkMode             = "awsvpc"
-    requiresCompatibilities = ["FARGATE"]
-    cpu                     = tostring(var.nextjs_task_cpu)
-    memory                  = tostring(var.nextjs_task_memory)
-    executionRoleArn        = aws_iam_role.ecs_task_execution_role.arn
-    taskRoleArn             = aws_iam_role.ecs_task_role_nextjs.arn
-
-    containerDefinitions = [
-      {
-        name                 = "${var.project_name}-nextjs"
-        enableExecuteCommand = true
-        image                = "${var.ecr_nextjs_repository_url}:${var.nextjs_image_tag}"
-        essential            = true
-        portMappings = [
-          {
-            containerPort = var.nextjs_container_port
-            hostPort      = var.nextjs_container_port
-            protocol      = "tcp"
-          }
-        ]
-        logConfiguration = {
-          logDriver = "awslogs"
-          options = {
-            "awslogs-group"         = aws_cloudwatch_log_group.nextjs.name
-            "awslogs-region"        = var.aws_region
-            "awslogs-stream-prefix" = "ecs"
-          }
-        }
-        environment = var.nextjs_environment_variables
-      }
-    ]
-  })
-}
-
-# Generate Go Server Task Definition JSON
-resource "local_file" "nestjs_taskdef_json" {
-  filename = "${path.module}/../../../../nestjs-taskdef.json"
-  content = jsonencode({
-    family                  = aws_ecs_task_definition.nestjs.family
-    networkMode             = "awsvpc"
-    enableExecuteCommand    = true
-    requiresCompatibilities = ["FARGATE"]
-    cpu                     = tostring(var.nestjs_task_cpu)
-    memory                  = tostring(var.nestjs_task_memory)
-    executionRoleArn        = aws_iam_role.ecs_task_execution_role.arn
-    taskRoleArn             = aws_iam_role.ecs_task_role_nestjs.arn
-    containerDefinitions = [
-      {
-        name      = "${var.project_name}-nestjs"
-        image     = "${var.ecr_nestjs_repository_url}:${var.nestjs_image_tag}"
-        essential = true
-        portMappings = [
-          {
-            containerPort = var.nestjs_container_port
-            hostPort      = var.nestjs_container_port
-            protocol      = "tcp"
-          }
-        ]
-        logConfiguration = {
-          logDriver = "awslogs"
-          options = {
-            "awslogs-group"         = aws_cloudwatch_log_group.nestjs.name
-            "awslogs-region"        = var.aws_region
-            "awslogs-stream-prefix" = "ecs"
-          }
-        }
-        environment = concat(
-          var.nestjs_environment_variables,
-           [
-            {
-              name  = "DB_HOST"
-              value = var.rds_endpoint
-            },
-            {
-              name  = "DB_PORT"
-              value = tostring(var.rds_port)
-            },
-            {
-              name  = "DB_NAME"
-              value = var.rds_database_name
-            },
-            {
-              name  = "DB_ENGINE"
-              value = var.rds_engine
-            }
-          ],
-          var.rds_master_user_secret_arn != "" ? [
-            {
-              name  = "DB_CREDENTIALS_SECRET_ARN"
-              value = var.rds_master_user_secret_arn
-            }
-          ] : []
-        )
-        # secrets = var.nestjs_secrets
-      }
-    ]
-  })
 }
 
 # ========================================

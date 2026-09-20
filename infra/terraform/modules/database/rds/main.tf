@@ -28,7 +28,7 @@ module "rds" {
   
   # Master user configuration
   # manage_master_user_password = true の場合、username を指定し、password は AWS が自動生成・管理する
-  username = "admin"
+  username = var.rds_username != "" ? var.rds_username : (var.rds_engine == "mysql" ? "admin" : "postgres")
   manage_master_user_password = true
 
   # Network configuration
@@ -49,11 +49,18 @@ module "rds" {
   final_snapshot_identifier_prefix = var.environment == "prod" ? "${var.project_name}-db-final-snapshot" : null
 
   # Enhanced Monitoring
-  enabled_cloudwatch_logs_exports = var.enable_enhanced_monitoring ? [
-    var.rds_engine == "mysql" ? "error" : "postgresql",
-    var.rds_engine == "mysql" ? "slowquery" : "upgrade",
-    "audit"
-  ] : []
+  # PostgreSQL: postgresql, upgrade
+  # MySQL: error, slowquery, audit
+  enabled_cloudwatch_logs_exports = var.enable_enhanced_monitoring ? (
+    var.rds_engine == "mysql" ? [
+      "error",
+      "slowquery",
+      "audit"
+    ] : [
+      "postgresql",
+      "upgrade"
+    ]
+  ) : []
   monitoring_interval = var.enable_enhanced_monitoring ? 60 : 0
   monitoring_role_arn = var.enable_enhanced_monitoring ? aws_iam_role.rds_monitoring[0].arn : null
 

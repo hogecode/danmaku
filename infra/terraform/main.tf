@@ -107,6 +107,46 @@ module "alb" {
   depends_on = [module.security_group, module.vpc, module.certificates]
 }
 
+# ========================================
+# ALB Listener Rules for NestJS API Routing
+# ========================================
+# Route /api/* paths to NestJS target group
+
+# HTTP listener rule for /api/* -> NestJS
+resource "aws_lb_listener_rule" "http_api_to_nestjs" {
+  listener_arn = module.alb.public_alb_http_listener_arn
+  priority     = 1
+
+  action {
+    type             = "forward"
+    target_group_arn = module.alb.nestjs_target_group_arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+}
+
+# HTTPS listener rule for /api/* -> NestJS (if HTTPS is enabled)
+resource "aws_lb_listener_rule" "https_api_to_nestjs" {
+  count = var.enable_https ? 1 : 0
+
+  listener_arn = module.alb.public_alb_https_listener_arn
+  priority     = 1
+
+  action {
+    type             = "forward"
+    target_group_arn = module.alb.nestjs_target_group_arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+}
 
 # ========================================
 # Phase 4: ECR Configuration
@@ -155,6 +195,7 @@ module "rds" {
   rds_instance_class        = local.rds_instance_class
   rds_allocated_storage     = var.rds_allocated_storage
   rds_database_name         = var.rds_database_name
+  rds_username              = var.rds_username
 
   # High Availability
   rds_multi_az              = local.rds_multi_az
