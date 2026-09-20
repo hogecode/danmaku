@@ -70,6 +70,7 @@ module "kms" {
 # ========================================
 # Phase 3: SSL/TLS Certificates (ACM)
 # ========================================
+# danmaku.cloudのSSL/TLS証明書を管理するモジュール
 module "certificates" {
   source = "./modules/cdn/certificates"
 
@@ -112,10 +113,38 @@ module "alb" {
 # ========================================
 # Route /api/* paths to NestJS target group
 
-# HTTP listener rule for /api/* -> NestJS
-resource "aws_lb_listener_rule" "http_api_to_nestjs" {
+# ========================================
+# HTTP to HTTPS Redirect (if HTTPS is enabled)
+# ========================================
+# Priority 1: Redirect all HTTP traffic to HTTPS
+resource "aws_lb_listener_rule" "http_to_https_redirect" {
+  count = var.enable_https ? 1 : 0
+
   listener_arn = module.alb.public_alb_http_listener_arn
   priority     = 1
+
+  action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/*"]
+    }
+  }
+}
+
+# HTTP listener rule for /api/* -> NestJS
+# Priority 2 because priority 1 is reserved for HTTP->HTTPS redirect (if HTTPS is enabled)
+resource "aws_lb_listener_rule" "http_api_to_nestjs" {
+  listener_arn = module.alb.public_alb_http_listener_arn
+  priority     = var.enable_https ? 2 : 1
 
   action {
     type             = "forward"
@@ -216,23 +245,39 @@ module "rds" {
 # ========================================
 
 # Construct NextJS environment variables with dynamic ALB DNS reference
+# IMPORTANT:
+# - NEXT_PUBLIC_API_* は ブラウザから使用 (クライアント側 API、ALB経由)
+# - API_URL は Next.js サーバーから使用 (サーバー側 API、内部ネットワーク経由)
 locals {
   nextjs_environment_variables_merged = concat(
+    var.nextjs_environment_variables,
     [
+      # ========================================
+      # ブラウザ側 API (ALB 経由、インターネット)
+      # ========================================
       {
         name  = "NEXT_PUBLIC_API_BASE_URL"
-        value = "http://${module.alb.public_alb_dns_name}/api"
+        value = var.enable_https ? "https://${var.domain_name}" : "http://${module.alb.public_alb_dns_name}"
       },
       {
-        name  = "API_BASE_URL"
-        value = "http://${module.alb.public_alb_dns_name}/api"
+        name  = "NEXT_PUBLIC_API_URL"
+        value = var.enable_https ? "https://${var.domain_name}/api" : "http://${module.alb.public_alb_dns_name}/api"
+      },
+      # ========================================
+      # サーバー側 API (内部ネットワーク、DNS)
+      # ========================================
+      # Note: NestJS サービスは同一 VPC 内の private subnet で動作
+      # DNS 解決: nestjs-service:3001 (ECS Service Discovery で内部 DNS を提供)
+      # または NestJS タスクの IP を直接指定（CloudMap 未使用時）
+      {
+        name  = "API_URL"
+        value = "http://nestjs-service:3001"  # CloudMap/Service Discovery 使用時
       },
       {
         name  = "NODE_ENV"
-        value = "production"
+        value = var.environment
       }
-    ],
-    var.nextjs_environment_variables
+    ]
   )
 }
 
@@ -242,6 +287,7 @@ module "ecs" {
   project_name              = var.project_name
   environment               = var.environment
   aws_region                = var.aws_region
+  vpc_id                    = module.vpc.vpc_id
 
   # ECR Configuration
   ecr_nextjs_repository_name     = var.ecr_nextjs_repository_name

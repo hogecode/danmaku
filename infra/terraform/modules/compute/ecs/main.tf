@@ -35,6 +35,20 @@ resource "aws_cloudwatch_log_group" "xray" {
 }
 
 # ========================================
+# Service Discovery - CloudMap Namespace
+# ========================================
+
+resource "aws_service_discovery_private_dns_namespace" "ecs" {
+  name            = "${var.project_name}.local"
+  vpc             = var.vpc_id
+  description     = "Private DNS namespace for ECS Service Discovery (${var.environment})"
+
+  tags = {
+    Name = "${var.project_name}-dns-namespace-${var.environment}"
+  }
+}
+
+# ========================================
 # ECS Cluster (using terraform-aws-modules)
 # ========================================
 
@@ -397,7 +411,35 @@ resource "aws_ecs_service" "nextjs" {
   }
 }
 
-# Go Server Service
+# ========================================
+# CloudMap Service Registration - NestJS
+# ========================================
+
+resource "aws_service_discovery_service" "nestjs" {
+  name            = "nestjs-service"
+  namespace_id    = aws_service_discovery_private_dns_namespace.ecs.id
+  description     = "Service discovery for NestJS API service"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.ecs.id
+
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+
+    routing_policy = "MULTIVALUE"
+  }
+
+  # Note: Health check config is not supported with private DNS namespaces
+  # ECS will automatically register/deregister instances based on task status
+
+  tags = {
+    Name = "${var.project_name}-nestjs-sd-service-${var.environment}"
+  }
+}
+
+# NestJS Service
 resource "aws_ecs_service" "nestjs" {
   name            = "${var.project_name}-nestjs-service"
   cluster         = module.ecs_cluster.cluster_id
@@ -417,6 +459,11 @@ resource "aws_ecs_service" "nestjs" {
     container_port   = var.nestjs_container_port
   }
 
+  # Service Discovery - CloudMap Registration
+  service_registries {
+    registry_arn = aws_service_discovery_service.nestjs.arn
+  }
+
   deployment_controller {
     type = "ECS"
   }
@@ -427,7 +474,8 @@ resource "aws_ecs_service" "nestjs" {
 
   depends_on = [
     aws_iam_role_policy.ecs_task_execution_custom,
-    aws_iam_role_policy.ecs_task_role_nestjs
+    aws_iam_role_policy.ecs_task_role_nestjs,
+    aws_service_discovery_service.nestjs
   ]
 
   tags = {

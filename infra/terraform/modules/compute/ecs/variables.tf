@@ -20,6 +20,11 @@ variable "aws_region" {
   type        = string
 }
 
+variable "vpc_id" {
+  description = "VPC ID for CloudMap Service Discovery"
+  type        = string
+}
+
 # ========================================
 # ECR Configuration
 # ========================================
