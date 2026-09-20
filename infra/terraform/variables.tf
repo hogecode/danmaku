@@ -379,45 +379,6 @@ variable "s3_filesystem_kms_key_arn" {
   default     = ""
 }
 
-
-# ========================================
-# Email Service Configuration (SES)
-# ========================================
-
-variable "test_email_addresses" {
-  description = "List of test email addresses for SES sandbox mode"
-  type        = list(string)
-  default     = []
-}
-
-variable "test_email_domains" {
-  description = "List of test email domains for SES sandbox mode"
-  type        = list(string)
-  default     = []
-}
-
-variable "test_domain_route53_zone_id" {
-  description = "Route53 Zone ID for test email domain verification"
-  type        = string
-  default     = ""
-}
-
-# ========================================
-# Messaging Configuration (SQS)
-# ========================================
-
-variable "sqs_queue_names" {
-  description = "List of SQS queue names to create"
-  type        = list(string)
-  default     = ["default", "email", "notifications"]
-}
-
-variable "sqs_kms_key_arn" {
-  description = "ARN of KMS key for SQS encryption (optional)"
-  type        = string
-  default     = ""
-}
-
 # ========================================
 # Monitoring & Logging Configuration
 # ========================================
@@ -586,37 +547,7 @@ variable "nestjs_secrets" {
   default = []
 }
 
-# ========================================
-# Lambda Functions Configuration
-# ========================================
 
-variable "lambda_functions" {
-  description = "Map of Lambda function definitions. Each key is the function name, value contains function configuration."
-  type = map(object({
-    description           = string
-    source_path           = string
-    handler               = string
-    runtime               = string
-    timeout               = number
-    memory_size           = number
-    environment_variables = map(string)
-    s3_trigger = optional(object({
-      enabled     = bool
-      bucket_ref  = string
-      key_prefix  = string
-      events      = list(string)
-    }))
-    s3_read_policy = optional(bool, false)
-    tags           = optional(map(string), {})
-  }))
-  default = {}
-}
-
-variable "lambda_functions_file" {
-  description = "Path to JSON file containing Lambda function definitions"
-  type        = string
-  default     = "lambda_functions.json"
-}
 
 
 # ========================================

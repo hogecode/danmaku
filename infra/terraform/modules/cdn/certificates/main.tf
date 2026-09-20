@@ -15,7 +15,7 @@ module "acm_certificate" {
   validation_method         = "DNS"
 
   create_certificate   = true
-  validate_certificate = true
+  validate_certificate = false
 
   tags = merge(var.common_tags, {
     Name = "${var.app_name}-${var.environment}-cert"

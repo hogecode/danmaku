@@ -17,11 +17,6 @@ output "public_alb_dns_name" {
   value       = try(module.public_alb.this_lb_dns_name, module.public_alb.lb_dns_name, "")
 }
 
-output "public_alb_zone_id" {
-  description = "Public ALB Zone ID"
-  value       = try(module.public_alb.this_lb_zone_id, module.public_alb.lb_zone_id, "")
-}
-
 output "nextjs_target_group_arn" {
   description = "Next.js target group ARN (Blue/Green deployment)"
   value       = try(module.public_alb.target_groups["nextjs-blue"].arn, "")

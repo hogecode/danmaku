@@ -194,28 +194,3 @@ output "project_name" {
   value       = var.project_name
 }
 
-
-# ========================================
-# Phase 10: Lambda Functions Configuration
-# ========================================
-
-output "lambda_functions" {
-  description = "Lambda functions information (ARN, name, invoke ARN)"
-  value = {
-    for name, lambda_module in module.lambda_functions : name => {
-      function_arn       = lambda_module.lambda_function_arn
-      function_name      = lambda_module.lambda_function_name
-      function_invoke_arn = lambda_module.lambda_function_invoke_arn
-      role_arn           = lambda_module.lambda_role_arn
-      role_name          = lambda_module.lambda_role_name
-      log_group_name     = lambda_module.lambda_cloudwatch_log_group_name
-      log_group_arn      = lambda_module.lambda_cloudwatch_log_group_arn
-    }
-  }
-  sensitive = false
-}
-
-output "lambda_functions_summary" {
-  description = "Summary of deployed Lambda functions"
-  value       = "Deployed ${length(module.lambda_functions)} Lambda function(s): ${join(", ", keys(module.lambda_functions))}"
-}
