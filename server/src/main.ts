@@ -9,6 +9,7 @@ import { AppModule } from './app.module';
 import { generateOpenAPIYaml } from './utils/openapi-generator';
 import { TraceIdMiddleware } from './common/middleware/trace-id.middleware';
 import { pinoLogger } from './common/logger/pino.logger';
+import { getSecretValue } from './common/utils/secret-parser.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bodyParser: true });
@@ -16,13 +17,30 @@ async function bootstrap() {
   // ✅ Pino ロギングを NestJS に統合
   app.useLogger(pinoLogger as any);
 
+  // Parse Redis credentials from JSON secret or individual env vars
+  const redisSecretsJson = process.env.REDIS_CREDENTIALS;
+
+  const redisHost = redisSecretsJson 
+    ? getSecretValue(redisSecretsJson, 'host', 'REDIS_HOST') || 'localhost'
+    : process.env.REDIS_HOST || 'localhost';
+    
+  const redisPort = redisSecretsJson
+    ? parseInt(getSecretValue(redisSecretsJson, 'port', 'REDIS_PORT') || '6379', 10)
+    : parseInt(process.env.REDIS_PORT || '6379', 10);
+    
+  const redisPassword = getSecretValue(redisSecretsJson, 'password', 'REDIS_PASSWORD');
+  
+  const redisDb = redisSecretsJson
+    ? parseInt(getSecretValue(redisSecretsJson, 'db', 'REDIS_DB') || '0', 10)
+    : parseInt(process.env.REDIS_DB || '0', 10);
+
   // Redis セッションストア設定
   const redisClient = createClient({
     socket: {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
+      host: redisHost,
+      port: redisPort,
     },
-    password: process.env.REDIS_PASSWORD,
+    password: redisPassword,
   });
 
   // Redis クライアントの接続
@@ -33,8 +51,9 @@ async function bootstrap() {
     prefix: 'session:',
   });
 
-  // Express session 設定
-  const sessionSecret = process.env.SESSION_SECRET || 'your-secret-key';
+  // Get session secret from JSON secret or individual env var
+  const appSecretsJson = process.env.APP_SECRETS;
+  const sessionSecret = getSecretValue(appSecretsJson, 'session_secret', 'SESSION_SECRET') || 'default-session-secret';
   const cookieSecure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
 
   // ✅ TraceId middleware を登録

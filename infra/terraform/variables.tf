@@ -547,8 +547,23 @@ variable "nestjs_secrets" {
   default = []
 }
 
+# ========================================
+# AWS Secrets Manager Configuration
+# ========================================
+# NOTE: Secrets are stored in AWS Secrets Manager, not in .tfvars
+# 秘密値は AWS Secrets Manager に保存されており、.tfvars には保存しません
 
+variable "create_secrets" {
+  description = "Whether to create secrets in AWS Secrets Manager (false if already created)"
+  type        = bool
+  default     = false
+}
 
+variable "redis_db" {
+  description = "Redis database number"
+  type        = number
+  default     = 0
+}
 
 # ========================================
 # GitHub OIDC Configuration (CI/CD)

@@ -326,7 +326,33 @@ resource "aws_ecs_task_definition" "nestjs" {
           }
         ] : []
       )
-      # secrets = var.nestjs_secrets
+      secrets = concat(
+        var.nestjs_secrets,
+        var.rds_credentials_secret_arn != "" ? [
+          {
+            name      = "DB_CREDENTIALS"
+            valueFrom = var.rds_credentials_secret_arn
+          }
+        ] : [],
+        var.redis_credentials_secret_arn != "" ? [
+          {
+            name      = "REDIS_CREDENTIALS"
+            valueFrom = var.redis_credentials_secret_arn
+          }
+        ] : [],
+        var.app_secrets_secret_arn != "" ? [
+          {
+            name      = "APP_SECRETS"
+            valueFrom = var.app_secrets_secret_arn
+          }
+        ] : [],
+        var.oauth_secrets_secret_arn != "" ? [
+          {
+            name      = "OAUTH_SECRETS"
+            valueFrom = var.oauth_secrets_secret_arn
+          }
+        ] : []
+      )
     }
   ])
 

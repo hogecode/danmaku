@@ -285,3 +285,31 @@ variable "rds_master_user_secret_arn" {
   default     = ""
 }
 
+# ==================================================
+# Secrets Manager ARNs (from secrets-manager module)
+# ==================================================
+
+variable "rds_credentials_secret_arn" {
+  description = "ARN of RDS credentials secret from Secrets Manager"
+  type        = string
+  default     = ""
+}
+
+variable "redis_credentials_secret_arn" {
+  description = "ARN of Redis credentials secret from Secrets Manager"
+  type        = string
+  default     = ""
+}
+
+variable "app_secrets_secret_arn" {
+  description = "ARN of application secrets from Secrets Manager"
+  type        = string
+  default     = ""
+}
+
+variable "oauth_secrets_secret_arn" {
+  description = "ARN of OAuth secrets from Secrets Manager"
+  type        = string
+  default     = ""
+}
+

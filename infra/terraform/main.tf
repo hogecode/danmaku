@@ -284,9 +284,13 @@ module "ecs" {
   nestjs_secrets               = var.nestjs_secrets
 
   # Secrets Manager Configuration
-  rds_master_user_secret_arn = module.rds.db_instance_master_user_secret_arn
+  rds_master_user_secret_arn    = module.rds.db_instance_master_user_secret_arn
+  rds_credentials_secret_arn    = module.secrets_manager.rds_credentials_secret_arn
+  redis_credentials_secret_arn  = module.secrets_manager.redis_credentials_secret_arn
+  app_secrets_secret_arn        = module.secrets_manager.app_secrets_secret_arn
+  oauth_secrets_secret_arn      = module.secrets_manager.oauth_secrets_secret_arn
 
-  depends_on = [module.vpc, module.security_group, module.alb, module.ecr, module.rds]
+  depends_on = [module.vpc, module.security_group, module.alb, module.ecr, module.rds, module.secrets_manager]
 }
 
 # ========================================
@@ -367,6 +371,25 @@ module "monitoring" {
   depends_on = [module.ecs, module.rds, module.alb, module.kms]
 }
 
+
+# ========================================
+# Phase 7.5: Secrets Manager Configuration
+# ========================================
+module "secrets_manager" {
+  source = "./modules/secrets/secrets-manager"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Note: This module references existing secrets in AWS Secrets Manager
+  # Secrets must be created beforehand via AWS CLI, Console, or CI/CD:
+  #   aws secretsmanager create-secret --name "danmaku/dev/rds/credentials" --secret-string '{"username":"...","password":"..."}'
+  #   aws secretsmanager create-secret --name "danmaku/dev/redis/credentials" --secret-string '{"host":"...","port":6379}'
+  #   aws secretsmanager create-secret --name "danmaku/dev/app/secrets" --secret-string '{"jwt_secret":"...","session_secret":"..."}'
+  #   aws secretsmanager create-secret --name "danmaku/dev/oauth/secrets" --secret-string '{"google_client_id":"...","google_client_secret":"..."}'
+
+  depends_on = [module.rds, module.cache]
+}
 
 # ========================================
 # Phase 8: GitHub OIDC IAM Role (CI/CD)
