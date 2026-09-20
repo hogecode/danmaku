@@ -1,18 +1,23 @@
-# Multi-stage build for NestJS production image
+# Optimized multi-stage build for NestJS production image
 # Stage 1: Builder
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
+# Copy package files
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production=false
+
+# Install all dependencies (including dev)
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Build the application
 RUN yarn build
+
+# Prune dev dependencies for production
+RUN yarn install --frozen-lockfile --production=true
 
 # Stage 2: Production runtime
 FROM node:20-alpine
@@ -26,14 +31,9 @@ RUN apk add --no-cache dumb-init
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Copy package files
-COPY package.json yarn.lock ./
-
-# Install only production dependencies
-RUN yarn install --frozen-lockfile --production=true && \
-    yarn cache clean
-
-# Copy built application from builder stage
+# Copy package files and production dependencies from builder
+COPY --from=builder --chown=nodejs:nodejs /app/package.json /app/yarn.lock ./
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 
 # Switch to non-root user

@@ -1,27 +1,26 @@
-# Multi-stage build for Next.js production image
-# Stage 1: Dependencies
-FROM node:20-alpine AS deps
-
-WORKDIR /app
-
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production=false
-
-# Stage 2: Builder
+# Optimized multi-stage build for Next.js production image
+# Stage 1: Builder
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production=false
+# Copy package files
+COPY package.json package-lock.json ./
 
+# Install all dependencies (including dev)
+RUN npm install --frozen-lockfile --ignore-scripts
+
+# Copy source code
 COPY . .
 
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN yarn build
+RUN npm run build
 
-# Stage 3: Production runtime
+# Prune dev dependencies for production
+RUN npm prune --production
+
+# Stage 2: Production runtime
 FROM node:20-alpine
 
 WORKDIR /app
@@ -33,14 +32,9 @@ RUN apk add --no-cache dumb-init
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Copy package files
-COPY package.json yarn.lock ./
-
-# Install only production dependencies
-RUN yarn install --frozen-lockfile --production=true && \
-    yarn cache clean
-
-# Copy built application from builder stage
+# Copy package files and production dependencies from builder
+COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nodejs:nodejs /app/public ./public
 COPY --from=builder --chown=nodejs:nodejs /app/next.config.* ./
@@ -56,6 +50,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application
-CMD ["yarn", "start"]
+CMD ["npm", "start"]
 
 EXPOSE 3000

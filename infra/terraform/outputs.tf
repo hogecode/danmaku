@@ -217,3 +217,83 @@ output "project_name" {
   value       = var.project_name
 }
 
+
+# ========================================
+# GitHub Secrets Configuration (CI/CD)
+# ========================================
+# These outputs should be used to set GitHub Repository Secrets
+# Usage: 
+#   cd infra/terraform
+#   terraform output -raw github_secrets_json | jq '.'
+
+output "github_secrets_json" {
+  description = "JSON formatted GitHub Secrets for CI/CD configuration"
+  value = jsonencode({
+    AWS_REGION                    = var.aws_region
+    AWS_ACCOUNT_ID                = data.aws_caller_identity.current.account_id
+    AWS_ROLE_ARN                  = module.cicd.github_oidc_role_arn
+    ECR_NEXTJS_REPOSITORY_NAME    = var.ecr_nextjs_repository_name
+    ECR_NESTJS_REPOSITORY_NAME    = var.ecr_nestjs_repository_name
+    ECS_CLUSTER_NAME              = module.ecs.ecs_cluster_name
+    ECS_NEXTJS_SERVICE_NAME       = module.ecs.nextjs_service_name
+    ECS_NESTJS_SERVICE_NAME       = module.ecs.nestjs_service_name
+  })
+  sensitive = false
+}
+
+output "github_secrets_table" {
+  description = "GitHub Secrets in table format for easy reference"
+  value = {
+    AWS_REGION                  = var.aws_region
+    AWS_ACCOUNT_ID              = data.aws_caller_identity.current.account_id
+    AWS_ROLE_ARN                = module.cicd.github_oidc_role_arn
+    ECR_NEXTJS_REPOSITORY_NAME  = var.ecr_nextjs_repository_name
+    ECR_NESTJS_REPOSITORY_NAME  = var.ecr_nestjs_repository_name
+    ECS_CLUSTER_NAME            = module.ecs.ecs_cluster_name
+    ECS_NEXTJS_SERVICE_NAME     = module.ecs.nextjs_service_name
+    ECS_NESTJS_SERVICE_NAME     = module.ecs.nestjs_service_name
+  }
+}
+
+# Individual outputs for direct reference
+output "aws_region_value" {
+  description = "AWS Region"
+  value       = var.aws_region
+}
+
+output "aws_account_id_value" {
+  description = "AWS Account ID"
+  value       = data.aws_caller_identity.current.account_id
+}
+
+output "aws_role_arn_value" {
+  description = "GitHub OIDC Role ARN for AWS authentication"
+  value       = module.cicd.github_oidc_role_arn
+}
+
+output "ecr_nextjs_repository_name_value" {
+  description = "ECR Repository name for Next.js"
+  value       = var.ecr_nextjs_repository_name
+}
+
+output "ecr_nestjs_repository_name_value" {
+  description = "ECR Repository name for NestJS"
+  value       = var.ecr_nestjs_repository_name
+}
+
+output "ecs_cluster_name_value" {
+  description = "ECS Cluster name"
+  value       = module.ecs.ecs_cluster_name
+}
+
+output "ecs_nextjs_service_name_value" {
+  description = "ECS Service name for Next.js"
+  value       = module.ecs.nextjs_service_name
+}
+
+output "ecs_nestjs_service_name_value" {
+  description = "ECS Service name for NestJS"
+  value       = module.ecs.nestjs_service_name
+}
+
+
