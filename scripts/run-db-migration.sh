@@ -85,12 +85,13 @@ ELAPSED=0
 MAX_WAIT=900
 
 while [ $ELAPSED -lt $MAX_WAIT ]; do
-  STATUS=$(aws ecs describe-tasks \
+  TASK_INFO=$(aws ecs describe-tasks \
     --cluster "$ECS_CLUSTER" \
     --tasks "$TASK_ARN" \
     --region "$AWS_REGION" \
-    --query 'tasks[0].lastStatus' \
-    --output text 2>/dev/null || echo "UNKNOWN")
+    --output json)
+  
+  STATUS=$(echo "$TASK_INFO" | jq -r '.tasks[0].lastStatus')
   
   if [ "$STATUS" = "STOPPED" ]; then
     echo "✅ Task stopped"
@@ -102,30 +103,47 @@ while [ $ELAPSED -lt $MAX_WAIT ]; do
   ELAPSED=$((ELAPSED + 5))
 done
 
-# Check exit code
-EXIT_CODE=$(aws ecs describe-tasks \
+# Get full task details
+TASK_INFO=$(aws ecs describe-tasks \
   --cluster "$ECS_CLUSTER" \
   --tasks "$TASK_ARN" \
   --region "$AWS_REGION" \
-  --query 'tasks[0].containers[0].exitCode' \
-  --output text)
+  --output json)
 
+echo ""
+echo "📊 Task Details:"
+echo "$TASK_INFO" | jq '.tasks[0] | {lastStatus, exitCode: .containers[0].exitCode, stoppedReason, containers: [.containers[] | {name, exitCode, reason}]}'
+
+# Check exit code
+EXIT_CODE=$(echo "$TASK_INFO" | jq -r '.tasks[0].containers[0].exitCode // "null"')
+STOPPED_REASON=$(echo "$TASK_INFO" | jq -r '.tasks[0].stoppedReason // "unknown"')
+
+echo ""
 echo "📊 Exit code: $EXIT_CODE"
+echo "📊 Stop reason: $STOPPED_REASON"
 
 # Get logs
 echo ""
 echo "📋 Logs from CloudWatch:"
 aws logs tail "/ecs/ecs-sample-nestjs-${ENVIRONMENT}" \
-  --follow --since 15m \
-  --region "$AWS_REGION" 2>/dev/null || echo "⚠️ Could not fetch logs"
+  --follow --since 20m \
+  --region "$AWS_REGION" 2>/dev/null || echo "⚠️ Could not fetch logs (task may not have started)"
 
 # Result
+echo ""
 if [ "$EXIT_CODE" = "0" ]; then
-  echo ""
   echo "✅ Migration completed successfully!"
   exit 0
-else
+elif [ "$EXIT_CODE" = "null" ]; then
+  echo "❌ Task failed to run. Reason: $STOPPED_REASON"
   echo ""
+  echo "Common causes:"
+  echo "  - Container image not found"
+  echo "  - Network configuration error"
+  echo "  - Insufficient resources (memory/CPU)"
+  echo "  - Task execution role missing permissions"
+  exit 1
+else
   echo "❌ Migration failed with exit code: $EXIT_CODE"
   exit 1
 fi
