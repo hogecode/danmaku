@@ -35,13 +35,25 @@ echo "📦 Image URI: $REPO_URI"
 # Check if image exists in ECR
 echo ""
 echo "🔍 Checking if image exists in ECR..."
+
+# First, list all available images to debug
+echo "📋 All images in repository:"
+aws ecr describe-images \
+  --repository-name "$ECR_NESTJS_REPOSITORY" \
+  --region "$AWS_REGION" \
+  --query 'imageDetails[].imageTags[]' \
+  --output text 2>&1
+
+echo ""
+echo "🔍 Looking for tag: $IMAGE_TAG"
+
+# Use jq to properly filter images
 IMAGES=$(aws ecr describe-images \
   --repository-name "$ECR_NESTJS_REPOSITORY" \
   --region "$AWS_REGION" \
-  --query "imageDetails[?contains(imageTags[], '$IMAGE_TAG')].imageTags" \
-  --output text 2>/dev/null)
+  --output json 2>&1 | jq -r ".imageDetails[] | select(.imageTags[]? == \"$IMAGE_TAG\") | .imageTags[0]" 2>/dev/null)
 
-if [ -n "$IMAGES" ]; then
+if [ -n "$IMAGES" ] && [ "$IMAGES" != "null" ]; then
   echo "✅ Image found in ECR: $IMAGE_TAG"
 else
   echo "❌ Image not found in ECR with tag: $IMAGE_TAG"
@@ -50,12 +62,12 @@ else
   aws ecr describe-images \
     --repository-name "$ECR_NESTJS_REPOSITORY" \
     --region "$AWS_REGION" \
-    --query 'sort_by(imageDetails, &imagePushedAt)[-10:].imageTags[]' \
-    --output text 2>/dev/null | tr '\t' '\n'
+    --output json 2>/dev/null | jq -r '.imageDetails | sort_by(.imagePushedAt)[-10:][].imageTags[]' 2>/dev/null || echo "No images available"
   echo ""
   echo "💡 If no images, you need to build and push an image first:"
+  echo "   cd server"
   echo "   docker build -t $ECR_NESTJS_REPOSITORY:latest ."
-  echo "   aws ecr get-login-password | docker login --username AWS --password-stdin <ECR_REGISTRY>"
+  echo "   aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin <ECR_REGISTRY>"
   echo "   docker tag $ECR_NESTJS_REPOSITORY:latest <ECR_REGISTRY>/$ECR_NESTJS_REPOSITORY:<TAG>"
   echo "   docker push <ECR_REGISTRY>/$ECR_NESTJS_REPOSITORY:<TAG>"
   exit 1
