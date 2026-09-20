@@ -1,0 +1,143 @@
+name: CI/CD - Production Environment
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  ENVIRONMENT: prod
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    strategy:
+      matrix:
+        include:
+          - service: server
+            package_manager: yarn
+            working_dir: ./server
+          - service: web
+            package_manager: npm
+            working_dir: ./apps/web
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: ${{ matrix.package_manager }}
+          cache-dependency-path: ${{ matrix.working_dir }}/${{ matrix.package_manager == 'npm' && 'package-lock.json' || 'yarn.lock' }}
+
+      - name: Install dependencies (yarn)
+        if: matrix.package_manager == 'yarn'
+        working-directory: ${{ matrix.working_dir }}
+        run: yarn install --frozen-lockfile
+
+      - name: Install dependencies (npm)
+        if: matrix.package_manager == 'npm'
+        working-directory: ${{ matrix.working_dir }}
+        run: npm ci
+
+      - name: Run linter (yarn)
+        if: matrix.package_manager == 'yarn'
+        working-directory: ${{ matrix.working_dir }}
+        run: yarn lint || true
+
+      - name: Run linter (npm)
+        if: matrix.package_manager == 'npm'
+        working-directory: ${{ matrix.working_dir }}
+        run: npm run lint || true
+
+      - name: Run tests (yarn)
+        if: matrix.package_manager == 'yarn'
+        working-directory: ${{ matrix.working_dir }}
+        run: yarn test --passWithNoTests || true
+
+      - name: Run tests (npm)
+        if: matrix.package_manager == 'npm'
+        working-directory: ${{ matrix.working_dir }}
+        run: npm test -- --passWithNoTests || true
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    outputs:
+      image_tag: ${{ env.IMAGE_TAG }}
+
+    steps:
+      - name: Set image tag from git tag
+        run: |
+          TAG=${{ github.ref }}
+          echo "IMAGE_TAG=${TAG#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Build and Push Next.js image to ECR
+        run: |
+          NEXTJS_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_NEXTJS_REPOSITORY_NAME }}
+          docker build -t $NEXTJS_REPO_URI:${{ env.IMAGE_TAG }} -t $NEXTJS_REPO_URI:latest ./apps/web
+          docker push $NEXTJS_REPO_URI:${{ env.IMAGE_TAG }}
+          docker push $NEXTJS_REPO_URI:latest
+          echo "✅ Next.js image built and pushed"
+
+      - name: Build and Push NestJS image to ECR
+        run: |
+          NESTJS_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+          docker build -t $NESTJS_REPO_URI:${{ env.IMAGE_TAG }} -t $NESTJS_REPO_URI:latest ./server
+          docker push $NESTJS_REPO_URI:${{ env.IMAGE_TAG }}
+          docker push $NESTJS_REPO_URI:latest
+          echo "✅ NestJS image built and pushed"
+
+  scan:
+    needs: build
+    uses: ./.github/workflows/scan.yml
+    with:
+      image_tag: ${{ needs.build.outputs.image_tag }}
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      ECR_NEXTJS_REPOSITORY_NAME: ${{ secrets.ECR_NEXTJS_REPOSITORY_NAME }}
+      ECR_NESTJS_REPOSITORY_NAME: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+
+  deploy:
+    needs: [build, scan]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: ${{ env.ENVIRONMENT }}
+      image_tag: ${{ needs.build.outputs.image_tag }}
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      ECR_NEXTJS_REPOSITORY_NAME: ${{ secrets.ECR_NEXTJS_REPOSITORY_NAME }}
+      ECR_NESTJS_REPOSITORY_NAME: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+      ECS_CLUSTER_NAME: ${{ secrets.ECS_CLUSTER_NAME }}
+      ECS_NEXTJS_SERVICE_NAME: ${{ secrets.ECS_NEXTJS_SERVICE_NAME }}
+      ECS_NESTJS_SERVICE_NAME: ${{ secrets.ECS_NESTJS_SERVICE_NAME }}

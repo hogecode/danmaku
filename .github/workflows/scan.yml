@@ -1,0 +1,84 @@
+name: Scan Docker Images
+
+on:
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
+        description: "Tag for Docker image to scan"
+    secrets:
+      AWS_REGION:
+        required: true
+      AWS_ACCOUNT_ID:
+        required: true
+      AWS_ROLE_ARN:
+        required: true
+      ECR_NEXTJS_REPOSITORY_NAME:
+        required: true
+      ECR_NESTJS_REPOSITORY_NAME:
+        required: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Pull Next.js image from ECR
+        run: |
+          NEXTJS_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_NEXTJS_REPOSITORY_NAME }}:${{ inputs.image_tag }}
+          docker pull $NEXTJS_REPO_URI
+          echo "NEXTJS_IMAGE_URI=$NEXTJS_REPO_URI" >> $GITHUB_ENV
+
+      - name: Pull NestJS image from ECR
+        run: |
+          NESTJS_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}:${{ inputs.image_tag }}
+          docker pull $NESTJS_REPO_URI
+          echo "NESTJS_IMAGE_URI=$NESTJS_REPO_URI" >> $GITHUB_ENV
+
+      - name: Run Trivy vulnerability scan on Next.js image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.NEXTJS_IMAGE_URI }}
+          format: 'sarif'
+          output: 'nextjs-trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Run Trivy vulnerability scan on NestJS image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.NESTJS_IMAGE_URI }}
+          format: 'sarif'
+          output: 'nestjs-trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results for Next.js to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'nextjs-trivy-results.sarif'
+          category: 'trivy-nextjs'
+
+      - name: Upload Trivy results for NestJS to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'nestjs-trivy-results.sarif'
+          category: 'trivy-nestjs'

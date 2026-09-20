@@ -1,37 +1,39 @@
-# CI/CD Module
+# CI/CD Module (GitHub Actions + OIDC)
 
-ECS Fargate へのマイクロサービスデプロイメント用の CI/CD パイプラインを実装します。
+GitHub Actions と AWS GitHub OIDC を使用した完全な CI/CD パイプラインを Terraform で実装します。
 
 ## 概要
 
 このモジュールは以下を実装します：
 
-- **GitHub Integration**: GitHub リポジトリからのソースコード取得
-- **CodeBuild**: Docker イメージのビルドと ECR へのプッシュ
-- **Security Scan**: Trivy を使用したコンテナイメージの脆弱性スキャン
-- **CodeDeploy**: ECS Fargate への段階的デプロイメント
-- **CodePipeline**: 自動化されたパイプラインオーケストレーション
-- **Manual Approval**: 本番環境へのデプロイメント前に手動承認を必須に
+- **GitHub OIDC Provider**: TLS 証明書から動的に thumbprint を取得して作成
+- **IAM Role**: GitHub Actions 用のオンデマンド権限昇格
+- **ECR Push 権限**: Docker イメージの ECR へのプッシュ
+- **ECS デプロイ権限**: ECS タスク定義の更新とサービスのデプロイ
 
 ## アーキテクチャ
 
 ```
-GitHub Repository
-    ↓
-  Source (develop/main ブランチ)
-    ↓
-CodePipeline
-    ├→ Build (CodeBuild)
-    │   └→ buildspec.yaml: Docker イメージビルド & ECR プッシュ
-    │
-    ├→ Scan (CodeBuild)
-    │   └→ buildspec-scan.yaml: Trivy セキュリティスキャン
-    │
-    ├→ Approval (本番のみ)
-    │   └→ Manual Approval Gate
-    │
-    └→ Deploy (CodeDeploy)
-        └→ ECS Fargate へのデプロイメント (Canary/AllAtOnce)
+Terraform Apply
+        ↓
+  1. TLS Certificate から Thumbprint 取得
+        ↓
+  2. GitHub OIDC Provider を AWS に作成
+        ↓
+  3. GitHub Actions 用 IAM Role を作成
+        ↓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  GitHub Actions Workflow 実行時
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. OIDC Token Request（GitHub Actions）
+        ↓
+  2. Token を AWS に送信
+        ↓
+  3. AWS GitHub OIDC Provider で検証
+        ↓
+  4. IAM Role を Assume（短期認証情報取得）
+        ↓
+  5. ECR Push + ECS Deploy 実行
 ```
 
 ## 使用方法
@@ -42,258 +44,263 @@ CodePipeline
 module "cicd" {
   source = "./modules/cicd"
 
-  project_name             = var.project_name
-  environment              = var.environment
-  aws_region               = var.aws_region
+  project_name                    = var.project_name
+  environment                     = var.environment
+  aws_region                      = var.aws_region
+  github_oidc_subject_claim       = var.github_oidc_subject_claim
+  ecr_nextjs_repository_name      = var.ecr_nextjs_repository_name
+  ecr_nestjs_repository_name      = var.ecr_nestjs_repository_name
 
-  # GitHub Configuration
-  github_owner             = "hogecode"
-  github_repo              = "ecs-sample"
-  github_token             = var.github_token  # Sensitive
-  github_branch_develop    = "develop"
-  github_branch_main       = "main"
+  common_tags = local.common_tags
 
-  # ECR Configuration
-  ecr_repository_name      = var.ecr_repository_name
-
-  # ECS Configuration
-  ecs_cluster_name         = module.ecs.cluster_name
-  ecs_service_name         = module.ecs.service_name
-  ecs_task_definition_family = "ecs-sample"
-
-  # ALB Configuration
-  alb_target_group_arn     = module.alb.target_group_arn
-
-  # Artifact Storage
-  artifact_bucket_name     = module.storage.artifact_bucket_name
-  kms_key_id              = module.security_group.s3_filesystem_kms_key_arn
-
-  # CodeBuild Configuration
-  codebuild_environment_compute_type = "BUILD_GENERAL1_MEDIUM"
-  codebuild_environment_image        = "aws/codebuild/standard:5.0"
-  codebuild_privileged_mode          = true
-
-  # CodeDeploy Configuration
-  enable_manual_approval   = true
-
-  # Tags
-  common_tags              = local.common_tags
+  depends_on = [module.ecr]
 }
 ```
 
-## 環境変数設定
+### Terraform Variables（terraform.tfvars）
 
-### Terraform Variables
+```hcl
+project_name              = "danmaku"
+environment               = "dev"
+aws_region                = "ap-northeast-1"
+
+# GitHub OIDC Subject Claim の例:
+# "repo:hogecode/danmaku:*"               # すべてのブランチ
+# "repo:hogecode/danmaku:ref:refs/heads/main"  # main ブランチのみ
+github_oidc_subject_claim = "repo:hogecode/danmaku:*"
+
+ecr_nextjs_repository_name = "ecs-nextjs"
+ecr_nestjs_repository_name = "ecs-nestjs"
+```
+
+### GitHub Secrets の設定
+
+Terraform apply 後、以下をGitHub リポジトリシークレットに設定:
 
 ```bash
-# GitHub Token (必須)
-export TF_VAR_github_token="ghp_xxxxxxxxxxxxxxxxxxxx"
-
-# 環境ごとの設定例
-terraform apply -var-file="environments/staging.tfvars"
-terraform apply -var-file="environments/prod.tfvars"
+# Terraform output から取得
+cd infra/terraform
+terraform output github_oidc_role_arn
+terraform output ecs_cluster_name
+terraform output ecs_nextjs_service_name
+terraform output ecs_nestjs_service_name
 ```
 
-### CodeBuild 環境変数
+| 変数名 | 値 |
+|--------|-----|
+| `AWS_REGION` | `ap-northeast-1` |
+| `AWS_ACCOUNT_ID` | AWS Account ID |
+| `AWS_ROLE_ARN` | terraform output から取得 |
+| `ECR_NEXTJS_REPOSITORY_NAME` | `ecs-nextjs` |
+| `ECR_NESTJS_REPOSITORY_NAME` | `ecs-nestjs` |
+| `ECS_CLUSTER_NAME` | terraform output から取得 |
+| `ECS_NEXTJS_SERVICE_NAME` | terraform output から取得 |
+| `ECS_NESTJS_SERVICE_NAME` | terraform output から取得 |
 
-CodeBuild プロジェクトで以下の環境変数が自動設定されます：
+## GitHub Actions ワークフロー
 
-- `AWS_DEFAULT_REGION`: ap-northeast-1
-- `AWS_ACCOUNT_ID`: 現在のアカウント ID
-- `IMAGE_REPO_NAME`: ecs-sample
+### 開発環境パイプライン（ci-dev.yml）
 
-## Buildspec ファイル
-
-### buildspec.yaml (Docker イメージビルド)
-
-リポジトリルートに配置：
+**トリガー**: `main` ブランチへの push
 
 ```yaml
-version: 0.2
+name: CI/CD - Dev Environment
 
-phases:
-  pre_build:
-    commands:
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | \
-        docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-  
-  build:
-    commands:
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
-  
-  post_build:
-    commands:
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - printf '[{"name":"ecs-sample-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+on:
+  push:
+    branches: [main]
 
-artifacts:
-  files:
-    - imagedefinitions.json
+jobs:
+  test:     # Unit tests & linting
+  build:    # Docker build & ECR push
+  scan:     # Trivy vulnerability scan
+  deploy:   # ECS deployment
 ```
 
-### buildspec-scan.yaml (セキュリティスキャン)
+### 本番環境パイプライン（ci-prod.yml）
 
-リポジトリルートに配置：
+**トリガー**: `v*` タグの push
 
 ```yaml
-version: 0.2
+name: CI/CD - Production Environment
 
-phases:
-  pre_build:
-    commands:
-      - apt-get update && apt-get install -y trivy
-  
-  build:
-    commands:
-      - trivy image --severity HIGH,CRITICAL $REPOSITORY_URI:$IMAGE_TAG
-      - |
-        CRITICAL_COUNT=$(trivy image --severity CRITICAL --format json $REPOSITORY_URI:$IMAGE_TAG | \
-          jq '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "CRITICAL")] | length')
-        if [ "$CRITICAL_COUNT" -gt 0 ]; then
-          echo "CRITICAL vulnerabilities detected!"
-          exit 1
-        fi
+on:
+  push:
+    tags: ['v*']
 
-artifacts:
-  files:
-    - scan-results.json
+jobs:
+  test:     # Unit tests & linting
+  build:    # Docker build & ECR push
+  scan:     # Trivy vulnerability scan
+  deploy:   # ECS deployment
 ```
 
-## AppSpec ファイル
+## OIDC 認証フロー
 
-### appspec.yaml (ECS デプロイメント設定)
-
-リポジトリルートに配置：
+### 1. GitHub Actions からの Token リクエスト
 
 ```yaml
-version: 0.0
-
-Resources:
-  - TargetService:
-      Type: AWS::ECS::Service
-      Properties:
-        TaskDefinition: "arn:aws:ecs:ap-northeast-1:ACCOUNT_ID:task-definition/ecs-sample:REVISION"
-        LoadBalancerInfo:
-          ContainerName: "ecs-sample-container"
-          ContainerPort: 8080
-        PlatformVersion: "1.4.0"
-        NetworkConfiguration:
-          AwsvpcConfiguration:
-            Subnets:
-              - "PRIVATE_API_SUBNET_1"
-              - "PRIVATE_API_SUBNET_2"
-            SecurityGroups:
-              - "GO_SERVER_SECURITY_GROUP"
-            AssignPublicIp: "DISABLED"
-
-Hooks:
-  - BeforeInstall: "pre-install-hook"
-  - AfterInstall: "post-install-hook"
-  - BeforeAllowTraffic: "pre-traffic-hook"
-  - AfterAllowTraffic: "post-traffic-hook"
+- name: Configure AWS credentials (OIDC)
+  uses: aws-actions/configure-aws-credentials@v4
+  with:
+    role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+    aws-region: ${{ secrets.AWS_REGION }}
 ```
 
-## デプロイメント戦略
+### 2. トークンの検証
 
-### ステージング環境
+AWS は以下を検証：
+- **Issuer**: https://token.actions.githubusercontent.com
+- **Subject Claim**: `repo:hogecode/danmaku:*`
+- **Audience**: sts.amazonaws.com
 
-- **トリガー**: develop ブランチへのマージ
-- **デプロイ方式**: AllAtOnce（すべてのトラフィックを即座に切り替え）
-- **ロールバック**: 自動ロールバック有効（失敗時）
+### 3. 短期認証情報の発行
 
-### 本番環境
+- **有効期限**: 15分（デフォルト）
+- **権限範囲**: IAM ロールのポリシーに限定
+- **監査ログ**: CloudTrail に記録
 
-- **トリガー**: main ブランチへのタグプッシュ（v*.*.* パターン）
-- **デプロイ方式**: Canary（10% → 5分待機 → 90%）
-- **承認**: マニュアル承認必須
-- **ロールバック**: 自動ロールバック有効（失敗時）
+## IAM ポリシー
+
+このモジュールで付与される権限：
+
+### ECR プッシュ権限
+```json
+{
+  "Effect": "Allow",
+  "Action": [
+    "ecr:GetDownloadUrlForLayer",
+    "ecr:BatchGetImage",
+    "ecr:PutImage",
+    "ecr:InitiateLayerUpload",
+    "ecr:UploadLayerPart",
+    "ecr:CompleteLayerUpload",
+    "ecr:GetAuthorizationToken"
+  ],
+  "Resource": "arn:aws:ecr:*:*:repository/*"
+}
+```
+
+### ECS デプロイ権限
+```json
+{
+  "Effect": "Allow",
+  "Action": [
+    "ecs:DescribeServices",
+    "ecs:DescribeTaskDefinition",
+    "ecs:DescribeContainerInstances",
+    "ecs:UpdateService",
+    "ecs:RegisterTaskDefinition",
+    "iam:PassRole"
+  ],
+  "Resource": "*"
+}
+```
+
+## セキュリティベストプラクティス
+
+### ✅ 推奨事項
+
+1. **Subject Claim の制限**
+   ```hcl
+   # 特定のブランチに限定
+   github_oidc_subject_claim = "repo:hogecode/danmaku:ref:refs/heads/main"
+   ```
+
+2. **IAM ポリシーの最小化**
+   - 必要なアクションのみを許可
+   - リソース ARN を指定
+
+3. **Secret の管理**
+   - AWS_ROLE_ARN のみをシークレット化
+   - 定期的なローテーション
+
+4. **監査ログの確認**
+   ```bash
+   aws cloudtrail lookup-events \
+     --lookup-attributes AttributeKey=PrincipalName,AttributeValue=github-actions-cicd-*
+   ```
+
+### ❌ 回避すべきこと
+
+- ❌ アクセスキー/シークレットキーの保存
+- ❌ `*:*` のようなワイルドカード権限
+- ❌ 本番環境への無制限アクセス
+
+## トラブルシューティング
+
+### 問題: OIDC Token 取得失敗
+
+```
+error: RequestError: Failed to retrieve sts:GetCallerIdentity
+```
+
+**解決策**:
+1. GitHub OIDC Provider が存在するか確認
+2. Subject Claim の形式を確認
+3. CloudTrail でエラー詳細を確認
+
+```bash
+# OIDC Provider の確認
+aws iam list-open-id-connect-providers
+
+# Subject Claim の確認
+aws iam get-open-id-connect-provider \
+  --open-id-connect-provider-arn arn:aws:iam::ACCOUNT:oidc-provider/token.actions.githubusercontent.com
+```
+
+### 問題: ECR Push 失敗
+
+```
+error: ECR_PUSH_ERROR - no credentials found
+```
+
+**解決策**:
+1. IAM Role の ECR ポリシーを確認
+2. ECR リポジトリが存在するか確認
+3. AWS クレデンシャルが正しく設定されているか確認
+
+```bash
+# Role のポリシーを確認
+aws iam list-role-policies --role-name github-actions-cicd-*
+```
+
+### 問題: ECS デプロイ失敗
+
+```
+error: Service not found or invalid task definition
+```
+
+**解決策**:
+1. ECS クラスター/サービス名を確認
+2. IAM Role が iam:PassRole 権限を持つか確認
+3. タスク定義が最新化されているか確認
+
+```bash
+# サービスの確認
+aws ecs describe-services \
+  --cluster CLUSTER_NAME \
+  --services SERVICE_NAME
+```
 
 ## ログと監視
 
 ### CloudWatch Logs
 
-- **ビルドログ**: `/aws/codebuild/ecs-sample-{env}-build`
-- **スキャンログ**: `/aws/codebuild/ecs-sample-{env}-scan`
-- **ECS ログ**: `/ecs/{service}-{env}`
+- GitHub Actions ワークフロー実行ログ: GitHub Actions タブ
+- AWS API 呼び出し: CloudTrail
 
-### CodePipeline 実行状態の確認
+### CloudTrail イベント確認
 
 ```bash
-# パイプラインの最新実行状態を確認
-aws codepipeline get-pipeline-state --name ecs-sample-staging-pipeline
-
-# ビルドプロジェクトのログを確認
-aws logs tail /aws/codebuild/ecs-sample-staging-build --follow
-
-# CodeDeploy デプロイの状態を確認
-aws deploy describe-deployment --deployment-id d-XXXXXXXXXXXXX
+# GitHub Actions からの API 呼び出しを確認
+aws cloudtrail lookup-events \
+  --lookup-attributes AttributeKey=PrincipalArn,AttributeValue=arn:aws:iam::ACCOUNT:role/github-actions-cicd-* \
+  --max-results 50
 ```
-
-## トラブルシューティング
-
-### CodeBuild ビルド失敗
-
-1. CloudWatch Logs を確認
-   ```bash
-   aws logs tail /aws/codebuild/ecs-sample-staging-build --follow
-   ```
-
-2. ビルドプロジェクト詳細を確認
-   ```bash
-   aws codebuild batch-get-builds --ids <build-id>
-   ```
-
-3. IAM ロール権限を確認
-   - ECR へのアクセス
-   - S3 アーティファクト へのアクセス
-   - CloudWatch Logs 書き込み権限
-
-### セキュリティスキャン失敗
-
-脆弱性が検出された場合：
-
-1. スキャン結果を確認
-   ```bash
-   aws logs tail /aws/codebuild/ecs-sample-staging-scan --follow
-   ```
-
-2. 脆弱性対応
-   - 依存ライブラリをアップデート
-   - ベースイメージを最新化
-   - 開発環境でローカルテスト
-
-3. 必要に応じてポリシーを調整
-   - CRITICAL: デプロイ停止、即座に対応
-   - HIGH: デプロイ停止、48時間以内に対応
-
-### CodeDeploy デプロイ失敗
-
-1. デプロイ状態を確認
-   ```bash
-   aws deploy describe-deployment --deployment-id d-XXXXXXXXXXXXX
-   ```
-
-2. ECS サービス状態を確認
-   ```bash
-   aws ecs describe-services --cluster ecs-sample-staging --services ecs-sample
-   ```
-
-3. ロールバックを実行
-   ```bash
-   aws deploy continue-deployment --deployment-id d-XXXXXXXXXXXXX
-   ```
-
-## セキュリティベストプラクティス
-
-- **GitHub Token**: AWS Secrets Manager で管理
-- **アーティファクト**: KMS で暗号化
-- **IAM ロール**: 最小権限の原則に従う
-- **脆弱性スキャン**: すべてのイメージを自動スキャン
-- **承認**: 本番環境へのデプロイは必ずマニュアル承認
 
 ## 参考資料
 
-- [AWS CodePipeline Documentation](https://docs.aws.amazon.com/codepipeline/)
-- [AWS CodeBuild Documentation](https://docs.aws.amazon.com/codebuild/)
-- [AWS CodeDeploy Documentation](https://docs.aws.amazon.com/codedeploy/)
-- [Trivy Documentation](https://aquasecurity.github.io/trivy/)
+- [GitHub Actions の OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
+- [AWS IAM OIDC プロバイダー](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html)
+- [AWS CLI CodeQL](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/iam/create-open-id-connect-provider.html)

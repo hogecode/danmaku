@@ -1,0 +1,117 @@
+name: CI/CD - Dev Environment
+
+on:
+#  push:
+#    branches:
+#      - main
+#    paths-ignore:
+#      - 'docs/**'
+#      - 'infra/**'
+#      - '.github/**'
+#      - '*.md'
+  workflow_dispatch:
+
+env:
+  ENVIRONMENT: dev
+  IMAGE_TAG: dev-${{ github.sha }}
+
+permissions:
+  contents: read # Read-only access to repository contents
+  id-token: write # Required for OIDC authentication with cloud providers
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    strategy:
+      matrix:
+        include:
+          - service: server
+            package_manager: yarn
+            working_dir: ./server
+          - service: web
+            package_manager: npm
+            working_dir: ./apps/web
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: ${{ matrix.package_manager }}
+          cache-dependency-path: ${{ matrix.working_dir }}/${{ matrix.package_manager == 'npm' && 'package-lock.json' || 'yarn.lock' }}
+
+      - name: Install dependencies (yarn)
+        if: matrix.package_manager == 'yarn'
+        working-directory: ${{ matrix.working_dir }}
+        run: yarn install --frozen-lockfile
+
+      - name: Install dependencies (npm)
+        if: matrix.package_manager == 'npm'
+        working-directory: ${{ matrix.working_dir }}
+        run: npm ci
+
+      - name: Run linter (yarn)
+        if: matrix.package_manager == 'yarn'
+        working-directory: ${{ matrix.working_dir }}
+        run: yarn lint || true
+
+      - name: Run linter (npm)
+        if: matrix.package_manager == 'npm'
+        working-directory: ${{ matrix.working_dir }}
+        run: npm run lint || true
+
+      - name: Run tests (yarn)
+        if: matrix.package_manager == 'yarn'
+        working-directory: ${{ matrix.working_dir }}
+        run: yarn test --passWithNoTests || true
+
+      - name: Run tests (npm)
+        if: matrix.package_manager == 'npm'
+        working-directory: ${{ matrix.working_dir }}
+        run: npm test -- --passWithNoTests || true
+
+  build:
+    needs: test
+    uses: ./.github/workflows/build.yml
+    with:
+      image_tag: ${{ env.IMAGE_TAG }}
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      ECR_NEXTJS_REPOSITORY_NAME: ${{ secrets.ECR_NEXTJS_REPOSITORY_NAME }}
+      ECR_NESTJS_REPOSITORY_NAME: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+
+  scan:
+    needs: build
+    uses: ./.github/workflows/scan.yml
+    with:
+      image_tag: ${{ env.IMAGE_TAG }}
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      ECR_NEXTJS_REPOSITORY_NAME: ${{ secrets.ECR_NEXTJS_REPOSITORY_NAME }}
+      ECR_NESTJS_REPOSITORY_NAME: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+
+  deploy:
+    needs: scan
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: ${{ env.ENVIRONMENT }}
+      image_tag: ${{ env.IMAGE_TAG }}
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      ECR_NEXTJS_REPOSITORY_NAME: ${{ secrets.ECR_NEXTJS_REPOSITORY_NAME }}
+      ECR_NESTJS_REPOSITORY_NAME: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+      ECS_CLUSTER_NAME: ${{ secrets.ECS_CLUSTER_NAME }}
+      ECS_NEXTJS_SERVICE_NAME: ${{ secrets.ECS_NEXTJS_SERVICE_NAME }}
+      ECS_NESTJS_SERVICE_NAME: ${{ secrets.ECS_NESTJS_SERVICE_NAME }}

@@ -296,10 +296,10 @@ variable "ecr_nextjs_repository_name" {
   default     = "ecs-nextjs"
 }
 
-variable "ecr_go_server_repository_name" {
-  description = "ECR repository name for Go server backend service"
+variable "ecr_nestjs_repository_name" {
+  description = "ECR repository name for NestJS server backend service"
   type        = string
-  default     = "ecs-go-server"
+  default     = "ecs-nestjs"
 }
 
 variable "ecr_image_scan_on_push" {
@@ -599,4 +599,20 @@ variable "lambda_functions_file" {
   description = "Path to JSON file containing Lambda function definitions"
   type        = string
   default     = "lambda_functions.json"
+}
+
+
+# ========================================
+# GitHub OIDC Configuration (CI/CD)
+# ========================================
+
+variable "github_oidc_subject_claim" {
+  description = "GitHub OIDC subject claim for assuming role (e.g., 'repo:owner/repo:*' or 'repo:owner/repo:ref:refs/heads/main')"
+  type        = string
+  default     = "repo:*/*:*"
+
+  validation {
+    condition     = can(regex("^repo:", var.github_oidc_subject_claim))
+    error_message = "GitHub OIDC subject claim must start with 'repo:' (e.g., 'repo:owner/repo:*')."
+  }
 }

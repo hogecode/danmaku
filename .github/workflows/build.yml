@@ -1,0 +1,57 @@
+name: Build & Push Docker Images
+
+on:
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
+        description: "Tag for Docker image"
+    secrets:
+      AWS_REGION:
+        required: true
+      AWS_ACCOUNT_ID:
+        required: true
+      AWS_ROLE_ARN:
+        required: true
+      ECR_NEXTJS_REPOSITORY_NAME:
+        required: true
+      ECR_NESTJS_REPOSITORY_NAME:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Build and Push Next.js image to ECR
+        run: |
+          NEXTJS_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_NEXTJS_REPOSITORY_NAME }}
+          docker build -t $NEXTJS_REPO_URI:${{ inputs.image_tag }} -t $NEXTJS_REPO_URI:latest ./apps/web
+          docker push $NEXTJS_REPO_URI:${{ inputs.image_tag }}
+          docker push $NEXTJS_REPO_URI:latest
+          echo "✅ Next.js image built and pushed"
+
+      - name: Build and Push NestJS image to ECR
+        run: |
+          NESTJS_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+          docker build -t $NESTJS_REPO_URI:${{ inputs.image_tag }} -t $NESTJS_REPO_URI:latest ./server
+          docker push $NESTJS_REPO_URI:${{ inputs.image_tag }}
+          docker push $NESTJS_REPO_URI:latest
+          echo "✅ NestJS image built and pushed"

@@ -23,6 +23,7 @@ module "vpc" {
   vpc_cidr                  = var.vpc_cidr
   availability_zones        = var.availability_zones
   public_subnet_cidrs       = var.public_subnet_cidrs
+  # TODO: CIDRを見直す
   private_app_subnet_cidrs  = var.private_app_subnet_cidrs
   private_api_subnet_cidrs  = var.private_api_subnet_cidrs
   private_db_subnet_cidrs   = var.private_db_subnet_cidrs
@@ -123,7 +124,7 @@ module "ecr" {
   
   # ECR Configuration
   ecr_nextjs_repository_name     = var.ecr_nextjs_repository_name
-  ecr_go_server_repository_name  = var.ecr_go_server_repository_name
+  ecr_go_server_repository_name  = var.ecr_nestjs_repository_name
   ecr_image_scan_on_push         = var.ecr_image_scan_on_push
   ecr_image_tag_mutability       = var.ecr_image_tag_mutability
 }
@@ -211,7 +212,7 @@ module "ecs" {
 
   # ECR Configuration
   ecr_nextjs_repository_name     = var.ecr_nextjs_repository_name
-  ecr_go_server_repository_name  = var.ecr_go_server_repository_name
+  ecr_go_server_repository_name  = var.ecr_nestjs_repository_name
   ecr_nextjs_repository_url      = module.ecr.nextjs_repository_url
   ecr_go_server_repository_url   = module.ecr.go_server_repository_url
   ecr_image_scan_on_push         = var.ecr_image_scan_on_push
@@ -333,55 +334,26 @@ module "monitoring" {
 
 
 # ========================================
-# Phase 8: CI/CD Pipeline Configuration
+# Phase 8: GitHub OIDC IAM Role (CI/CD)
 # ========================================
 module "cicd" {
   source = "./modules/cicd"
 
-  project_name             = var.project_name
-  environment              = var.environment
-  aws_region               = var.aws_region
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
 
-  # GitHub Configuration
-  github_owner             = "hogecode"
-  github_repo              = "ecs-sample"
-  github_token             = var.github_token
-  github_branch_develop    = "main"
-  github_branch_main       = "main"
+  # GitHub OIDC Configuration
+  github_oidc_subject_claim = var.github_oidc_subject_claim
 
-  # ECS Configuration - NextJS Service
-  ecs_nextjs_cluster_name  = "${var.project_name}-cluster-${var.environment}"
-  ecs_nextjs_service_name  = "${var.project_name}-nextjs-service"
-
-  # ECS Configuration - Go Server Service
-  ecs_go_cluster_name      = "${var.project_name}-cluster-${var.environment}"
-  ecs_go_service_name      = "${var.project_name}-go-server-service"
-
-  ecr_nextjs_repository_name     = var.ecr_nextjs_repository_name
-  ecr_go_server_repository_name  = var.ecr_go_server_repository_name
-  
-  # ALB Configuration
-  alb_target_group_arn      = try(module.alb.target_group_arn, "")
-  alb_target_group_name     = try(module.alb.target_group_name, "")
-  alb_nextjs_listener_arn   = try(module.alb.public_alb_http_listener_arn, "")
-  alb_go_listener_arn       = try(module.alb.private_alb_http_listener_arn, "")
-
-  # Artifact Storage
-  artifact_bucket_name     = module.storage.app_filesystem_bucket_name
-  kms_key_id              = try(module.storage.artifact_bucket_kms_key_id, "")
-
-  # CodeBuild Configuration
-  codebuild_environment_compute_type = var.environment == "prod" ? "BUILD_GENERAL1_LARGE" : "BUILD_GENERAL1_MEDIUM"
-  codebuild_environment_image        = "aws/codebuild/standard:5.0"
-  codebuild_privileged_mode          = true
-
-  # CodeDeploy Configuration
-  enable_manual_approval   = var.environment == "prod" ? true : false
+  # ECR Configuration
+  ecr_nextjs_repository_name = var.ecr_nextjs_repository_name
+  ecr_nestjs_repository_name = var.ecr_nestjs_repository_name
 
   # Tags
-  common_tags              = local.common_tags
+  common_tags = local.common_tags
 
-  depends_on = [module.ecs, module.alb, module.storage]
+  depends_on = [module.ecr]
 }
 
 

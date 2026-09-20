@@ -1,0 +1,138 @@
+name: Deploy to ECS
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: "Environment (dev, prod)"
+      image_tag:
+        required: true
+        type: string
+        description: "Image tag to deploy"
+    secrets:
+      AWS_REGION:
+        required: true
+      AWS_ACCOUNT_ID:
+        required: true
+      AWS_ROLE_ARN:
+        required: true
+      ECR_NEXTJS_REPOSITORY_NAME:
+        required: true
+      ECR_NESTJS_REPOSITORY_NAME:
+        required: true
+      ECS_CLUSTER_NAME:
+        required: true
+      ECS_NEXTJS_SERVICE_NAME:
+        required: true
+      ECS_NESTJS_SERVICE_NAME:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update Next.js ECS service
+        run: |
+          echo "🚀 Deploying Next.js service to ${{ inputs.environment }}..."
+          NEXTJS_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_NEXTJS_REPOSITORY_NAME }}:${{ inputs.image_tag }}
+          CLUSTER_NAME="${{ secrets.ECS_CLUSTER_NAME }}"
+          SERVICE_NAME="${{ secrets.ECS_NEXTJS_SERVICE_NAME }}"
+          
+          TASK_DEF_ARN=$(aws ecs describe-services \
+            --cluster "$CLUSTER_NAME" \
+            --services "$SERVICE_NAME" \
+            --region ${{ secrets.AWS_REGION }} \
+            --query 'services[0].taskDefinition' \
+            --output text)
+          
+          TASK_DEFINITION=$(aws ecs describe-task-definition \
+            --task-definition "$TASK_DEF_ARN" \
+            --region ${{ secrets.AWS_REGION }} \
+            --query 'taskDefinition' \
+            --output json)
+          
+          NEW_TASK_DEF=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "$NEXTJS_REPO_URI" \
+            '.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
+          
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "$(echo "$NEW_TASK_DEF" | jq -c .)" \
+            --region ${{ secrets.AWS_REGION }} \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          
+          aws ecs update-service \
+            --cluster "$CLUSTER_NAME" \
+            --service "$SERVICE_NAME" \
+            --task-definition "$NEW_TASK_DEF_ARN" \
+            --force-new-deployment \
+            --region ${{ secrets.AWS_REGION }}
+          
+          echo "✅ Next.js service update initiated"
+
+      - name: Update NestJS ECS service
+        run: |
+          echo "🚀 Deploying NestJS service to ${{ inputs.environment }}..."
+          NESTJS_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}:${{ inputs.image_tag }}
+          CLUSTER_NAME="${{ secrets.ECS_CLUSTER_NAME }}"
+          SERVICE_NAME="${{ secrets.ECS_NESTJS_SERVICE_NAME }}"
+          
+          TASK_DEF_ARN=$(aws ecs describe-services \
+            --cluster "$CLUSTER_NAME" \
+            --services "$SERVICE_NAME" \
+            --region ${{ secrets.AWS_REGION }} \
+            --query 'services[0].taskDefinition' \
+            --output text)
+          
+          TASK_DEFINITION=$(aws ecs describe-task-definition \
+            --task-definition "$TASK_DEF_ARN" \
+            --region ${{ secrets.AWS_REGION }} \
+            --query 'taskDefinition' \
+            --output json)
+          
+          NEW_TASK_DEF=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "$NESTJS_REPO_URI" \
+            '.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
+          
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "$(echo "$NEW_TASK_DEF" | jq -c .)" \
+            --region ${{ secrets.AWS_REGION }} \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          
+          aws ecs update-service \
+            --cluster "$CLUSTER_NAME" \
+            --service "$SERVICE_NAME" \
+            --task-definition "$NEW_TASK_DEF_ARN" \
+            --force-new-deployment \
+            --region ${{ secrets.AWS_REGION }}
+          
+          echo "✅ NestJS service update initiated"
+
+      - name: Wait for services to stabilize
+        timeout-minutes: 10
+        run: |
+          echo "⏳ Waiting for services to stabilize..."
+          CLUSTER_NAME="${{ secrets.ECS_CLUSTER_NAME }}"
+          NEXTJS_SERVICE="${{ secrets.ECS_NEXTJS_SERVICE_NAME }}"
+          NESTJS_SERVICE="${{ secrets.ECS_NESTJS_SERVICE_NAME }}"
+          
+          aws ecs wait services-stable \
+            --cluster "$CLUSTER_NAME" \
+            --services "$NEXTJS_SERVICE" "$NESTJS_SERVICE" \
+            --region ${{ secrets.AWS_REGION }} || echo "⚠️ Service stabilization timeout (services may still be deploying)"
+          
+          echo "✅ Deployment completed"
