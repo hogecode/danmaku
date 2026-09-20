@@ -29,7 +29,31 @@ echo "📋 Current task definition: $TASK_DEF_ARN"
 
 # Repository URI
 REPO_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_NESTJS_REPOSITORY}:${IMAGE_TAG}"
+echo "📦 Requested image tag: $IMAGE_TAG"
 echo "📦 Image URI: $REPO_URI"
+
+# Check if image exists in ECR
+echo ""
+echo "🔍 Checking if image exists in ECR..."
+if aws ecr describe-images \
+  --repository-name "$ECR_NESTJS_REPOSITORY" \
+  --image-ids "imageTag=$IMAGE_TAG" \
+  --region "$AWS_REGION" &>/dev/null; then
+  echo "✅ Image found in ECR"
+else
+  echo "❌ Image not found in ECR with tag: $IMAGE_TAG"
+  echo ""
+  echo "📋 Available images in ECR:"
+  aws ecr describe-images \
+    --repository-name "$ECR_NESTJS_REPOSITORY" \
+    --region "$AWS_REGION" \
+    --query 'imageDetails[].imageTags' \
+    --output text | head -20
+  echo ""
+  echo "💡 Try specifying an existing image tag:"
+  echo "   IMAGE_TAG=<tag> $0 <environment> <migration-type>"
+  exit 1
+fi
 
 # Get current task definition
 TASK_DEF=$(aws ecs describe-task-definition \
