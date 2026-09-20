@@ -73,6 +73,7 @@ resource "aws_iam_role_policy" "ecr_push_policy" {
           "ecr:UploadLayerPart",
           "ecr:CompleteLayerUpload",
           "ecr:DescribeRepositories",
+          "ecr:DescribeImages",
           "ecr:ListImages",
           "ecr:BatchCheckLayerAvailability"
         ]

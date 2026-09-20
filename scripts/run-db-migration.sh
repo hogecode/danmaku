@@ -56,21 +56,31 @@ IMAGES=$(aws ecr describe-images \
 if [ -n "$IMAGES" ] && [ "$IMAGES" != "null" ]; then
   echo "✅ Image found in ECR: $IMAGE_TAG"
 else
-  echo "❌ Image not found in ECR with tag: $IMAGE_TAG"
+  echo "⚠️  Image not found in ECR with tag: $IMAGE_TAG"
   echo ""
-  echo "📋 Available images in ECR (latest 10):"
-  aws ecr describe-images \
+  echo "📋 Available images in ECR:"
+  AVAILABLE=$(aws ecr describe-images \
     --repository-name "$ECR_NESTJS_REPOSITORY" \
     --region "$AWS_REGION" \
-    --output json 2>/dev/null | jq -r '.imageDetails | sort_by(.imagePushedAt)[-10:][].imageTags[]' 2>/dev/null || echo "No images available"
+    --output json 2>/dev/null | jq -r '.imageDetails | sort_by(.imagePushedAt)[-10:][].imageTags[]' 2>/dev/null || echo "")
+  
+  if [ -z "$AVAILABLE" ]; then
+    echo "❌ No images available in ECR"
+    echo ""
+    echo "💡 You need to build and push an image first:"
+    echo "   cd server"
+    echo "   docker build -t $ECR_NESTJS_REPOSITORY:latest ."
+    echo "   aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin <ECR_REGISTRY>"
+    echo "   docker tag $ECR_NESTJS_REPOSITORY:latest <ECR_REGISTRY>/$ECR_NESTJS_REPOSITORY:<TAG>"
+    echo "   docker push <ECR_REGISTRY>/$ECR_NESTJS_REPOSITORY:<TAG>"
+    exit 1
+  fi
+  
+  echo "$AVAILABLE"
   echo ""
-  echo "💡 If no images, you need to build and push an image first:"
-  echo "   cd server"
-  echo "   docker build -t $ECR_NESTJS_REPOSITORY:latest ."
-  echo "   aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin <ECR_REGISTRY>"
-  echo "   docker tag $ECR_NESTJS_REPOSITORY:latest <ECR_REGISTRY>/$ECR_NESTJS_REPOSITORY:<TAG>"
-  echo "   docker push <ECR_REGISTRY>/$ECR_NESTJS_REPOSITORY:<TAG>"
-  exit 1
+  echo "🔄 Using latest image instead..."
+  IMAGE_TAG=$(echo "$AVAILABLE" | tail -1)
+  echo "✅ Using image tag: $IMAGE_TAG"
 fi
 
 # Get current task definition
