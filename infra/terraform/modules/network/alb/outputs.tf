@@ -14,7 +14,7 @@ output "public_alb_arn" {
 
 output "public_alb_dns_name" {
   description = "Public ALB DNS name"
-  value       = try(module.public_alb.this_lb_dns_name, module.public_alb.lb_dns_name, "")
+  value       = module.public_alb.dns_name
 }
 
 output "nextjs_target_group_arn" {

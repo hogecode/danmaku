@@ -35,23 +35,29 @@ echo "📦 Image URI: $REPO_URI"
 # Check if image exists in ECR
 echo ""
 echo "🔍 Checking if image exists in ECR..."
-if aws ecr describe-images \
+IMAGES=$(aws ecr describe-images \
   --repository-name "$ECR_NESTJS_REPOSITORY" \
-  --image-ids "imageTag=$IMAGE_TAG" \
-  --region "$AWS_REGION" &>/dev/null; then
-  echo "✅ Image found in ECR"
+  --region "$AWS_REGION" \
+  --query "imageDetails[?contains(imageTags[], '$IMAGE_TAG')].imageTags" \
+  --output text 2>/dev/null)
+
+if [ -n "$IMAGES" ]; then
+  echo "✅ Image found in ECR: $IMAGE_TAG"
 else
   echo "❌ Image not found in ECR with tag: $IMAGE_TAG"
   echo ""
-  echo "📋 Available images in ECR:"
+  echo "📋 Available images in ECR (latest 10):"
   aws ecr describe-images \
     --repository-name "$ECR_NESTJS_REPOSITORY" \
     --region "$AWS_REGION" \
-    --query 'imageDetails[].imageTags' \
-    --output text | head -20
+    --query 'sort_by(imageDetails, &imagePushedAt)[-10:].imageTags[]' \
+    --output text 2>/dev/null | tr '\t' '\n'
   echo ""
-  echo "💡 Try specifying an existing image tag:"
-  echo "   IMAGE_TAG=<tag> $0 <environment> <migration-type>"
+  echo "💡 If no images, you need to build and push an image first:"
+  echo "   docker build -t $ECR_NESTJS_REPOSITORY:latest ."
+  echo "   aws ecr get-login-password | docker login --username AWS --password-stdin <ECR_REGISTRY>"
+  echo "   docker tag $ECR_NESTJS_REPOSITORY:latest <ECR_REGISTRY>/$ECR_NESTJS_REPOSITORY:<TAG>"
+  echo "   docker push <ECR_REGISTRY>/$ECR_NESTJS_REPOSITORY:<TAG>"
   exit 1
 fi
 

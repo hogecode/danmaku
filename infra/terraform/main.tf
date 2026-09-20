@@ -249,6 +249,7 @@ module "rds" {
 # - NEXT_PUBLIC_API_* は ブラウザから使用 (クライアント側 API、ALB経由)
 # - API_URL は Next.js サーバーから使用 (サーバー側 API、内部ネットワーク経由)
 locals {
+  alb_dns_name = try(module.alb.public_alb_dns_name, "localhost")
   nextjs_environment_variables_merged = concat(
     var.nextjs_environment_variables,
     [
@@ -257,11 +258,11 @@ locals {
       # ========================================
       {
         name  = "NEXT_PUBLIC_API_BASE_URL"
-        value = var.enable_https ? "https://${var.domain_name}" : "http://${module.alb.public_alb_dns_name}"
+        value = var.enable_https ? "https://${var.domain_name}" : length(local.alb_dns_name) > 0 && local.alb_dns_name != "localhost" ? "http://${local.alb_dns_name}" : "http://localhost:8080"
       },
       {
         name  = "NEXT_PUBLIC_API_URL"
-        value = var.enable_https ? "https://${var.domain_name}/api" : "http://${module.alb.public_alb_dns_name}/api"
+        value = var.enable_https ? "https://${var.domain_name}/api" : length(local.alb_dns_name) > 0 && local.alb_dns_name != "localhost" ? "http://${local.alb_dns_name}/api" : "http://localhost:8080/api"
       },
       # ========================================
       # サーバー側 API (内部ネットワーク、DNS)
@@ -312,7 +313,8 @@ module "ecs" {
   nextjs_security_group_id  = module.security_group.nextjs_security_group_id
   nestjs_security_group_id = module.security_group.nestjs_security_group_id
 
-  # Load Balancer Target Groups
+  # Load Balancer Configuration
+  alb_dns_name               = module.alb.public_alb_dns_name
   nextjs_target_group_arn   = module.alb.nextjs_target_group_arn
   nestjs_target_group_arn   = module.alb.nestjs_target_group_arn
 

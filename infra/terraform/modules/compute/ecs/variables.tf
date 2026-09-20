@@ -239,8 +239,14 @@ variable "nestjs_security_group_id" {
 }
 
 # ========================================
-# Load Balancer Target Group ARNs
+# Load Balancer Configuration
 # ========================================
+
+variable "alb_dns_name" {
+  description = "DNS name of the ALB (used for NEXT_PUBLIC_API_BASE_URL)"
+  type        = string
+  default     = ""
+}
 
 variable "nextjs_target_group_arn" {
   description = "ARN of the target group for Next.js ALB"
