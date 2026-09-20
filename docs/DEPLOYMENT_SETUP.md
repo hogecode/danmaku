@@ -2,52 +2,84 @@
 
 AWS Secrets Manager で秘密情報を管理し、ECS Fargate にスムーズに注入するセットアップ手順です。
 
+**詳細手順は [SECRETS_SETUP.md](./SECRETS_SETUP.md) を参照してください。**
+
 ## 前提条件
 
 - AWS CLI がインストール済みで、認証情報が設定されていること
 - Terraform がインストール済みであること
 - 適切な IAM 権限を持つ AWS アカウント
 
-## ステップ 1: AWS Secrets Manager に秘密を作成
+## クイックスタート
 
-### 1.1 RDS 認証情報の作成
+### 1. 秘密を作成
 
-```bash
-aws secretsmanager create-secret \
-  --name "danmaku/dev/rds/credentials" \
-  --description "RDS Master Credentials" \
-  --secret-string '{
-    "username": "admin",
-    "password": "your-strong-rds-password",
-    "engine": "mysql",
-    "host": "db.example.com",
-    "port": 3306,
-    "dbname": "danmaku"
-  }' \
-  --region ap-northeast-1
-```
+以下のコマンドで AWS Secrets Manager に秘密を作成してください（詳細は SECRETS_SETUP.md 参照）：
 
-### 1.2 Redis 認証情報の作成
+**注意**: RDS 認証情報は AWS が自動管理しているため、作成は不要です。
 
 ```bash
+# Redis 認証情報
 aws secretsmanager create-secret \
-  --name "danmaku/dev/redis/credentials" \
-  --description "Redis Connection Credentials" \
+  --name "ecs-sample/dev/redis/credentials" \
   --secret-string '{
-    "host": "redis.example.com",
+    "host": "your-redis-endpoint.cache.amazonaws.com",
     "port": 6379,
-    "password": "your-strong-redis-password",
+    "password": "YourRedisPasswordHere123!",
     "db": 0
   }' \
   --region ap-northeast-1
+
+# アプリケーション秘密
+aws secretsmanager create-secret \
+  --name "ecs-sample/dev/app/secrets" \
+  --secret-string '{
+    "jwt_secret": "your-jwt-secret-key-minimum-32-characters-long!",
+    "session_secret": "your-session-secret-key-minimum-32-char!",
+    "encryption_key": "your-encryption-key-32-characters-long!!",
+    "encryption_algorithm": "aes-256-gcm"
+  }' \
+  --region ap-northeast-1
+
+# OAuth 秘密
+aws secretsmanager create-secret \
+  --name "ecs-sample/dev/oauth/secrets" \
+  --secret-string '{
+    "google_client_id": "your-google-client-id.apps.googleusercontent.com",
+    "google_client_secret": "your-google-client-secret",
+    "onedrive_client_id": "your-onedrive-app-id",
+    "onedrive_client_secret": "your-onedrive-app-secret"
+  }' \
+  --region ap-northeast-1
 ```
 
-### 1.3 アプリケーション秘密の作成
+### 2. Terraform を実行
+
+すべての秘密が作成されたことを確認した後、Terraform を実行します：
 
 ```bash
-aws secretsmanager create-secret \
-  --name "danmaku/dev/app/secrets" \
-  --description "Application Secrets (JWT, Session, Encryption)" \
+cd infra/terraform
+
+# 初期化
+terraform init
+
+# 計画を確認
+terraform plan -var-file="terraform.dev.tfvars"
+
+# インフラストラクチャを適用
+terraform apply -var-file="terraform.dev.tfvars"
+```
+
+### 3. 秘密の確認
+
+デプロイ後、秘密が正しく ECS に注入されたか確認します：
+
+```bash
+# ECS ログを確認
+aws logs tail /ecs/ecs-sample-nestjs-dev --follow --region ap-northeast-1
+```
+
+詳細情報は [SECRETS_SETUP.md](./SECRETS_SETUP.md) を参照してください
   --secret-string '{
     "jwt_secret": "your-jwt-secret-key",
     "session_secret": "your-session-secret-key",

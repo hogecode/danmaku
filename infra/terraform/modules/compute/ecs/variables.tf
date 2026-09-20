@@ -289,12 +289,6 @@ variable "rds_master_user_secret_arn" {
 # Secrets Manager ARNs (from secrets-manager module)
 # ==================================================
 
-variable "rds_credentials_secret_arn" {
-  description = "ARN of RDS credentials secret from Secrets Manager"
-  type        = string
-  default     = ""
-}
-
 variable "redis_credentials_secret_arn" {
   description = "ARN of Redis credentials secret from Secrets Manager"
   type        = string

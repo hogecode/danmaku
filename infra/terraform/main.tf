@@ -284,11 +284,13 @@ module "ecs" {
   nestjs_secrets               = var.nestjs_secrets
 
   # Secrets Manager Configuration
-  rds_master_user_secret_arn    = module.rds.db_instance_master_user_secret_arn
-  rds_credentials_secret_arn    = module.secrets_manager.rds_credentials_secret_arn
-  redis_credentials_secret_arn  = module.secrets_manager.redis_credentials_secret_arn
-  app_secrets_secret_arn        = module.secrets_manager.app_secrets_secret_arn
-  oauth_secrets_secret_arn      = module.secrets_manager.oauth_secrets_secret_arn
+  # RDS credentials are automatically managed by AWS RDS (manage_master_user_password = true)
+  rds_master_user_secret_arn   = module.rds.db_instance_master_user_secret_arn
+  
+  # Other secrets (Redis, App, OAuth) are manually created in AWS Secrets Manager
+  redis_credentials_secret_arn = module.secrets_manager.redis_credentials_secret_arn
+  app_secrets_secret_arn       = module.secrets_manager.app_secrets_secret_arn
+  oauth_secrets_secret_arn     = module.secrets_manager.oauth_secrets_secret_arn
 
   depends_on = [module.vpc, module.security_group, module.alb, module.ecr, module.rds, module.secrets_manager]
 }

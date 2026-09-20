@@ -9,7 +9,7 @@ import { AppModule } from './app.module';
 import { generateOpenAPIYaml } from './utils/openapi-generator';
 import { TraceIdMiddleware } from './common/middleware/trace-id.middleware';
 import { pinoLogger } from './common/logger/pino.logger';
-import { getSecretValue } from './common/utils/secret-parser.util';
+import { parseSecret, getSecretValue } from './common/utils/secret-parser.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bodyParser: true });
@@ -17,22 +17,111 @@ async function bootstrap() {
   // ✅ Pino ロギングを NestJS に統合
   app.useLogger(pinoLogger as any);
 
-  // Parse Redis credentials from JSON secret or individual env vars
-  const redisSecretsJson = process.env.REDIS_CREDENTIALS;
+  // ========================================
+  // Parse RDS credentials from JSON secret (AWS Secrets Manager)
+  // ========================================
+  const dbSecretsJson = process.env.DB_CREDENTIALS;
+  let dbConfig = {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '3306', 10),
+    username: process.env.DB_USERNAME || 'admin',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'danmaku',
+  };
 
-  const redisHost = redisSecretsJson 
-    ? getSecretValue(redisSecretsJson, 'host', 'REDIS_HOST') || 'localhost'
-    : process.env.REDIS_HOST || 'localhost';
-    
-  const redisPort = redisSecretsJson
-    ? parseInt(getSecretValue(redisSecretsJson, 'port', 'REDIS_PORT') || '6379', 10)
-    : parseInt(process.env.REDIS_PORT || '6379', 10);
-    
-  const redisPassword = getSecretValue(redisSecretsJson, 'password', 'REDIS_PASSWORD');
+  if (dbSecretsJson) {
+    try {
+      const parsedDbSecrets = parseSecret(dbSecretsJson);
+      if (typeof parsedDbSecrets === 'object' && parsedDbSecrets !== null) {
+        dbConfig = {
+          host: parsedDbSecrets.host || dbConfig.host,
+          port: parsedDbSecrets.port ? parseInt(String(parsedDbSecrets.port), 10) : dbConfig.port,
+          username: parsedDbSecrets.username || dbConfig.username,
+          password: parsedDbSecrets.password || dbConfig.password,
+          database: parsedDbSecrets.dbname || dbConfig.database,
+        };
+        console.log(`✅ RDS credentials loaded from JSON secret: ${dbConfig.host}:${dbConfig.port}`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ Failed to parse DB_CREDENTIALS JSON secret, using env vars fallback:`, error);
+    }
+  }
+
+  // Store RDS config in process for ConfigService to use
+  process.env.TYPEORM_HOST = dbConfig.host;
+  process.env.TYPEORM_PORT = String(dbConfig.port);
+  process.env.TYPEORM_USERNAME = dbConfig.username;
+  process.env.TYPEORM_PASSWORD = dbConfig.password;
+  process.env.TYPEORM_DATABASE = dbConfig.database;
+
+  // ========================================
+  // Parse OAuth secrets from JSON secret (AWS Secrets Manager)
+  // ========================================
+  const oauthSecretsJson = process.env.OAUTH_SECRETS;
+  if (oauthSecretsJson) {
+    try {
+      const parsedOAuthSecrets = parseSecret(oauthSecretsJson);
+      if (typeof parsedOAuthSecrets === 'object' && parsedOAuthSecrets !== null) {
+        // Set OAuth environment variables from JSON
+        if (parsedOAuthSecrets.google_client_id) {
+          process.env.GOOGLE_CLIENT_ID = parsedOAuthSecrets.google_client_id;
+        }
+        if (parsedOAuthSecrets.google_client_secret) {
+          process.env.GOOGLE_CLIENT_SECRET = parsedOAuthSecrets.google_client_secret;
+        }
+        if (parsedOAuthSecrets.onedrive_client_id) {
+          process.env.ONEDRIVE_CLIENT_ID = parsedOAuthSecrets.onedrive_client_id;
+        }
+        if (parsedOAuthSecrets.onedrive_client_secret) {
+          process.env.ONEDRIVE_CLIENT_SECRET = parsedOAuthSecrets.onedrive_client_secret;
+        }
+        console.log('✅ OAuth secrets loaded from JSON secret');
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to parse OAUTH_SECRETS JSON secret, using env vars fallback:', error);
+    }
+  }
+
+  // ========================================
+  // Parse Redis credentials from JSON secret (AWS Secrets Manager)
+  // ========================================
+  const redisSecretsJson = process.env.REDIS_CREDENTIALS;
+  let redisConfig = {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379', 10),
+    password: process.env.REDIS_PASSWORD,
+    db: parseInt(process.env.REDIS_DB || '0', 10),
+  };
+
+  if (redisSecretsJson) {
+    try {
+      const parsedRedisSecrets = parseSecret(redisSecretsJson);
+      if (typeof parsedRedisSecrets === 'object' && parsedRedisSecrets !== null) {
+        redisConfig = {
+          host: parsedRedisSecrets.host || redisConfig.host,
+          port: parsedRedisSecrets.port ? parseInt(String(parsedRedisSecrets.port), 10) : redisConfig.port,
+          password: parsedRedisSecrets.password || redisConfig.password,
+          db: parsedRedisSecrets.db ? parseInt(String(parsedRedisSecrets.db), 10) : redisConfig.db,
+        };
+        console.log(`✅ Redis credentials loaded from JSON secret: ${redisConfig.host}:${redisConfig.port}`);
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to parse REDIS_CREDENTIALS JSON secret, using env vars fallback:', error);
+    }
+  }
+
+  const redisHost = redisConfig.host;
+  const redisPort = redisConfig.port;
+  const redisPassword = redisConfig.password;
+  const redisDb = redisConfig.db;
   
-  const redisDb = redisSecretsJson
-    ? parseInt(getSecretValue(redisSecretsJson, 'db', 'REDIS_DB') || '0', 10)
-    : parseInt(process.env.REDIS_DB || '0', 10);
+  // Store Redis config in process for ConfigService to use
+  process.env.REDIS_HOST = redisHost;
+  process.env.REDIS_PORT = String(redisPort);
+  if (redisPassword) {
+    process.env.REDIS_PASSWORD = redisPassword;
+  }
+  process.env.REDIS_DB = String(redisDb);
 
   // Redis セッションストア設定
   const redisClient = createClient({
@@ -51,8 +140,35 @@ async function bootstrap() {
     prefix: 'session:',
   });
 
-  // Get session secret from JSON secret or individual env var
+  // ========================================
+  // Parse App secrets from JSON secret (AWS Secrets Manager)
+  // ========================================
   const appSecretsJson = process.env.APP_SECRETS;
+  if (appSecretsJson) {
+    try {
+      const parsedAppSecrets = parseSecret(appSecretsJson);
+      if (typeof parsedAppSecrets === 'object' && parsedAppSecrets !== null) {
+        // Set app secrets environment variables from JSON
+        if (parsedAppSecrets.jwt_secret) {
+          process.env.JWT_SECRET = parsedAppSecrets.jwt_secret;
+        }
+        if (parsedAppSecrets.session_secret) {
+          process.env.SESSION_SECRET = parsedAppSecrets.session_secret;
+        }
+        if (parsedAppSecrets.encryption_key) {
+          process.env.ENCRYPTION_KEY = parsedAppSecrets.encryption_key;
+        }
+        if (parsedAppSecrets.encryption_algorithm) {
+          process.env.ENCRYPTION_ALGORITHM = parsedAppSecrets.encryption_algorithm;
+        }
+        console.log('✅ App secrets loaded from JSON secret');
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to parse APP_SECRETS JSON secret, using env vars fallback:', error);
+    }
+  }
+
+  // Get session secret from JSON secret or individual env var
   const sessionSecret = getSecretValue(appSecretsJson, 'session_secret', 'SESSION_SECRET') || 'default-session-secret';
   const cookieSecure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
 

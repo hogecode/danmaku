@@ -328,12 +328,6 @@ resource "aws_ecs_task_definition" "nestjs" {
       )
       secrets = concat(
         var.nestjs_secrets,
-        var.rds_credentials_secret_arn != "" ? [
-          {
-            name      = "DB_CREDENTIALS"
-            valueFrom = var.rds_credentials_secret_arn
-          }
-        ] : [],
         var.redis_credentials_secret_arn != "" ? [
           {
             name      = "REDIS_CREDENTIALS"

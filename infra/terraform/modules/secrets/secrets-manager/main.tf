@@ -6,22 +6,13 @@
 # (via AWS Console, AWS CLI, or automated secret creation)
 # 
 # Secrets are expected to exist with these names:
-# - {project_name}/{environment}/rds/credentials
 # - {project_name}/{environment}/redis/credentials
 # - {project_name}/{environment}/app/secrets
 # - {project_name}/{environment}/oauth/secrets
-
-# ==================================================
-# Data Source: Reference RDS Credentials Secret
-# ==================================================
-
-data "aws_secretsmanager_secret" "rds_credentials" {
-  name = "${var.project_name}/${var.environment}/rds/credentials"
-}
-
-data "aws_secretsmanager_secret_version" "rds_credentials" {
-  secret_id = data.aws_secretsmanager_secret.rds_credentials.id
-}
+#
+# NOTE: RDS credentials are automatically managed by AWS RDS via Secrets Manager
+# (when manage_master_user_password = true). This secret is NOT referenced here.
+# Use module.rds.db_instance_master_user_secret_arn instead.
 
 # ==================================================
 # Data Source: Reference Redis Credentials Secret
