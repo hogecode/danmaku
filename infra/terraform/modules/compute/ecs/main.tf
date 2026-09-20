@@ -258,15 +258,7 @@ resource "aws_ecs_task_definition" "nextjs" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
-      environment = concat(
-        var.nextjs_environment_variables,
-        var.private_alb_dns_name != "" ? [
-          {
-            name  = "NEXT_PUBLIC_API_BASE_URL"
-            value = "http://${var.private_alb_dns_name}"
-          }
-        ] : []
-      )
+      environment = var.nextjs_environment_variables
       secrets = var.nextjs_secrets
     }
   ])
@@ -381,15 +373,7 @@ resource "local_file" "nextjs_taskdef_json" {
             "awslogs-stream-prefix" = "ecs"
           }
         }
-        environment = concat(
-          var.nextjs_environment_variables,
-          var.private_alb_dns_name != "" ? [
-            {
-              name  = "NEXT_PUBLIC_API_BASE_URL"
-              value = "http://${var.private_alb_dns_name}"
-            }
-          ] : []
-        )
+        environment = var.nextjs_environment_variables
       }
     ]
   })

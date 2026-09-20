@@ -96,3 +96,13 @@ output "public_alb_http_listener_arn" {
   description = "Public ALB HTTP listener ARN"
   value       = try(module.public_alb.listeners["http"].arn, "")
 }
+
+output "public_alb_http_listener_id" {
+  description = "Public ALB HTTP listener ID"
+  value       = try(module.public_alb.listeners["http"].id, "")
+}
+
+output "nestjs_blue_target_group_arn_value" {
+  description = "NestJS Blue target group ARN (for listener rules)"
+  value       = try(module.public_alb.target_group_arns["nestjs-blue"], "")
+}

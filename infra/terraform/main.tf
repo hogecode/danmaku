@@ -186,11 +186,11 @@ locals {
     [
       {
         name  = "NEXT_PUBLIC_API_BASE_URL"
-        value = "http://${module.alb.private_alb_dns_name}"
+        value = "http://${module.alb.public_alb_dns_name}/api"
       },
       {
         name  = "API_BASE_URL"
-        value = "http://${module.alb.private_alb_dns_name}"
+        value = "http://${module.alb.public_alb_dns_name}/api"
       },
       {
         name  = "NODE_ENV"
@@ -243,6 +243,10 @@ module "ecs" {
 
   # NextJS Environment Variables (with dynamic ALB DNS reference)
   nextjs_environment_variables = local.nextjs_environment_variables_merged
+
+  # NestJS Environment Variables and Secrets
+  nestjs_environment_variables = var.nestjs_environment_variables
+  nestjs_secrets               = var.nestjs_secrets
 
   # Secrets Manager Configuration
   rds_master_user_secret_arn = module.rds.db_instance_master_user_secret_arn

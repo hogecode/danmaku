@@ -26,11 +26,6 @@ output "private_app_subnets" {
   value       = module.vpc.private_app_subnets
 }
 
-output "private_api_subnets" {
-  description = "Private API layer subnet IDs"
-  value       = module.vpc.private_api_subnets
-}
-
 output "private_db_subnets" {
   description = "Private database layer subnet IDs"
   value       = module.vpc.private_db_subnets
@@ -80,11 +75,6 @@ output "nextjs_security_group_id" {
   value       = module.security_group.nextjs_security_group_id
 }
 
-output "private_alb_security_group_id" {
-  description = "Private ALB security group ID"
-  value       = module.security_group.private_alb_security_group_id
-}
-
 output "nestjs_security_group_id" {
   description = "Go Server ECS security group ID"
   value       = module.security_group.nestjs_security_group_id
@@ -113,11 +103,6 @@ output "public_alb_id" {
 output "public_alb_dns_name" {
   description = "DNS name of the public ALB"
   value       = module.alb.public_alb_dns_name
-}
-
-output "private_alb_dns_name" {
-  description = "DNS name of the private ALB"
-  value       = module.alb.private_alb_dns_name
 }
 
 output "nextjs_target_group_arn" {

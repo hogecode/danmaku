@@ -17,23 +17,14 @@ module "public_alb" {
   enable_http2               = true
   enable_cross_zone_load_balancing = true
 
-  # Listeners configuration with path-based routing
+  # Listeners configuration with default forward to Next.js
   listeners = merge(
     {
       http = {
-        port     = 80
-        protocol = "HTTP"
-        rules = {
-          nextjs = {
-            priority        = 100
-            path_patterns   = ["/"]
-            target_group_key = "nextjs-blue"
-          }
-          nestjs = {
-            priority        = 200
-            path_patterns   = ["/api/*"]
-            target_group_key = "nestjs-blue"
-          }
+        port        = 80
+        protocol    = "HTTP"
+        forward = {
+          target_group_key = "nextjs-blue"
         }
       }
     },
@@ -42,17 +33,8 @@ module "public_alb" {
         port            = 443
         protocol        = "HTTPS"
         certificate_arn = var.alb_certificate_arn
-        rules = {
-          nextjs = {
-            priority        = 100
-            path_patterns   = ["/"]
-            target_group_key = "nextjs-blue"
-          }
-          nestjs = {
-            priority        = 200
-            path_patterns   = ["/api/*"]
-            target_group_key = "nestjs-blue"
-          }
+        forward = {
+          target_group_key = "nextjs-blue"
         }
       }
     } : {}
@@ -115,4 +97,6 @@ module "public_alb" {
     Name = "${var.project_name}-public-alb-${var.environment}"
   }
 }
+
+
 

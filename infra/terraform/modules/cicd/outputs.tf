@@ -19,6 +19,6 @@ output "github_oidc_role_id" {
 
 output "github_oidc_provider_arn" {
   description = "ARN of the GitHub OIDC Provider"
-  value       = data.aws_iam_openid_connect_provider.github.arn
+  value       = aws_iam_openid_connect_provider.github.arn
 }
 

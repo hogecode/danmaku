@@ -570,6 +570,28 @@ variable "nextjs_environment_variables" {
 }
 
 # ========================================
+# NestJS Environment Variables & Secrets Configuration
+# ========================================
+
+variable "nestjs_environment_variables" {
+  description = "Additional environment variables for NestJS container"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+}
+
+variable "nestjs_secrets" {
+  description = "Secrets from AWS Secrets Manager for NestJS container"
+  type = list(object({
+    name      = string
+    valueFrom = string
+  }))
+  default = []
+}
+
+# ========================================
 # Lambda Functions Configuration
 # ========================================
 
