@@ -146,6 +146,48 @@ echo "$TASK_INFO" | jq '.tasks[0] | {lastStatus, exitCode: .containers[0].exitCo
 
 EXIT_CODE=$(echo "$TASK_INFO" | jq -r '.tasks[0].containers[0].exitCode // "null"')
 
+# Get container logs from CloudWatch
+echo ""
+echo "📋 Fetching container logs from CloudWatch..."
+
+# Determine log group and stream based on cluster
+if [[ "$ECS_CLUSTER" == *"prod"* ]]; then
+  LOG_GROUP="/aws/ecs/ecs-sample-nestjs-service-prod"
+else
+  LOG_GROUP="/aws/ecs/ecs-sample-nestjs-service"
+fi
+
+# Extract task ID from task ARN (format: ...../task-id)
+TASK_ID=$(echo "$TASK_ARN" | awk -F/ '{print $NF}')
+LOG_STREAM="${ENVIRONMENT}/${TASK_ID}"
+CONTAINER_NAME="nestjs"
+
+echo "  Log Group: $LOG_GROUP"
+echo "  Log Stream: $LOG_STREAM"
+echo "  Container: $CONTAINER_NAME"
+echo ""
+
+if [ ! -z "$LOG_STREAM" ]; then
+  # Try to get logs
+  LOGS=$(aws logs get-log-events \
+    --log-group-name "$LOG_GROUP" \
+    --log-stream-name "$LOG_STREAM" \
+    --region "$AWS_REGION" \
+    --output text \
+    --query 'events[*].message' 2>/dev/null || echo "")
+  
+  if [ ! -z "$LOGS" ]; then
+    echo "🔍 Container Logs:"
+    echo "---"
+    echo "$LOGS"
+    echo "---"
+  else
+    echo "⚠️  No logs found in CloudWatch"
+  fi
+else
+  echo "⚠️  Unable to retrieve log stream name"
+fi
+
 echo ""
 if [ "$EXIT_CODE" = "0" ]; then
   echo "✅ Migration completed successfully!"
