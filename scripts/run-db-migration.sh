@@ -48,10 +48,16 @@ else
 fi
 
 # Register new task definition
+# Filter out read-only fields that aren't allowed in register-task-definition
 NEW_TASK_DEF=$(echo "$TASK_DEF" | jq \
   --arg IMAGE "$REPO_URI" \
   --argjson CMD "$CMD" \
-  '.taskDefinitionArn = (.taskDefinitionArn | split(":") | .[0:-1] | join(":")) | .revision = null | .containerDefinitions[0].image = $IMAGE | .containerDefinitions[0].command = $CMD')
+  'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | 
+   .containerDefinitions[0].image = $IMAGE | 
+   .containerDefinitions[0].command = $CMD')
+
+echo "📝 Filtered task definition for registration:"
+echo "$NEW_TASK_DEF" | jq 'keys'
 
 NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
   --cli-input-json "$(echo "$NEW_TASK_DEF" | jq -c .)" \
