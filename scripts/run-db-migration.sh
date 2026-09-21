@@ -230,8 +230,32 @@ else
   
   if [ ! -z "$TASK_DETAILS" ]; then
     echo ""
-    echo "📌 Full Task Details:"
-    echo "$TASK_DETAILS" | jq '.'
+    echo "📌 Task Timing Info:"
+    echo "$TASK_DETAILS" | jq '{
+      createdAt,
+      startedAt,
+      pullStartedAt,
+      pullStoppedAt,
+      executionStoppedAt,
+      stoppedAt,
+      stoppedReason,
+      stopCode
+    }'
+    
+    echo ""
+    echo "💡 Debugging tips:"
+    echo "  1. Check if image pull failed:"
+    PULL_DURATION=$(echo "$TASK_DETAILS" | jq -r 'if .pullStoppedAt and .pullStartedAt then "Pull succeeded" else "Check pull status" end')
+    echo "     $PULL_DURATION"
+    
+    echo ""
+    echo "  2. Check container startup logs with AWS Systems Manager:"
+    echo "     aws ssm start-session --target <ecs-container-instance-id>"
+    
+    echo ""
+    echo "  3. Check ECS task execution role CloudWatch permissions:"
+    TASK_EXEC_ROLE=$(echo "$TASK_DETAILS" | jq -r '.taskDefinitionArn')
+    echo "     Task Definition: $TASK_EXEC_ROLE"
   fi
 fi
 
@@ -241,5 +265,12 @@ if [ "$EXIT_CODE" = "0" ]; then
   exit 0
 else
   echo "❌ Migration failed with exit code: $EXIT_CODE"
+  echo ""
+  echo "📚 Next steps:"
+  echo "  1. Review the task details above for timing and error codes"
+  echo "  2. Check ECS Container Insights for resource issues"
+  echo "  3. Verify DB_USER, DB_PASSWORD in AWS Secrets Manager"
+  echo "  4. Verify RDS security group allows NestJS security group"
+  echo "  5. Check application logs: yarn db:migrate --verbose"
   exit 1
 fi
