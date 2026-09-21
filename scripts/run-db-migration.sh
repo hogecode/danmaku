@@ -142,50 +142,93 @@ TASK_INFO=$(aws ecs describe-tasks \
 
 echo ""
 echo "📊 Task Details:"
-echo "$TASK_INFO" | jq '.tasks[0] | {lastStatus, exitCode: .containers[0].exitCode, stoppedReason}'
+echo "$TASK_INFO" | jq '.tasks[0] | {lastStatus, exitCode: .containers[0].exitCode, stoppedReason, stoppedCode: .stoppedCode}'
 
 EXIT_CODE=$(echo "$TASK_INFO" | jq -r '.tasks[0].containers[0].exitCode // "null"')
+
+# Get more detailed container info
+echo ""
+echo "📝 Container Details:"
+echo "$TASK_INFO" | jq '.tasks[0].containers[0] | {name, lastStatus, exitCode, reason, image}' 2>/dev/null || echo "  (Unable to parse container details)"
 
 # Get container logs from CloudWatch
 echo ""
 echo "📋 Fetching container logs from CloudWatch..."
 
-# Determine log group and stream based on cluster
-if [[ "$ECS_CLUSTER" == *"prod"* ]]; then
-  LOG_GROUP="/aws/ecs/ecs-sample-nestjs-service-prod"
-else
-  LOG_GROUP="/aws/ecs/ecs-sample-nestjs-service"
-fi
-
 # Extract task ID from task ARN (format: ...../task-id)
 TASK_ID=$(echo "$TASK_ARN" | awk -F/ '{print $NF}')
-LOG_STREAM="${ENVIRONMENT}/${TASK_ID}"
-CONTAINER_NAME="nestjs"
 
-echo "  Log Group: $LOG_GROUP"
-echo "  Log Stream: $LOG_STREAM"
-echo "  Container: $CONTAINER_NAME"
-echo ""
+# Try multiple log group patterns
+# Priority: exact environment-based, then generic
+declare -a LOG_GROUPS=(
+  "/ecs/ecs-sample-nestjs-${ENVIRONMENT}"
+  "/ecs/ecs-sample-nestjs-dev"
+  "/ecs/ecs-sample-nestjs-prod"
+  "/aws/ecs/ecs-sample-nestjs-service"
+  "/aws/ecs/ecs-sample-nestjs-service-prod"
+  "/aws/ecs/ecs-sample-nestjs-service-dev"
+  "/aws/ecs/danmaku-nestjs"
+)
 
-if [ ! -z "$LOG_STREAM" ]; then
-  # Try to get logs
-  LOGS=$(aws logs get-log-events \
-    --log-group-name "$LOG_GROUP" \
-    --log-stream-name "$LOG_STREAM" \
-    --region "$AWS_REGION" \
-    --output text \
-    --query 'events[*].message' 2>/dev/null || echo "")
+LOGS=""
+FOUND_LOG_GROUP=""
+FOUND_LOG_STREAM=""
+
+# Try to find logs
+for LOG_GROUP in "${LOG_GROUPS[@]}"; do
+  echo "  Trying log group: $LOG_GROUP"
   
-  if [ ! -z "$LOGS" ]; then
-    echo "🔍 Container Logs:"
-    echo "---"
-    echo "$LOGS"
-    echo "---"
-  else
-    echo "⚠️  No logs found in CloudWatch"
+  # Check if log group exists
+  if ! aws logs describe-log-groups \
+    --log-group-name-prefix "$LOG_GROUP" \
+    --region "$AWS_REGION" \
+    --query "logGroups[?logGroupName=='$LOG_GROUP']" \
+    --output text 2>/dev/null | grep -q "$LOG_GROUP"; then
+    continue
   fi
+  
+  # Try different log stream patterns
+  declare -a LOG_STREAMS=(
+    "${TASK_ID}"
+    "${ENVIRONMENT}/${TASK_ID}"
+    "ecs-sample-nestjs-service/${TASK_ID}"
+    "${ENVIRONMENT}/ecs-sample-nestjs-service/${TASK_ID}"
+  )
+  
+  for LOG_STREAM in "${LOG_STREAMS[@]}"; do
+    echo "    Trying log stream: $LOG_STREAM"
+    
+    LOGS=$(aws logs get-log-events \
+      --log-group-name "$LOG_GROUP" \
+      --log-stream-name "$LOG_STREAM" \
+      --region "$AWS_REGION" \
+      --output text \
+      --query 'events[*].message' 2>/dev/null || echo "")
+    
+    if [ ! -z "$LOGS" ]; then
+      FOUND_LOG_GROUP="$LOG_GROUP"
+      FOUND_LOG_STREAM="$LOG_STREAM"
+      echo "      ✅ Found logs!"
+      break 2
+    fi
+  done
+done
+
+if [ ! -z "$LOGS" ]; then
+  echo ""
+  echo "🔍 Container Logs ($FOUND_LOG_GROUP / $FOUND_LOG_STREAM):"
+  echo "---"
+  echo "$LOGS"
+  echo "---"
 else
-  echo "⚠️  Unable to retrieve log stream name"
+  echo ""
+  echo "⚠️  No logs found in CloudWatch"
+  echo ""
+  echo "Available log groups:"
+  aws logs describe-log-groups \
+    --region "$AWS_REGION" \
+    --query 'logGroups[?contains(logGroupName, `ecs-sample-nestjs`) || contains(logGroupName, `danmaku-nestjs`)].logGroupName' \
+    --output text | tr '\t' '\n'
 fi
 
 echo ""
