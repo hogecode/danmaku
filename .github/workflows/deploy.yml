@@ -86,7 +86,8 @@ jobs:
               runtimePlatform,
               taskRoleArn,
               executionRoleArn
-            }
+            } |
+            with_entries(select(.value != null))
           ')
           
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
@@ -144,7 +145,8 @@ jobs:
               runtimePlatform,
               taskRoleArn,
               executionRoleArn
-            }
+            } |
+            with_entries(select(.value != null))
           ')
           
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
