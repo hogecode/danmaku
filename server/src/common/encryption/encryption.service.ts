@@ -10,9 +10,14 @@ export class EncryptionService {
 
   constructor(private configService: ConfigService) {
     // 環境変数から暗号化キーを取得
-    const keyString = this.configService.get<string>('ENCRYPTION_KEY');
+    // NOTE: process.env を優先（main.ts で AWS Secrets Manager から設定されるため）
+    // その後、ConfigService にフォールバック
+    const keyString = process.env.ENCRYPTION_KEY || this.configService.get<string>('ENCRYPTION_KEY');
     if (!keyString || keyString.length !== 64) {
-      throw new Error('ENCRYPTION_KEY must be a 64-character hex string (32 bytes)');
+      throw new Error(
+        `ENCRYPTION_KEY must be a 64-character hex string (32 bytes). ` +
+        `Got: ${keyString ? `${keyString.length} chars` : 'undefined'}`
+      );
     }
     this.encryptionKey = Buffer.from(keyString, 'hex');
 
@@ -62,7 +67,7 @@ export class EncryptionService {
 
       return decrypted;
     } catch (error) {
-      throw new Error(`Decryption failed: ${error.message}`);
+      throw new Error(`Decryption failed: ${error}`);
     }
   }
 }
