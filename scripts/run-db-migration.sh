@@ -120,11 +120,17 @@ NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
 echo "✅ Registered: $NEW_TASK_DEF_ARN"
 
 # Run task
+# Parse subnets and security groups into proper JSON arrays for AWS CLI
+# Convert comma-separated subnet IDs to JSON array format
+SUBNET_ARRAY=$(echo "$DB_SUBNET_IDS" | jq -R 'split(",") | map(select(length > 0))')
+# Ensure security group is properly formatted
+SG_ARRAY=$(echo "$NESTJS_SECURITY_GROUP_ID" | jq -R 'if test("^sg-") then [.] else split(",") | map(select(length > 0)) end')
+
 TASK_ARN=$(aws ecs run-task \
   --cluster "$ECS_CLUSTER" \
   --task-definition "$NEW_TASK_DEF_ARN" \
   --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=[${DB_SUBNET_IDS}],securityGroups=[${NESTJS_SECURITY_GROUP_ID}],assignPublicIp=DISABLED}" \
+  --network-configuration "awsvpcConfiguration={subnets=$SUBNET_ARRAY,securityGroups=$SG_ARRAY,assignPublicIp=DISABLED}" \
   --region "$AWS_REGION" \
   --query 'tasks[0].taskArn' \
   --output text)
