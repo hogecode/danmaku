@@ -62,20 +62,20 @@ NEW_TASK_DEF=$(echo "$TASK_DEF" | jq \
    if .containerDefinitions[0].secrets == null then
      .containerDefinitions[0].secrets = [
        {
-         name = "DB_CREDENTIALS",
-         valueFrom = ($ACCOUNT_ID + ":secret:danmaku/db-credentials::")
+         "name": "DB_CREDENTIALS",
+         "valueFrom": "\($ACCOUNT_ID):secret:danmaku/db-credentials::"
        },
        {
-         name = "REDIS_CREDENTIALS",
-         valueFrom = ($ACCOUNT_ID + ":secret:danmaku/redis-credentials::")
+         "name": "REDIS_CREDENTIALS",
+         "valueFrom": "\($ACCOUNT_ID):secret:danmaku/redis-credentials::"
        },
        {
-         name = "APP_SECRETS",
-         valueFrom = ($ACCOUNT_ID + ":secret:danmaku/app-secrets::")
+         "name": "APP_SECRETS",
+         "valueFrom": "\($ACCOUNT_ID):secret:danmaku/app-secrets::"
        },
        {
-         name = "OAUTH_SECRETS",
-         valueFrom = ($ACCOUNT_ID + ":secret:danmaku/oauth-secrets::")
+         "name": "OAUTH_SECRETS",
+         "valueFrom": "\($ACCOUNT_ID):secret:danmaku/oauth-secrets::"
        }
      ]
    else
