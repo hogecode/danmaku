@@ -10,6 +10,7 @@ import { PlayerModule } from './player/player.module';
 import { CommonModule } from './common/common.module';
 import { NicovideoModule } from './nicovideo/nicovideo.module';
 import { UserSettingsModule } from './user-settings/user-settings.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UserSettingsModule } from './user-settings/user-settings.module';
     PlayerModule,
     NicovideoModule,
     UserSettingsModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

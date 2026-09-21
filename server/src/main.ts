@@ -100,10 +100,13 @@ async function bootstrap() {
     console.log('⏭️ Skipping OpenAPI YAML generation in production environment');
   }
 
-  const port = process.env.PORT || 3001;
-  await app.listen(port);
-  console.log(`Application running on http://localhost:${port}`);
-  console.log(`Swagger documentation available at http://localhost:${port}/api/docs`);
+  const port = Number(process.env.PORT || 3001);
+
+  await app.listen(port, '0.0.0.0');
+
+  console.log(`🚀 NestJS listening on 0.0.0.0:${port}`);
+  console.log(`Application running on http://0.0.0.0:${port}`);
+  console.log(`Swagger documentation available at http://0.0.0.0:${port}/api/docs`);
 }
 
 bootstrap();
