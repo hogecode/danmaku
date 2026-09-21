@@ -23,13 +23,39 @@ import Redis from 'ioredis';
           db,
           enableOfflineQueue: false,
           enableReadyCheck: false,
+          // ✅ 再接続の設定（ioredis のビルトイン再接続機構）
+          retryStrategy: (times: number) => {
+            const delay = Math.min(times * 50, 2000);
+            console.warn(`⏳ Redis reconnect attempt ${times}, retrying in ${delay}ms...`);
+            return delay;
+          },
+          maxRetriesPerRequest: null,
         };
 
         if (password) {
           redisConfig.password = password;
         }
 
-        return new Redis(redisConfig);
+        const redis = new Redis(redisConfig);
+
+        // ✅ ioredis エラーハンドラを登録（予期しない接続切断時のプロセスクラッシュを防止）
+        redis.on('error', (err) => {
+          console.error('❌ Redis Client Error (ioredis):', err);
+        });
+
+        redis.on('connect', () => {
+          console.log('✅ Redis connected (ioredis)');
+        });
+
+        redis.on('reconnecting', () => {
+          console.warn('⏳ Redis reconnecting (ioredis)...');
+        });
+
+        redis.on('ready', () => {
+          console.log('✅ Redis ready (ioredis)');
+        });
+
+        return redis;
       },
     },
   ],

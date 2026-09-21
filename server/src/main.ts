@@ -179,8 +179,23 @@ async function bootstrap() {
     password: redisPassword,
   });
 
+  // ✅ Redis エラーハンドラを登録（予期しない接続切断時のプロセスクラッシュを防止）
+  redisClient.on('error', (err) => {
+    console.error('❌ Redis Client Error (session store):', err);
+  });
+
+  redisClient.on('connect', () => {
+    console.log('✅ Redis connected (session store)');
+  });
+
+  redisClient.on('reconnecting', () => {
+    console.warn('⏳ Redis reconnecting (session store)...');
+  });
+
   // Redis クライアントの接続
-  redisClient.connect().catch(console.error);
+  redisClient.connect().catch((err) => {
+    console.error('❌ Failed to connect to Redis (session store):', err);
+  });
 
   const redisStore = new RedisStore({
     client: redisClient as any,

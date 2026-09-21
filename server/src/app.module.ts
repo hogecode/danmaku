@@ -13,6 +13,7 @@ import { UserSettingsModule } from './user-settings/user-settings.module';
 
 @Module({
   imports: [
+    // 開発段階では .env ファイルから環境変数を読み込む
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
