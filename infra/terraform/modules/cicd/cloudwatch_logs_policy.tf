@@ -16,10 +16,7 @@ resource "aws_iam_role_policy" "cloudwatch_logs_read_policy" {
           "logs:DescribeLogStreams",
           "logs:GetLogEvents"
         ]
-        Resource = [
-          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/*",
-          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/ecs/*"
-        ]
+        Resource = "*"
       }
     ]
   })

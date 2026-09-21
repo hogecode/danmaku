@@ -178,14 +178,8 @@ FOUND_LOG_STREAM=""
 for LOG_GROUP in "${LOG_GROUPS[@]}"; do
   echo "  Trying log group: $LOG_GROUP"
   
-  # Check if log group exists
-  if ! aws logs describe-log-groups \
-    --log-group-name-prefix "$LOG_GROUP" \
-    --region "$AWS_REGION" \
-    --query "logGroups[?logGroupName=='$LOG_GROUP']" \
-    --output text 2>/dev/null | grep -q "$LOG_GROUP"; then
-    continue
-  fi
+  # Skip permission check, just try to get logs directly
+  # This is faster and avoids DescribeLogGroups permission issues
   
   # Try different log stream patterns
   declare -a LOG_STREAMS=(
@@ -224,11 +218,21 @@ else
   echo ""
   echo "⚠️  No logs found in CloudWatch"
   echo ""
-  echo "Available log groups:"
-  aws logs describe-log-groups \
+  echo "Trying alternative log retrieval method..."
+  
+  # Try to get logs using awslogs or describe-tasks details
+  TASK_DETAILS=$(aws ecs describe-tasks \
+    --cluster "$ECS_CLUSTER" \
+    --tasks "$TASK_ARN" \
     --region "$AWS_REGION" \
-    --query 'logGroups[?contains(logGroupName, `ecs-sample-nestjs`) || contains(logGroupName, `danmaku-nestjs`)].logGroupName' \
-    --output text | tr '\t' '\n'
+    --query 'tasks[0]' \
+    --output json 2>/dev/null)
+  
+  if [ ! -z "$TASK_DETAILS" ]; then
+    echo ""
+    echo "📌 Full Task Details:"
+    echo "$TASK_DETAILS" | jq '.'
+  fi
 fi
 
 echo ""
