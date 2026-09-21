@@ -264,6 +264,14 @@ function parseRedisSecrets(): RedisSecrets {
   }
   process.env.REDIS_DB = String(redisConfig.db);
 
+  // ✅ デバッグ：設定完了ログ
+  pinoLogger.info({
+    host: redisConfig.host,
+    port: redisConfig.port,
+    db: redisConfig.db,
+    hasPassword: !!redisConfig.password,
+  }, '✅ Redis configuration loaded and set to process.env');
+
   return redisConfig;
 }
 

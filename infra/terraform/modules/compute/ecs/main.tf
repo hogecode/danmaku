@@ -232,6 +232,16 @@ resource "aws_iam_role_policy" "ecs_task_role_nestjs" {
         Effect   = "Allow"
         Action   = ["cloudwatch:PutMetricData", "kms:Decrypt"]
         Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["ssmmessages:CreateControlChannel", "ssmmessages:CreateDataChannel", "ssmmessages:OpenControlChannel", "ssmmessages:OpenDataChannel"]
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["ec2messages:GetMessages"]
+        Resource = "*"
       }
     ]
   })
@@ -386,6 +396,7 @@ resource "aws_ecs_service" "nextjs" {
   task_definition = aws_ecs_task_definition.nextjs.arn
   desired_count   = var.nextjs_desired_count
   launch_type     = "FARGATE"
+  enable_execute_command = true
 
   network_configuration {
     subnets          = var.private_app_subnet_ids
@@ -452,6 +463,7 @@ resource "aws_ecs_service" "nestjs" {
   task_definition = aws_ecs_task_definition.nestjs.arn
   desired_count   = var.nestjs_desired_count
   launch_type     = "FARGATE"
+  enable_execute_command = true
 
   network_configuration {
     subnets          = var.private_api_subnet_ids

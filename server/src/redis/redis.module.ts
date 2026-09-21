@@ -37,6 +37,17 @@ import { pinoLogger } from '../common/logger/pino.logger';
           redisConfig.password = password;
         }
 
+        // ✅ デバッグ：ConfigService から読み込んだ値を確認
+        pinoLogger.info({
+          configServiceHost: host,
+          configServicePort: port,
+          configServiceDb: db,
+          configServiceHasPassword: !!password,
+          processEnvREDIS_HOST: process.env.REDIS_HOST,
+          processEnvREDIS_PORT: process.env.REDIS_PORT,
+          processEnvREDIS_DB: process.env.REDIS_DB,
+        }, '🔍 RedisModule initializing');
+
         const redis = new Redis(redisConfig);
 
         // ✅ ioredis エラーハンドラを登録（予期しない接続切断時のプロセスクラッシュを防止）
