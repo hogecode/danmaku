@@ -15,6 +15,7 @@ import { ProviderType } from '../../drive/constants';
 import { GoogleTokenService } from './providers/google/google-token.service';
 import { OnedriveTokenService } from './providers/onedrive/onedrive-token.service';
 import { EncryptionService } from '../../common/encryption/encryption.service';
+import { LoggerService } from '../../common/logger/logger.service';
 
 /**
  * マルチプロバイダー OAuth トークン管理（共通＆ルーティング層）
@@ -27,6 +28,7 @@ export class TokenService {
     private readonly googleTokenService: GoogleTokenService,
     private readonly onedriveTokenService: OnedriveTokenService,
     private readonly encryptionService: EncryptionService,
+    private readonly logger: LoggerService,
   ) {}
 
   // OAuth プロバイダーを抽象化してOAuth 認可URLを生成するメソッド
@@ -119,7 +121,7 @@ export class TokenService {
     } else if (provider === ProviderType.ONEDRIVE) {
       return await this.onedriveTokenService.revokeToken(accessToken);
     }
-    console.warn(`Cannot revoke token for unsupported provider: ${provider}`);
+    this.logger.warn(`Cannot revoke token for unsupported provider: ${provider}`);
   }
 
   // JWT アクセストークンを生成するメソッド

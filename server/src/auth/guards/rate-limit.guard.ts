@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import Redis from 'ioredis';
+import { LoggerService } from '../../common/logger/logger.service';
 
 /**
  * Redis ベースのレート制限ガード
@@ -21,7 +22,10 @@ export class RateLimitGuard implements CanActivate {
   private readonly windowMs = 60 * 1000; // 1分
   private readonly maxRequests = 5;
 
-  constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis) {}
+  constructor(
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
+    private readonly logger: LoggerService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -52,7 +56,7 @@ export class RateLimitGuard implements CanActivate {
         throw error;
       }
       // Redis その他のエラーの場合はリクエストを許可（フェイルオープン）
-      console.error('Rate limit guard error:', error);
+      this.logger.error('Rate limit guard error', error, { ip: this.getClientIp(request) });
       return true;
     }
   }

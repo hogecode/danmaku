@@ -6,6 +6,7 @@
  */
 
 import { parseSecret } from '../common/utils/secret-parser.util';
+import { pinoLogger } from '../common/logger/pino.logger';
 
 /**
  * App Secrets
@@ -57,14 +58,14 @@ export function loadSecretsToProcessEnv(): {
   redisConfig: RedisSecrets;
   oauthSecrets: OAuthSecrets;
 } {
-  console.log('📋 Loading secrets from AWS Secrets Manager...');
+  pinoLogger.info('📋 Loading secrets from AWS Secrets Manager...');
 
   const appSecrets: AppSecrets = parseAppSecrets();
   const dbConfig: DatabaseSecrets = parseDatabaseSecrets();
   const redisConfig: RedisSecrets = parseRedisSecrets();
   const oauthSecrets: OAuthSecrets = parseOAuthSecrets();
 
-  console.log('✅ All secrets loaded successfully');
+  pinoLogger.info('✅ All secrets loaded successfully');
   return { appSecrets, dbConfig, redisConfig, oauthSecrets };
 }
 
@@ -73,7 +74,7 @@ function parseAppSecrets(): AppSecrets {
   const appSecretsJson = process.env.APP_SECRETS;
   
   if (!appSecretsJson) {
-    console.warn('⚠️ APP_SECRETS not set');
+    pinoLogger.warn('⚠️ APP_SECRETS not set');
     return appSecrets;
   }
 
@@ -92,16 +93,16 @@ function parseAppSecrets(): AppSecrets {
         process.env.ENCRYPTION_KEY = parsed.encryption_key;
         appSecrets.encryption_key = parsed.encryption_key;
       } else {
-        console.error('❌ encryption_key is missing');
+        pinoLogger.error('❌ encryption_key is missing');
       }
       if (parsed.encryption_algorithm) {
         process.env.ENCRYPTION_ALGORITHM = parsed.encryption_algorithm;
         appSecrets.encryption_algorithm = parsed.encryption_algorithm;
       }
-      console.log('✅ App secrets loaded');
+      pinoLogger.info('✅ App secrets loaded');
     }
   } catch (error) {
-    console.warn('⚠️ Failed to parse APP_SECRETS:', error);
+    pinoLogger.warn({ err: error as Error }, 'Failed to parse APP_SECRETS');
   }
   return appSecrets;
 }
@@ -125,10 +126,10 @@ function parseDatabaseSecrets(): DatabaseSecrets {
         dbConfig.username = parsed.username || dbConfig.username;
         dbConfig.password = parsed.password || dbConfig.password;
         dbConfig.dbname = parsed.dbname || dbConfig.dbname;
-        console.log(`✅ Database credentials loaded: ${dbConfig.host}:${dbConfig.port}`);
+        pinoLogger.info(`✅ Database credentials loaded: ${dbConfig.host}:${dbConfig.port}`);
       }
     } catch (error) {
-      console.warn('⚠️ Failed to parse DB_CREDENTIALS:', error);
+      pinoLogger.warn({ err: error as Error }, 'Failed to parse DB_CREDENTIALS');
     }
   }
 
@@ -140,7 +141,7 @@ function parseDatabaseSecrets(): DatabaseSecrets {
 
   const databaseUrl = `postgresql://${dbConfig.username}:${encodeURIComponent(dbConfig.password)}@${dbConfig.host}:${dbConfig.port}/${dbConfig.dbname}`;
   process.env.DATABASE_URL = databaseUrl;
-  console.log(`✅ DATABASE_URL constructed`);
+  pinoLogger.info(`✅ DATABASE_URL constructed`);
   return dbConfig;
 }
 
@@ -161,10 +162,10 @@ function parseRedisSecrets(): RedisSecrets {
         redisConfig.port = parsed.port ? parseInt(String(parsed.port), 10) : redisConfig.port;
         redisConfig.password = parsed.password || redisConfig.password;
         redisConfig.db = parsed.db ? parseInt(String(parsed.db), 10) : redisConfig.db;
-        console.log(`✅ Redis credentials loaded: ${redisConfig.host}:${redisConfig.port}`);
+        pinoLogger.info(`✅ Redis credentials loaded: ${redisConfig.host}:${redisConfig.port}`);
       }
     } catch (error) {
-      console.warn('⚠️ Failed to parse REDIS_CREDENTIALS:', error);
+      pinoLogger.warn({ err: error as Error }, 'Failed to parse REDIS_CREDENTIALS');
     }
   }
 
@@ -183,7 +184,7 @@ function parseOAuthSecrets(): OAuthSecrets {
   const oauthSecretsJson = process.env.OAUTH_SECRETS;
 
   if (!oauthSecretsJson) {
-    console.warn('⚠️ OAUTH_SECRETS not set');
+    pinoLogger.warn('⚠️ OAUTH_SECRETS not set');
     return oauthSecrets;
   }
 
@@ -206,11 +207,12 @@ function parseOAuthSecrets(): OAuthSecrets {
         process.env.ONEDRIVE_CLIENT_SECRET = parsed.onedrive_client_secret;
         oauthSecrets.onedrive_client_secret = parsed.onedrive_client_secret;
       }
-      console.log('✅ OAuth secrets loaded');
+      pinoLogger.info('✅ OAuth secrets loaded');
     }
   } catch (error) {
-    console.warn('⚠️ Failed to parse OAUTH_SECRETS:', error);
+    pinoLogger.warn({ err: error as Error }, 'Failed to parse OAUTH_SECRETS');
   }
 
   return oauthSecrets;
 }
+

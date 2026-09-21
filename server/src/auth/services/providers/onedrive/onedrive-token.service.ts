@@ -10,6 +10,7 @@ import * as jwt from 'jsonwebtoken';
 import { GoogleTokenDto } from '../../../dto';
 import { ProviderTokenService } from '../provider-token.interface';
 import { PKCEUtil } from '../../../utils/pkce.util';
+import { LoggerService } from '../../../../common/logger/logger.service';
 
 /**
  * OneDrive OAuth トークン管理
@@ -27,6 +28,7 @@ export class OnedriveTokenService implements ProviderTokenService {
   constructor(
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
     private readonly configService: ConfigService,
+    private readonly logger: LoggerService,
   ) {}
 
   /**
@@ -125,14 +127,14 @@ export class OnedriveTokenService implements ProviderTokenService {
             response.data.email = decoded.preferred_username;
           }
         } catch (error) {
-          console.error('[OnedriveTokenService] Failed to decode id_token:', error);
+          this.logger.error('[OnedriveTokenService] Failed to decode id_token:', error);
         }
       }
 
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.error('OneDrive token exchange error:', error.response?.data);
+        this.logger.error('OneDrive token exchange error:', error.response?.data);
         throw new InternalServerErrorException(
           `Failed to exchange code for token: ${error.response?.data?.error_description || error.message}`,
         );
@@ -173,7 +175,7 @@ export class OnedriveTokenService implements ProviderTokenService {
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.error('OneDrive token refresh error:', error.response?.data);
+        this.logger.error('OneDrive token refresh error:', error.response?.data);
         throw new InternalServerErrorException(
           `Failed to refresh token: ${error.response?.data?.error_description || error.message}`,
         );
@@ -207,8 +209,9 @@ export class OnedriveTokenService implements ProviderTokenService {
         },
       );
     } catch (error) {
-      console.error('OneDrive token revoke error:', error);
+      this.logger.error('OneDrive token revoke error:', error);
       // リボーク失敗は無視（既に失効している可能性）
     }
   }
 }
+

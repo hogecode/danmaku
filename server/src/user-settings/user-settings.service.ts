@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import type { Database } from '../database/database.module';
 import { userSettings } from '../database/session.schema';
 import { UserSettingsDto, UpdateUserSettingsDto } from './dto/user-settings.dto';
+import { LoggerService } from '../common/logger/logger.service';
 
 /**
  * ユーザー設定サービス
@@ -14,6 +15,7 @@ export class UserSettingsService {
   constructor(
     @Inject('DATABASE_CONNECTION')
     private readonly db: Database,
+    private readonly logger: LoggerService,
   ) {}
 
   /**
@@ -69,7 +71,7 @@ export class UserSettingsService {
       throw new NotFoundException('User settings not found');
     }
 
-    console.log('[UserSettings] updateDto received:', updateDto, 'keys:', Object.keys(updateDto || {}));
+    this.logger.debug('updateSettings received', { updateDto, keys: Object.keys(updateDto || {}) });
 
     // ✅ すべてのプロパティを明示的に抽出
     const updateData: Record<string, any> = {};
@@ -90,16 +92,16 @@ export class UserSettingsService {
     for (const field of fieldsToUpdate) {
       if (field in updateDto && (updateDto as any)[field] !== undefined) {
         updateData[field] = (updateDto as any)[field];
-        console.log(`[UserSettings] ✓ set ${field} = ${JSON.stringify((updateDto as any)[field])}`);
+        this.logger.debug(`Setting field: ${field}`, { value: (updateDto as any)[field] });
       }
     }
 
-    console.log('[UserSettings] extracted updateData:', updateData, 'keys:', Object.keys(updateData));
+    this.logger.debug('Extracted updateData', { updateData, keys: Object.keys(updateData) });
 
     // ✅ updated_at を常に更新
     updateData.updated_at = new Date();
 
-    console.log('[UserSettings] final updateData to save:', updateData);
+    this.logger.debug('Final updateData to save', { updateData });
 
     const updated = await this.db
       .update(userSettings)

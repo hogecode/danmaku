@@ -1,9 +1,10 @@
 /**
  * Pino ロギングシステム
  * 
- * ✅ 開発環境: カラー出力で見やすくフォーマット
- * ✅ 本番環境: 構造化ログ（JSON形式）
- * ✅ 最小限の情報表示（開発環境）
+ * ログレベル: trace(10) < debug(20) < info(30) < warn(40) < error(50) < fatal(60)
+ * 
+ * ✅ 開発環境: カラー出力で見やすくフォーマット、DEBUG レベル以上を表示
+ * ✅ 本番環境: 構造化ログ（JSON形式）、INFO レベル以上を表示
  */
 
 import pino from 'pino';
@@ -15,27 +16,40 @@ import { v4 as uuidv4 } from 'uuid';
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
+ * ログレベルの決定
+ * 環境変数 LOG_LEVEL で制御可能
+ * デフォルト: 開発環境=debug, 本番環境=info
+ */
+const getLogLevel = (): string => {
+  if (process.env.LOG_LEVEL) {
+    return process.env.LOG_LEVEL;
+  }
+  return isDevelopment ? 'debug' : 'info';
+};
+
+/**
  * Pino logger インスタンス
  * 
- * 開発環境: pino-pretty で見やすくフォーマット
- * 本番環境: JSON形式のまま
+ * 開発環境: pino-pretty で見やすくフォーマット、DEBUG以上を表示
+ * 本番環境: JSON形式で構造化ログ、INFO以上を表示
  */
 const basePinoLogger = pino(
   {
     // ✅ ログレベル（環境変数で制御可能）
-    level: process.env.LOG_LEVEL || 'info',
+    level: getLogLevel(),
 
-    // ✅ タイムスタンプフォーマット
+    // ✅ タイムスタンプフォーマット（ISO 8601）
     timestamp: pino.stdTimeFunctions.isoTime,
 
     // ✅ メタデータ（本番環境のみ）
     base: isDevelopment
       ? undefined
       : {
-          env: process.env.NODE_ENV || 'development',
+          env: process.env.NODE_ENV || 'production',
+          version: process.env.APP_VERSION || 'unknown',
         },
 
-    // ✅ traceId（本番環境のみ）
+    // ✅ トランザクションID（本番環境のみ、リクエスト追跡用）
     mixin() {
       if (isDevelopment) {
         return {};
@@ -45,7 +59,7 @@ const basePinoLogger = pino(
       };
     },
   },
-  // ✅ 開発環境では pino-pretty を使用
+  // ✅ 開発環境では pino-pretty を使用（見やすくフォーマット）
   isDevelopment
     ? pino.transport({
         target: 'pino-pretty',
@@ -53,7 +67,10 @@ const basePinoLogger = pino(
           colorize: true,
           singleLine: true,
           translateTime: false,
-          ignore: 'pid,hostname,time,env',
+          // 不要なメタデータを隠す
+          ignore: 'pid,hostname,time,env,version',
+          // ログレベルをラベル表示
+          levelLabel: 'level',
         },
       })
     : undefined,

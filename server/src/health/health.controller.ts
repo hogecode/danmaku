@@ -3,6 +3,7 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { sql } from 'drizzle-orm';
 import { DATABASE_CONNECTION } from '../database/database.module';
 import type {Database} from '../database/database.module';
+import { LoggerService } from '../common/logger/logger.service';
 
 interface HealthResponse {
   status: 'ok' | 'error';
@@ -17,6 +18,7 @@ interface HealthResponse {
 export class HealthController {
   constructor(
     @Inject(DATABASE_CONNECTION) private readonly db: Database,
+    private readonly logger: LoggerService,
   ) {}
 
   @Get()
@@ -27,7 +29,7 @@ export class HealthController {
       // Check database connection by executing a simple query
       await this.db.execute(sql`SELECT 1`);
 
-      console.log(`✅ Health check passed at ${timestamp}`);
+      this.logger.debug(`Health check passed`);
 
       return {
         status: 'ok',
@@ -37,7 +39,7 @@ export class HealthController {
         },
       };
     } catch (error) {
-      console.error('❌ Health check failed:', error);
+      this.logger.error('Health check failed', error);
       return {
         status: 'error',
         timestamp,

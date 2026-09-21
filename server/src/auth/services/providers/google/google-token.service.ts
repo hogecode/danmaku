@@ -10,6 +10,7 @@ import * as jwt from 'jsonwebtoken';
 import { GoogleTokenDto } from '../../../dto';
 import { ProviderTokenService } from '../provider-token.interface';
 import { PKCEUtil } from '../../../utils/pkce.util';
+import { LoggerService } from '../../../../common/logger/logger.service';
 
 /**
  * Google OAuth トークン管理
@@ -24,6 +25,7 @@ export class GoogleTokenService implements ProviderTokenService {
   constructor(
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
     private readonly configService: ConfigService,
+    private readonly logger: LoggerService,
   ) {}
 
   /**
@@ -48,7 +50,7 @@ export class GoogleTokenService implements ProviderTokenService {
     }
 
     // デバッグ: リダイレクト URI を確認
-    console.log(`[GoogleTokenService] generateAuthorizationUrl - purpose: ${purpose}, redirectUri: ${redirectUri}`);
+    this.logger.debug(`generateAuthorizationUrl - purpose: ${purpose}, redirectUri: ${redirectUri}`);
 
     const { verifier, challenge } = PKCEUtil.generatePKCE();
     const state = PKCEUtil.generateState();
@@ -106,7 +108,7 @@ export class GoogleTokenService implements ProviderTokenService {
 
     try {
       // デバッグ: トークン交換時のリダイレクト URI を確認
-      console.log(`[GoogleTokenService] exchangeCodeForToken - redirectUri: ${redirectUri}, code: ${code.substring(0, 20)}...`);
+      this.logger.debug(`exchangeCodeForToken - redirectUri: ${redirectUri}, code: ${code.substring(0, 20)}...`);
       
       const response = await axios.post<GoogleTokenDto>(
         this.tokenUrl,
@@ -133,7 +135,7 @@ export class GoogleTokenService implements ProviderTokenService {
              response.data.email = decoded.email;
            }
          } catch (error) {
-           console.error('[GoogleTokenService] Failed to decode id_token:', error);
+           this.logger.debug('Failed to decode id_token', { error });
            // デコード失敗時も続行
          }
        }
@@ -142,8 +144,7 @@ export class GoogleTokenService implements ProviderTokenService {
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.error('Google token exchange error:', error.response?.data);
-        console.error(`[GoogleTokenService] Failed request - redirectUri: ${redirectUri}`);
+        this.logger.error('Google token exchange failed', error as Error | any, { redirectUri, response: error.response?.data });
         throw new InternalServerErrorException(
           `Failed to exchange code for token: ${error.response?.data?.error_description || error.message}`,
         );
@@ -184,7 +185,7 @@ export class GoogleTokenService implements ProviderTokenService {
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.error('Google token refresh error:', error.response?.data);
+        this.logger.error('Google token refresh failed', error as Error | any, { response: error.response?.data });
         throw new InternalServerErrorException(
           `Failed to refresh token: ${error.response?.data?.error_description || error.message}`,
         );
@@ -217,8 +218,10 @@ export class GoogleTokenService implements ProviderTokenService {
         },
       );
     } catch (error) {
-      console.error('Google token revoke error:', error);
+      this.logger.warn('Google token revoke failed', { err: error as Error });
       // リボーク失敗は無視（既に失効している可能性）
     }
   }
 }
+
+

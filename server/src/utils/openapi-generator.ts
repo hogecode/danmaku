@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { pinoLogger } from '../common/logger/pino.logger';
 
 /**
  * OpenAPI ドキュメントを生成してYAMLファイルとして保存する
@@ -42,9 +43,9 @@ export async function generateOpenAPIYaml(
     // YAML ファイルに保存
     fs.writeFileSync(resolvedPath, yamlContent, 'utf-8');
 
-    console.log(`✅ OpenAPI YAML generated: ${resolvedPath}`);
+    pinoLogger.info(`OpenAPI YAML generated: ${resolvedPath}`);
   } catch (error) {
-    console.error('❌ Failed to generate OpenAPI YAML:', error);
+    pinoLogger.error({ err: error as Error }, 'Failed to generate OpenAPI YAML');
     throw error;
   }
 }

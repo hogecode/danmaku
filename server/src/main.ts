@@ -92,21 +92,21 @@ async function bootstrap() {
   if (process.env.NODE_ENV === 'development') {
     try {
       await generateOpenAPIYaml(app, 'openapi.yaml');
-      console.log('✅ OpenAPI YAML generated successfully');
+      pinoLogger.info('OpenAPI YAML generated successfully');
     } catch (error) {
-      console.warn('⚠️ Failed to generate OpenAPI YAML:', error);
+      pinoLogger.warn({ err: error as Error }, 'Failed to generate OpenAPI YAML');
     }
   } else {
-    console.log('⏭️ Skipping OpenAPI YAML generation in production environment');
+    pinoLogger.debug('Skipping OpenAPI YAML generation in production environment');
   }
 
   const port = Number(process.env.PORT || 3001);
 
   await app.listen(port, '0.0.0.0');
 
-  console.log(`🚀 NestJS listening on 0.0.0.0:${port}`);
-  console.log(`Application running on http://0.0.0.0:${port}`);
-  console.log(`Swagger documentation available at http://0.0.0.0:${port}/api/docs`);
+  pinoLogger.info(`🚀 NestJS listening on 0.0.0.0:${port}`);
+  pinoLogger.info(`📍 Application running on http://0.0.0.0:${port}`);
+  pinoLogger.info(`📚 Swagger documentation available at http://0.0.0.0:${port}/api/docs`);
 }
 
 bootstrap();

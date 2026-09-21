@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { pinoLogger } from '../common/logger/pino.logger';
 
 /**
  * Redis クライアント提供モジュール
@@ -26,7 +27,7 @@ import Redis from 'ioredis';
           // ✅ 再接続の設定（ioredis のビルトイン再接続機構）
           retryStrategy: (times: number) => {
             const delay = Math.min(times * 50, 2000);
-            console.warn(`⏳ Redis reconnect attempt ${times}, retrying in ${delay}ms...`);
+            pinoLogger.warn(`Redis reconnect attempt ${times}, retrying in ${delay}ms...`);
             return delay;
           },
           maxRetriesPerRequest: null,
@@ -40,19 +41,19 @@ import Redis from 'ioredis';
 
         // ✅ ioredis エラーハンドラを登録（予期しない接続切断時のプロセスクラッシュを防止）
         redis.on('error', (err) => {
-          console.error('❌ Redis Client Error (ioredis):', err);
+          pinoLogger.error({ err }, 'Redis Client Error (ioredis)');
         });
 
         redis.on('connect', () => {
-          console.log('✅ Redis connected (ioredis)');
+          pinoLogger.info('✅ Redis connected (ioredis)');
         });
 
         redis.on('reconnecting', () => {
-          console.warn('⏳ Redis reconnecting (ioredis)...');
+          pinoLogger.warn('Redis reconnecting (ioredis)...');
         });
 
         redis.on('ready', () => {
-          console.log('✅ Redis ready (ioredis)');
+          pinoLogger.info('✅ Redis ready (ioredis)');
         });
 
         return redis;

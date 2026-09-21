@@ -24,6 +24,8 @@
  *   process.env.SESSION_SECRET = '...'
  */
 
+import { pinoLogger } from '../logger/pino.logger';
+
 /**
  * Parse JSON secret string into an object
  * Returns the parsed object or undefined if parsing fails
@@ -34,7 +36,7 @@
  * Example:
  *   const dbSecrets = parseSecret(process.env.DB_CREDENTIALS);
  *   if (dbSecrets) {
- *     console.log(dbSecrets.username, dbSecrets.password);
+ *     logger.debug('Database secrets loaded', { host: dbSecrets.host });
  *   }
  */
 export function parseSecret(
@@ -50,7 +52,7 @@ export function parseSecret(
       return parsed;
     }
   } catch (error) {
-    console.warn('Failed to parse JSON secret:', error);
+    pinoLogger.warn({ err: error as Error }, 'Failed to parse JSON secret');
   }
 
   return undefined;
@@ -92,7 +94,7 @@ export function getSecretValue(
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'production') {
-        console.error(`Failed to parse JSON secret for ${jsonKey}:`, error);
+        pinoLogger.error({ err: error as Error, jsonKey }, `Failed to parse JSON secret`);
       }
     }
   }
@@ -101,3 +103,4 @@ export function getSecretValue(
   const envVal = process.env[envVarName];
   return envVal;
 }
+

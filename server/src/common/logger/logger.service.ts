@@ -2,7 +2,7 @@
  * Logger Service
  * 
  * Pino ロガーを注入可能にするサービス
- * 各モジュールで使用
+ * ログレベル: TRACE < DEBUG < INFO < WARN < ERROR < FATAL
  */
 
 import { Injectable, Inject } from '@nestjs/common';
@@ -14,10 +14,11 @@ export class LoggerService {
   constructor(@Inject('PINO_LOGGER') private readonly pinoLogger: PinoLogger) {}
 
   /**
-   * Info レベルでログを出力
+   * Trace レベルでログを出力（最詳細）
+   * 用途: 詳細なフロー追跡、パラメータ値などの内部情報
    */
-  info(message: string, metadata?: Record<string, any>) {
-    this.pinoLogger.info(
+  trace(message: string, metadata?: Record<string, any>) {
+    this.pinoLogger.trace(
       {
         traceId: getTraceId(),
         ...metadata,
@@ -28,6 +29,7 @@ export class LoggerService {
 
   /**
    * Debug レベルでログを出力
+   * 用途: 開発時の情報追跡、リクエスト/レスポンス、内部状態
    */
   debug(message: string, metadata?: Record<string, any>) {
     this.pinoLogger.debug(
@@ -40,7 +42,22 @@ export class LoggerService {
   }
 
   /**
+   * Info レベルでログを出力（推奨デフォルト）
+   * 用途: 重要なビジネスロジック、ユーザー操作、正常系の重要な進捗
+   */
+  info(message: string, metadata?: Record<string, any>) {
+    this.pinoLogger.info(
+      {
+        traceId: getTraceId(),
+        ...metadata,
+      },
+      message,
+    );
+  }
+
+  /**
    * Warn レベルでログを出力
+   * 用途: 予期しない状況だが継続可能な状況、非推奨API使用
    */
   warn(message: string, metadata?: Record<string, any>) {
     this.pinoLogger.warn(
@@ -54,6 +71,7 @@ export class LoggerService {
 
   /**
    * Error レベルでログを出力
+   * 用途: 処理失敗、例外、リトライ可能なエラー
    */
   error(message: string, error?: Error | any, metadata?: Record<string, any>) {
     this.pinoLogger.error(
@@ -68,7 +86,8 @@ export class LoggerService {
   }
 
   /**
-   * Fatal レベルでログを出力
+   * Fatal レベルでログを出力（最重大）
+   * 用途: システム停止を伴うエラー、リカバリ不可能なエラー
    */
   fatal(message: string, error?: Error | any, metadata?: Record<string, any>) {
     this.pinoLogger.fatal(
@@ -83,17 +102,18 @@ export class LoggerService {
   }
 
   /**
-   * パフォーマンス計測用ロギング
+   * パフォーマンス計測用ロギング（DEBUG レベル）
+   * 用途: 関数実行時間、クエリ実行時間などの計測
    */
   performance(functionName: string, durationMs: number, metadata?: Record<string, any>) {
-    this.pinoLogger.info(
+    this.pinoLogger.debug(
       {
         traceId: getTraceId(),
         functionName,
         durationMs,
         ...metadata,
       },
-      `[Performance] ${functionName} took ${durationMs}ms`,
+      `⏱️ ${functionName} took ${durationMs}ms`,
     );
   }
 }
