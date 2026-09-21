@@ -53,6 +53,8 @@ async function bootstrap() {
     prefix: 'session:',
   });
 
+  pinoLogger.info('✅ RedisStore created successfully');
+
   const sessionSecret = getSecretValue(process.env.APP_SECRETS, 'session_secret', 'SESSION_SECRET') || 'default-session-secret';
   const cookieSecure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
 

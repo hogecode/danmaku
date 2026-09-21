@@ -118,18 +118,27 @@ export class AuthController {
         throw new Error('Session ID not found');
       }
 
+      this.logger.info('[AUTH] Before session.save()', {
+        sessionId: sessionId.substring(0, 10) + '...',
+        userId: userInfo.id,
+        sessionHasUserId: !!(session as any).userId,
+        sessionKeys: Object.keys(session),
+      });
+
       // ✅ Express Session Store に保存
       await new Promise<void>((resolve, reject) => {
         const sessionWithSave = session as Express.Session & {
           save(callback: (err: Error | null) => void): void;
         };
 
+        this.logger.info('[AUTH] Calling session.save()...');
+
         sessionWithSave.save((err: Error | null) => {
           if (err) {
             this.logger.error('[AUTH] Failed to save session', err);
             reject(err);
           } else {
-            this.logger.debug('[AUTH] Session saved successfully', {
+            this.logger.info('[AUTH] Session saved successfully', {
               sessionId: sessionId.substring(0, 10) + '...',
               userId: userInfo.id,
             });
