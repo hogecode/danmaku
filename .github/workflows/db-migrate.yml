@@ -45,6 +45,18 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Debug AWS credentials
+        run: |
+          echo "🔍 AWS Configuration:"
+          echo "  Region: ${{ secrets.AWS_REGION }}"
+          echo "  Account ID: ${{ secrets.AWS_ACCOUNT_ID }}"
+          echo "  ECR Repo: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}"
+          echo ""
+          echo "🔧 Testing AWS CLI:"
+          aws sts get-caller-identity --no-paginate
+          echo ""
+          echo "✅ AWS CLI works"
+
       - name: Verify image tag exists in ECR
         id: verify-tag
         run: |
@@ -53,25 +65,43 @@ jobs:
           REPO_NAME="${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}"
           REGION="${{ secrets.AWS_REGION }}"
           
+          echo "📌 Looking for: $REPO_NAME:$IMAGE_TAG in $REGION"
+          set -x  # Debug mode
+          
+          # Try to describe all images
+          echo "🔧 Listing all images in repository..."
           IMAGE_INFO=$(aws ecr describe-images \
             --repository-name "$REPO_NAME" \
-            --image-ids "imageTag=$IMAGE_TAG" \
             --region "$REGION" \
-            --output json 2>/dev/null)
+            --output json 2>&1)
           
-          if [ -z "$IMAGE_INFO" ] || [ "$(echo "$IMAGE_INFO" | jq '.imageDetails | length')" -eq 0 ]; then
-            echo "❌ Image tag '$IMAGE_TAG' NOT FOUND in ECR repository '$REPO_NAME'"
-            echo "📋 Available image tags (latest 20):"
-            aws ecr describe-images \
-              --repository-name "$REPO_NAME" \
-              --region "$REGION" \
-              --query 'sort_by(imageDetails, &imagePushedAt)[-20:].imageTags[]' \
-              --output text
+          AWS_EXIT=$?
+          set +x
+          
+          if [ $AWS_EXIT -ne 0 ]; then
+            echo "❌ AWS CLI failed with exit code $AWS_EXIT"
+            echo "Error output:"
+            echo "$IMAGE_INFO"
             exit 1
           fi
           
-          echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "📦 Response received"
+          
+          # Check if tag exists
+          TAG_EXISTS=$(echo "$IMAGE_INFO" | jq --arg TAG "$IMAGE_TAG" '[.imageDetails[] | select(.imageTags[]? == $TAG)] | length')
+          
+          if [ "$TAG_EXISTS" -eq 0 ]; then
+            echo ""
+            echo "❌ Image tag '$IMAGE_TAG' NOT FOUND in ECR repository '$REPO_NAME'"
+            echo "📋 Available image tags (latest 20):"
+            echo "$IMAGE_INFO" | jq -r '.imageDetails | sort_by(.imagePushedAt)[-20:] | .[].imageTags[]' 2>/dev/null | sort -u || echo "  [Unable to parse image tags]"
+            echo ""
+            exit 1
+          fi
+          
+          echo ""
           echo "✅ Image verified: $REPO_NAME:$IMAGE_TAG"
+          echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: 🔄 Dry-Run Migration
         run: |
