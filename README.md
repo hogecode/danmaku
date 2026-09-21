@@ -37,7 +37,7 @@ https://danmaku.cloud
 | **desktop** | Flutter + Custom Video Player |
 | **Backend** | NestJS + Node.js |
 | **CDN** | Cloudflare |
-| **Infra** | AWS ECS Fargate + ALB |
+| **Infra** | AWS ECS Fargate + ALB + terraform |
 | **CI/CD** | GitHub Actions |
 | **Reverse Proxy** | Caddy |
 | **Container Orchestration** | Docker Compose (dev) / ECS Fargate (prod) |

@@ -41,17 +41,17 @@ run-android-local: ## ローカルで Android ビルド実行
 tf.init:
 	cd infra/terraform && terraform init -input=false
 
-.PHONY: tf.plan.dev
-tf.plan.dev: ## Dev環境のTerraform計画を実行
-	@echo "Running Terraform plan for dev environment..."
-	@cd infra/terraform && terraform plan -var-file="environments/dev.tfvars" -out=tfplan
+.PHONY: tf.plan.prod
+tf.plan.prod: ## Prod環境のTerraform計画を実行
+	@echo "Running Terraform plan for prod environment..."
+	@cd infra/terraform && terraform plan -var-file="environments/prod.tfvars" -out=tfplan
 
-.PHONY: tf.apply.dev
-tf.apply.dev: ## Dev環境のTerraform変更を適用
-	@echo "Applying Terraform changes for dev environment..."
+.PHONY: tf.apply.prod
+tf.apply.prod: ## Prod環境のTerraform変更を適用
+	@echo "Applying Terraform changes for prod environment..."
 	@cd infra/terraform && terraform apply tfplan
 
-.PHONY: tf.destroy.dev
-tf.destroy.dev: ## Dev環境のTerraformリソースを破棄
-	@echo "Destroying Terraform resources for dev environment..."
-	@cd infra/terraform && terraform destroy -var-file="environments/dev.tfvars" -auto-approve
+.PHONY: tf.destroy.prod
+tf.destroy.prod: ## Prod環境のTerraformリソースを破棄
+	@echo "Destroying Terraform resources for prod environment..."
+	@cd infra/terraform && terraform destroy -var-file="environments/prod.tfvars" -auto-approve

@@ -66,8 +66,25 @@ jobs:
             --query 'taskDefinition' \
             --output json)
           
-          NEW_TASK_DEF=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "$NEXTJS_REPO_URI" \
-            '.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
+          NEW_TASK_DEF=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "$NEXTJS_REPO_URI" '{
+            family: .family,
+            networkMode: .networkMode,
+            containerDefinitions: [.containerDefinitions[0] | .image = $IMAGE] + .containerDefinitions[1:],
+            volumes: .volumes,
+            placementConstraints: .placementConstraints,
+            requiresCompatibilities: .requiresCompatibilities,
+            cpu: .cpu,
+            memory: .memory,
+            tags: .tags,
+            pidMode: .pidMode,
+            ipcMode: .ipcMode,
+            proxyConfiguration: .proxyConfiguration,
+            inferenceAccelerators: .inferenceAccelerators,
+            ephemeralStorage: .ephemeralStorage,
+            runtimePlatform: .runtimePlatform,
+            taskRoleArn: .taskRoleArn,
+            executionRoleArn: .executionRoleArn
+          }')
           
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
             --cli-input-json "$(echo "$NEW_TASK_DEF" | jq -c .)" \
@@ -104,8 +121,25 @@ jobs:
             --query 'taskDefinition' \
             --output json)
           
-          NEW_TASK_DEF=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "$NESTJS_REPO_URI" \
-            '.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
+          NEW_TASK_DEF=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "$NESTJS_REPO_URI" '{
+            family: .family,
+            networkMode: .networkMode,
+            containerDefinitions: [.containerDefinitions[0] | .image = $IMAGE] + .containerDefinitions[1:],
+            volumes: .volumes,
+            placementConstraints: .placementConstraints,
+            requiresCompatibilities: .requiresCompatibilities,
+            cpu: .cpu,
+            memory: .memory,
+            tags: .tags,
+            pidMode: .pidMode,
+            ipcMode: .ipcMode,
+            proxyConfiguration: .proxyConfiguration,
+            inferenceAccelerators: .inferenceAccelerators,
+            ephemeralStorage: .ephemeralStorage,
+            runtimePlatform: .runtimePlatform,
+            taskRoleArn: .taskRoleArn,
+            executionRoleArn: .executionRoleArn
+          }')
           
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
             --cli-input-json "$(echo "$NEW_TASK_DEF" | jq -c .)" \
