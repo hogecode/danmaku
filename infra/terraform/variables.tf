@@ -579,3 +579,76 @@ variable "github_oidc_subject_claim" {
     error_message = "GitHub OIDC subject claim must start with 'repo:' (e.g., 'repo:owner/repo:*')."
   }
 }
+
+# ========================================
+# Cloudflare Configuration
+# ========================================
+
+variable "cloudflare_api_token" {
+  description = "Cloudflare API Token for managing DNS, SSL, and CDN settings"
+  type        = string
+  sensitive   = true
+  default     = ""
+
+  validation {
+    condition     = var.cloudflare_api_token == "" || length(var.cloudflare_api_token) > 20
+    error_message = "Cloudflare API Token must be valid or empty string"
+  }
+}
+
+variable "cloudflare_account_id" {
+  description = "Cloudflare Account ID (for Logpush and advanced features)"
+  type        = string
+  default     = ""
+}
+
+variable "enable_cloudflare" {
+  description = "Enable Cloudflare CDN and DNS management"
+  type        = bool
+  default     = true
+}
+
+variable "cloudflare_ssl_mode" {
+  description = "Cloudflare SSL/TLS mode (flexible, full, full_strict)"
+  type        = string
+  default     = "full"
+
+  validation {
+    condition     = contains(["flexible", "full", "full_strict"], var.cloudflare_ssl_mode)
+    error_message = "SSL mode must be flexible, full, or full_strict"
+  }
+}
+
+variable "cloudflare_security_level" {
+  description = "Cloudflare security level (essentially_off, low, medium, high, under_attack)"
+  type        = string
+  default     = "high"
+
+  validation {
+    condition     = contains(["essentially_off", "low", "medium", "high", "under_attack"], var.cloudflare_security_level)
+    error_message = "Security level must be valid"
+  }
+}
+
+variable "enable_cloudflare_minify" {
+  description = "Enable automatic minification of CSS/JS/HTML via Cloudflare"
+  type        = bool
+  default     = true
+}
+
+variable "enable_cloudflare_rate_limiting" {
+  description = "Enable Cloudflare rate limiting rules"
+  type        = bool
+  default     = true
+}
+
+variable "cloudflare_cache_ttl" {
+  description = "Cloudflare browser cache TTL in seconds"
+  type        = number
+  default     = 1800
+
+  validation {
+    condition     = var.cloudflare_cache_ttl >= 0 && var.cloudflare_cache_ttl <= 31536000
+    error_message = "Cache TTL must be between 0 and 31536000 seconds"
+  }
+}

@@ -238,7 +238,38 @@ output "github_secrets_json" {
     ECS_NEXTJS_SERVICE_NAME       = module.ecs.nextjs_service_name
     ECS_NESTJS_SERVICE_NAME       = module.ecs.nestjs_service_name
   })
-  sensitive = false
+}
+
+# ========================================
+# Phase 8: Cloudflare Outputs
+# ========================================
+
+output "cloudflare_zone_id" {
+  description = "Cloudflare Zone ID (if Cloudflare is enabled)"
+  value       = try(module.cloudflare[0].zone_id, null)
+}
+
+output "cloudflare_nameservers" {
+  description = "Cloudflare nameservers to configure at domain registrar"
+  value       = try(module.cloudflare[0].nameservers, null)
+}
+
+output "cloudflare_dns_records" {
+  description = "Cloudflare DNS records (ALB CNAME)"
+  value = try({
+    main = module.cloudflare[0].alb_cname_record
+    www  = module.cloudflare[0].www_cname_record
+  }, null)
+}
+
+output "cloudflare_configuration" {
+  description = "Cloudflare configuration summary"
+  value = try({
+    ssl                = module.cloudflare[0].ssl_configuration
+    security           = module.cloudflare[0].security_configuration
+    caching            = module.cloudflare[0].caching_configuration
+    performance        = module.cloudflare[0].performance_configuration
+  }, null)
 }
 
 output "github_secrets_table" {

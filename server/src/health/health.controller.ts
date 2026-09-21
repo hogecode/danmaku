@@ -13,7 +13,7 @@ interface HealthResponse {
   message?: string;
 }
 
-@Controller('health')
+@Controller('api/health')
 export class HealthController {
   constructor(
     @Inject(DATABASE_CONNECTION) private readonly db: Database,

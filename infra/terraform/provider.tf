@@ -1,5 +1,3 @@
-
-
 provider "aws" {
   region = var.aws_region
 
@@ -8,4 +6,8 @@ provider "aws" {
       local.common_tags
     )
   }
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
 }

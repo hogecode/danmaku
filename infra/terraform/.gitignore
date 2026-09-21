@@ -14,6 +14,9 @@ crash.*.log
 *.tfvars.json
 !*.tfvars.sample
 !example.tfvars
+!environments/*.tfvars.sample
+!environments/dev.tfvars
+!environments/prod.tfvars
 
 # Ignore override files, as they are usually used for temporary workspaces
 override.tf
