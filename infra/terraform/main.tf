@@ -472,6 +472,7 @@ module "cicd" {
 # ========================================
 # Phase 8: Cloudflare CDN & DNS Management
 # ========================================
+/*
 module "cloudflare" {
   count  = var.enable_cloudflare && var.cloudflare_api_token != "" ? 1 : 0
   source = "./modules/cdn/cloudflare"
@@ -503,3 +504,4 @@ module "cloudflare" {
   depends_on = [module.alb]
 }
 
+*/

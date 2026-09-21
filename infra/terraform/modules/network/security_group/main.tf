@@ -87,8 +87,8 @@ module "nestjs_sg" {
 
   ingress_with_source_security_group_id = [
     {
-      from_port                = 8080
-      to_port                  = 8080
+      from_port                = 3001
+      to_port                  = 3001
       protocol                 = "tcp"
       source_security_group_id = module.alb_public_sg.security_group_id
       description              = "HTTP from Public ALB"

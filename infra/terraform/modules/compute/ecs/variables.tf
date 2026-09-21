@@ -165,9 +165,9 @@ variable "nestjs_task_memory" {
 }
 
 variable "nestjs_container_port" {
-  description = "Container port for Go server"
+  description = "Container port for NestJS server"
   type        = number
-  default     = 8080
+  default     = 3001
 }
 
 variable "nestjs_image_tag" {

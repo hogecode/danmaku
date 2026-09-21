@@ -243,6 +243,7 @@ output "github_secrets_json" {
 # ========================================
 # Phase 8: Cloudflare Outputs
 # ========================================
+/*
 
 output "cloudflare_zone_id" {
   description = "Cloudflare Zone ID (if Cloudflare is enabled)"
@@ -328,3 +329,4 @@ output "ecs_nestjs_service_name_value" {
 }
 
 
+*/

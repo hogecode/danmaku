@@ -72,16 +72,16 @@ module "public_alb" {
     nestjs-blue = {
       name             = "${var.project_name}-nestjs-blue-${var.environment}"
       backend_protocol = "HTTP"
-      backend_port     = 8080
+      backend_port     = 3001
       target_type      = "ip"
       create_attachment = false
       health_check = {
-        healthy_threshold   = 2
+        healthy_threshold   = 3
         unhealthy_threshold = 3
-        timeout             = 5
+        timeout             = 10
         interval            = 30
         path                = "/api/health"
-        matcher             = "200-399"
+        matcher             = "200"
       }
       stickiness = {
         type            = "lb_cookie"

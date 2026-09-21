@@ -61,12 +61,20 @@ nestjs_max_capacity  = 5    # Maximum for auto-scaling
 # Note: Database and Redis credentials are injected from AWS Secrets Manager
 nestjs_environment_variables = [
   {
+    name  = "NODE_ENV"
+    value = "production"
+  },
+  {
     name  = "LOG_LEVEL"
     value = "info"
   },
   {
-    name  = "NODE_ENV"
-    value = "production"
+    name  = "PORT"
+    value = "3001"
+  },
+  {
+    name  = "API_BASE_URL"
+    value = "https://danmaku.cloud/api"
   }
 ]
 nestjs_secrets = []

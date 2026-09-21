@@ -29,7 +29,16 @@ nestjs_task_memory       = 512
 nestjs_desired_count     = 1
 nestjs_min_capacity      = 1
 nestjs_max_capacity      = 2
-nestjs_environment_variables = []
+nestjs_environment_variables = [
+  {
+    name  = "PORT"
+    value = "3001"
+  },
+  {
+    name  = "NODE_ENV"
+    value = "development"
+  }
+]
 nestjs_secrets           = []
 
 rds_engine                = "postgres"
