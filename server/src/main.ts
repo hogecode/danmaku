@@ -257,8 +257,18 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  // Generate OpenAPI YAML file at startup
-  await generateOpenAPIYaml(app, 'openapi.yaml');
+  // Generate OpenAPI YAML file at startup (only in development)
+  // In production, file system writes are restricted due to non-root user
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      await generateOpenAPIYaml(app, 'openapi.yaml');
+      console.log('✅ OpenAPI YAML generated successfully');
+    } catch (error) {
+      console.warn('⚠️ Failed to generate OpenAPI YAML:', error);
+    }
+  } else {
+    console.log('⏭️ Skipping OpenAPI YAML generation in production environment');
+  }
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
