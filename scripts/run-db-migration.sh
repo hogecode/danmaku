@@ -79,7 +79,7 @@ NEW_TASK_DEF=$(echo "$TASK_DEF" | jq \
        }
      ]
    else
-     .containerDefinitions[0].secrets
+     .
    end')
 
 echo "📝 Filtered task definition for registration:"
