@@ -64,8 +64,8 @@ resource "cloudflare_zone_settings_override" "main" {
     security_level = var.security_level // essentially_off, low, medium, high, under_attack
 
     # Caching
-    cache_level       = var.cache_level
-    browser_cache_ttl = var.browser_cache_ttl
+    cache_level       = var.cache_level // "bypass", "basic", "simplified", "aggressive", "cache_everything"
+    browser_cache_ttl = var.browser_cache_ttl // 1800 seconds (30 minutes)
     always_online     = var.environment == "prod" ? "on" : "off"
 
     # Performance
@@ -75,11 +75,11 @@ resource "cloudflare_zone_settings_override" "main" {
       js   = var.enable_minify
     }
 
-    rocket_loader      = var.enable_rocket_loader ? "on" : "off"
+    rocket_loader      = var.enable_rocket_loader ? "on" : "off" // Rocket Loader for asynchronous JavaScript loading
     brotli             = "on" // brotli compression
     email_obfuscation  = "on" //メールアドレスの難読化
-    hotlink_protection = var.enable_hotlink_protection ? "on" : "off"
-    development_mode   = var.development_mode ? "on" : "off"
+    hotlink_protection = var.enable_hotlink_protection ? "on" : "off" // Hotlink protection for images and other assets
+    development_mode   = var.development_mode ? "on" : "off" // Development mode for bypassing cache during development
   }
 
   depends_on = [data.cloudflare_zone.main]
@@ -102,7 +102,7 @@ resource "cloudflare_cache_rule" "cache_assets" {
 
   actions {
     cache {
-      default_ttl = 604800
+      default_ttl = 604800 // 7 days in seconds
     }
   }
 
@@ -118,7 +118,7 @@ resource "cloudflare_cache_rule" "no_cache_api" {
 
   actions {
     cache {
-      default_ttl = 0
+      default_ttl = 0 // Bypass cache for API endpoints
     }
   }
 

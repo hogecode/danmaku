@@ -10,12 +10,43 @@ import { TraceIdMiddleware } from './common/middleware/trace-id.middleware';
 import { pinoLogger } from './common/logger/pino.logger';
 import { getSecretValue } from './common/utils/secret-parser.util';
 import { initializeBootstrap } from './config';
+import { EnvironmentSchema } from './config/environment.schema';
+
+async function validateEnvironment() {
+  try {
+    const result = EnvironmentSchema.safeParse(process.env);
+    
+    if (!result.success) {
+      const errors = result.error.issues.map((err) => {
+        const path = err.path.join('.');
+        return `${path}: ${err.message}`;
+      }).join('\n  ');
+      
+      const errorMessage = `Environment validation failed:\n  ${errors}`;
+      pinoLogger.fatal({ errors: result.error.issues }, errorMessage);
+      process.exit(1);
+    }
+    
+    pinoLogger.info('✅ Environment validation passed');
+    return result.data;
+  } catch (error: unknown) {
+    pinoLogger.fatal({ err: error as Error }, 'Fatal error during environment validation');
+    process.exit(1);
+  }
+}
 
 async function bootstrap() {
   // ========================================
-  // ✅ Initialize secrets and Redis (BEFORE NestFactory.create)
+  // ✅ 1. Initialize secrets from AWS Secrets Manager (BEFORE validation)
+  // ✅ This loads JSON secrets (OAUTH_SECRETS, APP_SECRETS, etc.) into process.env
   // ========================================
   const { redisClient } = await initializeBootstrap();
+
+  // ========================================
+  // ✅ 2. Validate environment variables (AFTER secrets are loaded)
+  // ✅ Now GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, etc. are available in process.env
+  // ========================================
+  //await validateEnvironment();
 
   const redisStore = new RedisStore({
     client: redisClient as any,

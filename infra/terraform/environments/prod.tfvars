@@ -58,25 +58,199 @@ nestjs_min_capacity  = 1    # Minimum for auto-scaling
 nestjs_max_capacity  = 5    # Maximum for auto-scaling
 
 # NestJS Environment Variables
-# Note: Database and Redis credentials are injected from AWS Secrets Manager
+# ========================================
+# IMPORTANT: 
+# - Database & Redis credentials → AWS Secrets Manager (see secrets below)
+# - OAuth Client ID/Secret → AWS Secrets Manager (see secrets below)
+# - App Secrets (JWT, SESSION, ENCRYPTION) → AWS Secrets Manager (see secrets below)
+# - All other config → Environment Variables below
+# ========================================
+
 nestjs_environment_variables = [
+  # ========================================
+  # 1. Node.js & Logging Configuration
+  # ========================================
   {
     name  = "NODE_ENV"
     value = "production"
-  },
-  {
-    name  = "LOG_LEVEL"
-    value = "info"
   },
   {
     name  = "PORT"
     value = "3001"
   },
   {
-    name  = "API_BASE_URL"
-    value = "https://danmaku.cloud/api"
+    name  = "LOG_LEVEL"
+    value = "info"
+  },
+  {
+    name  = "LOG_FORMAT"
+    value = "json"
+  },
+  
+  # ========================================
+  # 2. CORS & Security
+  # ========================================
+  {
+    name  = "CORS_ORIGIN"
+    value = "https://danmaku.cloud"
+  },
+  {
+    name  = "CORS_CREDENTIALS"
+    value = "true"
+  },
+  {
+    name  = "COOKIE_SECURE"
+    value = "true"
+  },
+  
+  # ========================================
+  # 3. Frontend & Callback URLs
+  # ========================================
+  {
+    name  = "FRONTEND_URL"
+    value = "https://danmaku.cloud"
+  },
+  {
+    name  = "MOBILE_CALLBACK_URL"
+    value = "danmaku://auth/callback"
+  },
+  
+  # ========================================
+  # 4. JWT & Session Configuration
+  # ========================================
+  {
+    name  = "JWT_ACCESS_EXPIRATION"
+    value = "15m"
+  },
+  {
+    name  = "JWT_REFRESH_EXPIRATION"
+    value = "7d"
+  },
+  {
+    name  = "JWT_ALGORITHM"
+    value = "HS256"
+  },
+  {
+    name  = "SESSION_TTL"
+    value = "86400"
+  },
+  
+  # ========================================
+  # 5. OAuth Provider Configuration
+  # ========================================
+  {
+    name  = "GOOGLE_OAUTH_ENABLED"
+    value = "true"
+  },
+  {
+    name  = "GOOGLE_REDIRECT_URI"
+    value = "https://danmaku.cloud/api/auth/callback/google"
+  },
+  {
+    name  = "GOOGLE_DRIVE_REDIRECT_URI"
+    value = "https://danmaku.cloud/api/drive-connections/google/callback"
+  },
+  {
+    name  = "GOOGLE_SCOPES"
+    value = "openid email profile https://www.googleapis.com/auth/drive"
+  },
+  {
+    name  = "ONEDRIVE_OAUTH_ENABLED"
+    value = "false"
+  },
+  {
+    name  = "ONEDRIVE_REDIRECT_URI"
+    value = "https://danmaku.cloud/api/auth/callback/onedrive"
+  },
+  {
+    name  = "ONEDRIVE_SCOPES"
+    value = "openid,email,profile,Files.Read,offline_access"
+  },
+  
+  # ========================================
+  # 6. Encryption Configuration
+  # ========================================
+  {
+    name  = "ENCRYPTION_ALGORITHM"
+    value = "aes-256-gcm"
+  },
+  
+  # ========================================
+  # 7. File Storage & Screenshots
+  # ========================================
+  {
+    name  = "STORAGE_PATH"
+    value = "./uploads"
+  },
+  {
+    name  = "SCREENSHOT_MAX_SIZE"
+    value = "5242880"
+  },
+  {
+    name  = "SCREENSHOT_QUALITY"
+    value = "90"
+  },
+  
+  # ========================================
+  # 8. Rate Limiting
+  # ========================================
+  {
+    name  = "RATE_LIMIT_WINDOW"
+    value = "900000"
+  },
+  {
+    name  = "RATE_LIMIT_MAX_REQUESTS"
+    value = "100"
+  },
+  
+  # ========================================
+  # 9. Feature Flags
+  # ========================================
+  {
+    name  = "ENABLE_LOCAL_AUTH"
+    value = "true"
+  },
+  {
+    name  = "ENABLE_OAUTH_GOOGLE"
+    value = "true"
+  },
+  {
+    name  = "ENABLE_OAUTH_ONEDRIVE"
+    value = "false"
+  },
+  {
+    name  = "ENABLE_SCREENSHOTS"
+    value = "true"
+  },
+  {
+    name  = "ENABLE_PLAYLISTS"
+    value = "true"
+  },
+  {
+    name  = "ENABLE_COMMENTS"
+    value = "true"
   }
 ]
+
+# ========================================
+# AWS Account ID (Required for Secrets Manager ARN)
+# ========================================
+# Set your AWS Account ID here
+# Example: aws sts get-caller-identity --query Account --output text
+aws_account_id = "885545925004"
+
+# ========================================
+# NestJS Secrets (AWS Secrets Manager)
+# ========================================
+# IMPORTANT: All secrets are automatically injected from Secrets Manager in main.tf
+# DO NOT put secret values here - they are auto-added based on:
+#   - rds_master_user_secret_arn → DB_CREDENTIALS
+#   - redis_credentials_secret_arn → REDIS_CREDENTIALS
+#   - app_secrets_secret_arn → APP_SECRETS
+#   - oauth_secrets_secret_arn → OAUTH_SECRETS
+#
+# This variable is kept for custom/additional secrets if needed
+# ========================================
 nestjs_secrets = []
 
 # RDS Database

@@ -538,15 +538,6 @@ variable "nestjs_environment_variables" {
   default = []
 }
 
-variable "nestjs_secrets" {
-  description = "Secrets from AWS Secrets Manager for NestJS container"
-  type = list(object({
-    name      = string
-    valueFrom = string
-  }))
-  default = []
-}
-
 # ========================================
 # AWS Secrets Manager Configuration
 # ========================================
@@ -652,3 +643,33 @@ variable "cloudflare_cache_ttl" {
     error_message = "Cache TTL must be between 0 and 31536000 seconds"
   }
 }
+
+# ========================================
+# AWS Secrets Manager Configuration
+# ========================================
+
+variable "aws_account_id" {
+  description = "AWS Account ID for constructing Secrets Manager ARNs"
+  type        = string
+  
+  validation {
+    condition     = can(regex("^\\d{12}$", var.aws_account_id))
+    error_message = "AWS Account ID must be a 12-digit number"
+  }
+}
+
+# ========================================
+# NestJS Secrets Configuration
+# ========================================
+
+variable "nestjs_secrets" {
+  description = "NestJS secrets to inject from AWS Secrets Manager"
+  type = list(object({
+    name      = string
+    valueFrom = string
+  }))
+  default = []
+}
+
+
+

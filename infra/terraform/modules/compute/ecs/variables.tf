@@ -192,7 +192,7 @@ variable "nestjs_environment_variables" {
 }
 
 variable "nestjs_secrets" {
-  description = "Secrets from Secrets Manager for Go server container"
+  description = "NestJS secrets to inject from AWS Secrets Manager"
   type = list(object({
     name      = string
     valueFrom = string
@@ -317,4 +317,16 @@ variable "oauth_secrets_secret_arn" {
   type        = string
   default     = ""
 }
+
+variable "aws_account_id" {
+  description = "AWS Account ID for constructing Secrets Manager ARNs"
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.aws_account_id == "" || can(regex("^\\d{12}$", var.aws_account_id))
+    error_message = "AWS Account ID must be a 12-digit number or empty string"
+  }
+}
+
 

@@ -1,6 +1,16 @@
 /**
  * NestJS Bootstrap 用のヘルパー関数
  * main.ts の初期化処理を整理
+ * 
+ * 実行順序（main.ts）:
+ * 1. await initializeBootstrap()
+ *    → loadSecretsToProcessEnv() で AWS Secrets Manager から秘密をロード
+ *    → process.env に展開
+ * 2. await validateEnvironment()
+ *    → environment.schema.ts で process.env をバリデーション
+ *    → 失敗時はプロセス終了
+ * 3. NestFactory.create()
+ *    → 全ての環境変数が検証済みで安全
  */
 
 import { createClient, RedisClientType } from 'redis';

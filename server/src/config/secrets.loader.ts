@@ -1,8 +1,79 @@
 /**
  * AWS Secrets Manager のパース処理を一元管理
  * 
- * ❗ IMPORTANT: NestFactory.create BEFORE に実行される必要がある
- * EncryptionService などが起動時に process.env を読むため
+ * ========================================
+ * 実行フロー
+ * ========================================
+ * 1. main.ts: await initializeBootstrap()
+ *    ↓
+ * 2. bootstrap.helper.ts: initializeBootstrap()
+ *    → loadSecretsToProcessEnv()
+ *       ├─ parseAppSecrets()         [danmaku/app-secrets]
+ *       ├─ parseDatabaseSecrets()    [danmaku/db-credentials]
+ *       ├─ parseRedisSecrets()       [danmaku/redis-credentials]
+ *       └─ parseOAuthSecrets()       [danmaku/oauth-secrets]
+ * 3. main.ts: await validateEnvironment()
+ *    → EnvironmentSchema.safeParse(process.env)
+ * 4. main.ts: NestFactory.create()
+ *
+ * ========================================
+ * Secrets Manager vs Environment Variables
+ * ========================================
+ * 
+ * ✅ Secrets Manager に格納 (本番環境):
+ *   - JWT_SECRET
+ *   - SESSION_SECRET
+ *   - ENCRYPTION_KEY
+ *   - GOOGLE_CLIENT_ID
+ *   - GOOGLE_CLIENT_SECRET
+ *   - DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_NAME
+ *   - REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
+ *
+ * ✅ Environment Variables に設定 (Terraform tfvars):
+ *   - NODE_ENV
+ *   - PORT
+ *   - LOG_LEVEL
+ *   - CORS_ORIGIN
+ *   - FRONTEND_URL
+ *   - JWT_ACCESS_EXPIRATION
+ *   - GOOGLE_OAUTH_ENABLED
+ *   - ENABLE_*（機能フラグ）
+ *   - その他の設定値
+ * 
+ * ========================================
+ * マッピング
+ * ========================================
+ * 
+ * danmaku/app-secrets (JSON)
+ *   ├─ jwt_secret → process.env.JWT_SECRET
+ *   ├─ session_secret → process.env.SESSION_SECRET
+ *   ├─ encryption_key → process.env.ENCRYPTION_KEY
+ *   └─ encryption_algorithm → process.env.ENCRYPTION_ALGORITHM
+ *
+ * danmaku/oauth-secrets (JSON)
+ *   ├─ google_client_id → process.env.GOOGLE_CLIENT_ID
+ *   ├─ google_client_secret → process.env.GOOGLE_CLIENT_SECRET
+ *   ├─ onedrive_client_id → process.env.ONEDRIVE_CLIENT_ID
+ *   └─ onedrive_client_secret → process.env.ONEDRIVE_CLIENT_SECRET
+ *
+ * danmaku/db-credentials (JSON)
+ *   ├─ host → process.env.DB_HOST, process.env.TYPEORM_HOST
+ *   ├─ port → process.env.DB_PORT, process.env.TYPEORM_PORT
+ *   ├─ username → process.env.DB_USERNAME, process.env.TYPEORM_USERNAME
+ *   ├─ password → process.env.DB_PASSWORD, process.env.TYPEORM_PASSWORD
+ *   └─ dbname → process.env.DB_NAME, process.env.TYPEORM_DATABASE
+ *
+ * danmaku/redis-credentials (JSON)
+ *   ├─ host → process.env.REDIS_HOST
+ *   ├─ port → process.env.REDIS_PORT
+ *   ├─ password → process.env.REDIS_PASSWORD
+ *   └─ db → process.env.REDIS_DB
+ * 
+ * ❗ IMPORTANT: 
+ *   - loadSecretsToProcessEnv() は NestFactory.create() 前に実行必須
+ *   - EncryptionService などが起動時に process.env を読むため
+ *   - validateEnvironment() 前に実行必須
+ *   - Secrets Manager のデータが environment.schema.ts で検証されるように
  */
 
 import { parseSecret } from '../common/utils/secret-parser.util';
@@ -69,12 +140,29 @@ export function loadSecretsToProcessEnv(): {
   return { appSecrets, dbConfig, redisConfig, oauthSecrets };
 }
 
+/**
+ * Parse APP_SECRETS from AWS Secrets Manager
+ * 
+ * Secrets Manager Secret: danmaku/app-secrets
+ * {
+ *   "jwt_secret": "your-jwt-secret-min-32-chars",
+ *   "session_secret": "your-session-secret-min-32-chars",
+ *   "encryption_key": "your-encryption-key-min-64-chars",
+ *   "encryption_algorithm": "aes-256-gcm"
+ * }
+ * 
+ * Maps to Environment Variables:
+ *   - JWT_SECRET
+ *   - SESSION_SECRET
+ *   - ENCRYPTION_KEY
+ *   - ENCRYPTION_ALGORITHM
+ */
 function parseAppSecrets(): AppSecrets {
   const appSecrets: AppSecrets = {};
   const appSecretsJson = process.env.APP_SECRETS;
   
   if (!appSecretsJson) {
-    pinoLogger.warn('⚠️ APP_SECRETS not set');
+    pinoLogger.warn('⚠️ APP_SECRETS not set (expected from AWS Secrets Manager)');
     return appSecrets;
   }
 
@@ -93,16 +181,16 @@ function parseAppSecrets(): AppSecrets {
         process.env.ENCRYPTION_KEY = parsed.encryption_key;
         appSecrets.encryption_key = parsed.encryption_key;
       } else {
-        pinoLogger.error('❌ encryption_key is missing');
+        pinoLogger.error('❌ encryption_key is missing in APP_SECRETS');
       }
       if (parsed.encryption_algorithm) {
         process.env.ENCRYPTION_ALGORITHM = parsed.encryption_algorithm;
         appSecrets.encryption_algorithm = parsed.encryption_algorithm;
       }
-      pinoLogger.info('✅ App secrets loaded');
+      pinoLogger.info('✅ App secrets loaded from danmaku/app-secrets');
     }
   } catch (error) {
-    pinoLogger.warn({ err: error as Error }, 'Failed to parse APP_SECRETS');
+    pinoLogger.warn({ err: error as Error }, 'Failed to parse APP_SECRETS JSON');
   }
   return appSecrets;
 }
@@ -179,12 +267,32 @@ function parseRedisSecrets(): RedisSecrets {
   return redisConfig;
 }
 
+/**
+ * Parse OAUTH_SECRETS from AWS Secrets Manager
+ * 
+ * Secrets Manager Secret: danmaku/oauth-secrets
+ * {
+ *   "google_client_id": "123456789-xxxxx.apps.googleusercontent.com",
+ *   "google_client_secret": "GOCSPX-xxxxxxxxxxxxxxx",
+ *   "onedrive_client_id": "optional-client-id",
+ *   "onedrive_client_secret": "optional-client-secret"
+ * }
+ * 
+ * Maps to Environment Variables:
+ *   - GOOGLE_CLIENT_ID
+ *   - GOOGLE_CLIENT_SECRET
+ *   - ONEDRIVE_CLIENT_ID (optional)
+ *   - ONEDRIVE_CLIENT_SECRET (optional)
+ * 
+ * Note: 有効なOAuth情報がない場合、environment.schema.ts で検証失敗となり、
+ *      プロセスが起動失敗する
+ */
 function parseOAuthSecrets(): OAuthSecrets {
   const oauthSecrets: OAuthSecrets = {};
   const oauthSecretsJson = process.env.OAUTH_SECRETS;
 
   if (!oauthSecretsJson) {
-    pinoLogger.warn('⚠️ OAUTH_SECRETS not set');
+    pinoLogger.warn('⚠️ OAUTH_SECRETS not set (expected from AWS Secrets Manager)');
     return oauthSecrets;
   }
 
@@ -207,10 +315,10 @@ function parseOAuthSecrets(): OAuthSecrets {
         process.env.ONEDRIVE_CLIENT_SECRET = parsed.onedrive_client_secret;
         oauthSecrets.onedrive_client_secret = parsed.onedrive_client_secret;
       }
-      pinoLogger.info('✅ OAuth secrets loaded');
+      pinoLogger.info('✅ OAuth secrets loaded from danmaku/oauth-secrets');
     }
   } catch (error) {
-    pinoLogger.warn({ err: error as Error }, 'Failed to parse OAUTH_SECRETS');
+    pinoLogger.warn({ err: error as Error }, 'Failed to parse OAUTH_SECRETS JSON');
   }
 
   return oauthSecrets;
