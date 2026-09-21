@@ -4,7 +4,7 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class EncryptionService {
-  private readonly algorithm = 'aes-256-cbc';
+  private readonly algorithm: string;
   private readonly encryptionKey: Buffer;
   private readonly iv: Buffer;
 
@@ -20,6 +20,9 @@ export class EncryptionService {
       );
     }
     this.encryptionKey = Buffer.from(keyString, 'hex');
+
+    // アルゴリズムを環境変数から取得（デフォルト: aes-256-cbc）
+    this.algorithm = process.env.ENCRYPTION_ALGORITHM || this.configService.get<string>('ENCRYPTION_ALGORITHM') || 'aes-256-cbc';
 
     // IV は暗号化時に生成、復号時に暗号文から抽出
     // 固定 IV は使用しない（セキュリティ上の問題）
