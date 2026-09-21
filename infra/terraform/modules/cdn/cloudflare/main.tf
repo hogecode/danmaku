@@ -44,6 +44,7 @@ resource "cloudflare_record" "www" {
   comment = "WWW subdomain"
 }
 
+
 # ========================================
 # Zone Settings - SSL/TLS & Security
 # ========================================
@@ -53,14 +54,14 @@ resource "cloudflare_zone_settings_override" "main" {
 
   settings {
     # SSL/TLS
-    ssl                      = var.ssl_mode
-    min_tls_version          = var.min_tls_version
+    ssl                      = var.ssl_mode // flexible, full, full_strict
+    min_tls_version          = var.min_tls_version // "1.0", "1.1", "1.2", "1.3"
     tls_1_3                  = "on"
     automatic_https_rewrites = "on"
     always_use_https         = "on"
 
     # Security
-    security_level = var.security_level
+    security_level = var.security_level // essentially_off, low, medium, high, under_attack
 
     # Caching
     cache_level       = var.cache_level
@@ -75,9 +76,8 @@ resource "cloudflare_zone_settings_override" "main" {
     }
 
     rocket_loader      = var.enable_rocket_loader ? "on" : "off"
-    brotli             = "on"
-    gzip               = "on"
-    email_obfuscation  = "on"
+    brotli             = "on" // brotli compression
+    email_obfuscation  = "on" //メールアドレスの難読化
     hotlink_protection = var.enable_hotlink_protection ? "on" : "off"
     development_mode   = var.development_mode ? "on" : "off"
   }

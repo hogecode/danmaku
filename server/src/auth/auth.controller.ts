@@ -52,7 +52,20 @@ export class AuthController {
   async loginWithProvider(
     @Param('provider') provider: ProviderType,
   ): Promise<LoginResponseDto> {
-    return await this.tokenService.generateAuthorizationUrl(provider);
+    try {
+      const result = await this.tokenService.generateAuthorizationUrl(provider);
+      this.logger.debug(`[AUTH] Authorization URL generated for ${provider}`, {
+        stateExpiry: result.expires_in,
+      });
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `[AUTH] Failed to generate authorization URL for ${provider}`,
+        error as Error,
+        { provider }
+      );
+      throw new BadRequestException('Failed to initiate login');
+    }
   }
 
   
