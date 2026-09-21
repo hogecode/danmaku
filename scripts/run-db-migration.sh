@@ -83,10 +83,10 @@ NEW_TASK_DEF=$(echo "$TASK_DEF" | jq \
    end')
 
 echo "📝 Filtered task definition for registration:"
-echo "$NEW_TASK_DEF" | jq 'keys'
+echo "$NEW_TASK_DEF" | jq '{family, networkMode, requiresCompatibilities: .requiresCompatibilities, cpu, memory, containerDefinitions: [.containerDefinitions[] | {name, image, memory}]}'
 
 NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
-  --cli-input-json "$(echo "$NEW_TASK_DEF" | jq -c .)" \
+  --cli-input-json "$NEW_TASK_DEF" \
   --region "$AWS_REGION" \
   --query 'taskDefinition.taskDefinitionArn' \
   --output text)
