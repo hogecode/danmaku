@@ -12,10 +12,51 @@ import { pinoLogger } from './common/logger/pino.logger';
 import { parseSecret, getSecretValue } from './common/utils/secret-parser.util';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bodyParser: true });
+  // ========================================
+  // IMPORTANT: Parse secrets BEFORE NestFactory.create
+  // EncryptionService is instantiated during NestFactory.create,
+  // and it needs ENCRYPTION_KEY to be set beforehand
+  // ========================================
 
-  // ✅ Pino ロギングを NestJS に統合
-  app.useLogger(pinoLogger as any);
+  // ========================================
+  // Parse App secrets from JSON secret (AWS Secrets Manager)
+  // ========================================
+  const appSecretsJson = process.env.APP_SECRETS;
+  if (appSecretsJson) {
+    try {
+      const parsedAppSecrets = parseSecret(appSecretsJson);
+      if (typeof parsedAppSecrets === 'object' && parsedAppSecrets !== null) {
+        // Set app secrets environment variables from JSON BEFORE NestFactory.create
+        if (parsedAppSecrets.jwt_secret) {
+          process.env.JWT_SECRET = parsedAppSecrets.jwt_secret;
+        }
+        if (parsedAppSecrets.session_secret) {
+          process.env.SESSION_SECRET = parsedAppSecrets.session_secret;
+        }
+        if (parsedAppSecrets.encryption_key) {
+          process.env.ENCRYPTION_KEY = parsedAppSecrets.encryption_key;
+        } else {
+          console.error('❌ ERROR: encryption_key is missing from APP_SECRETS');
+          console.error('Available keys in APP_SECRETS:', Object.keys(parsedAppSecrets));
+        }
+        if (parsedAppSecrets.encryption_algorithm) {
+          process.env.ENCRYPTION_ALGORITHM = parsedAppSecrets.encryption_algorithm;
+        }
+        console.log('✅ App secrets loaded from JSON secret BEFORE NestFactory.create');
+        console.log('✅ ENCRYPTION_KEY set:', !!process.env.ENCRYPTION_KEY);
+      } else {
+        console.error('❌ ERROR: Parsed APP_SECRETS is not a valid object');
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to parse APP_SECRETS JSON secret:', error);
+      console.error('APP_SECRETS content type:', typeof appSecretsJson);
+      console.error('APP_SECRETS length:', appSecretsJson?.length);
+    }
+  } else {
+    console.warn('⚠️ APP_SECRETS environment variable is not set');
+  }
+
+
 
   // ========================================
   // Parse RDS credentials from JSON secret (AWS Secrets Manager)
@@ -140,50 +181,15 @@ async function bootstrap() {
     prefix: 'session:',
   });
 
-  // ========================================
-  // Parse App secrets from JSON secret (AWS Secrets Manager)
-  // ========================================
-  const appSecretsJson = process.env.APP_SECRETS;
-  if (appSecretsJson) {
-    try {
-      const parsedAppSecrets = parseSecret(appSecretsJson);
-      if (typeof parsedAppSecrets === 'object' && parsedAppSecrets !== null) {
-        // Set app secrets environment variables from JSON
-        if (parsedAppSecrets.jwt_secret) {
-          process.env.JWT_SECRET = parsedAppSecrets.jwt_secret;
-        }
-        if (parsedAppSecrets.session_secret) {
-          process.env.SESSION_SECRET = parsedAppSecrets.session_secret;
-        }
-        if (parsedAppSecrets.encryption_key) {
-          process.env.ENCRYPTION_KEY = parsedAppSecrets.encryption_key;
-        } else {
-          console.error('❌ ERROR: encryption_key is missing from APP_SECRETS');
-          console.error('Available keys in APP_SECRETS:', Object.keys(parsedAppSecrets));
-        }
-        if (parsedAppSecrets.encryption_algorithm) {
-          process.env.ENCRYPTION_ALGORITHM = parsedAppSecrets.encryption_algorithm;
-        }
-        console.log('✅ App secrets loaded from JSON secret');
-        console.log('✅ ENCRYPTION_KEY set:', !!process.env.ENCRYPTION_KEY);
-        console.log('✅ JWT_SECRET set:', !!process.env.JWT_SECRET);
-        console.log('✅ SESSION_SECRET set:', !!process.env.SESSION_SECRET);
-      } else {
-        console.error('❌ ERROR: Parsed APP_SECRETS is not a valid object');
-      }
-    } catch (error) {
-      console.warn('⚠️ Failed to parse APP_SECRETS JSON secret, using env vars fallback:', error);
-      console.error('APP_SECRETS content type:', typeof appSecretsJson);
-      console.error('APP_SECRETS length:', appSecretsJson?.length);
-    }
-  } else {
-    console.warn('⚠️ APP_SECRETS environment variable is not set');
-  }
-
   // Get session secret from JSON secret or individual env var
+  // (appSecretsJson is already set in the pre-initialization phase above)
   const sessionSecret = getSecretValue(appSecretsJson, 'session_secret', 'SESSION_SECRET') || 'default-session-secret';
   const cookieSecure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
+  
+  const app = await NestFactory.create(AppModule, { bodyParser: true });
 
+  // ✅ Pino ロギングを NestJS に統合
+  app.useLogger(pinoLogger as any);
   // ✅ TraceId middleware を登録
   app.use(new TraceIdMiddleware().use.bind(new TraceIdMiddleware()));
 
