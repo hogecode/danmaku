@@ -11,8 +11,9 @@ on:
         type: string
         default: migrate
       image_tag:
-        required: false
+        required: true
         type: string
+        description: "Image tag to use for DB migration (must exist in ECR)"
     secrets:
       AWS_REGION:
         required: true
@@ -44,28 +45,33 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Get latest image tag
-        id: latest-tag
+      - name: Verify image tag exists in ECR
+        id: verify-tag
         run: |
-          if [ -z "${{ inputs.image_tag }}" ]; then
-            echo "🔍 Fetching latest image tag from ECR..."
-            TAG=$(aws ecr describe-images \
-              --repository-name "${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}" \
-              --region ${{ secrets.AWS_REGION }} \
-              --output json 2>/dev/null | jq -r '.imageDetails | sort_by(.imagePushedAt)[-1].imageTags[0]')
-            
-            if [ -z "$TAG" ] || [ "$TAG" = "null" ]; then
-              echo "❌ No images found in ECR repository"
-              echo "📋 Available repositories:"
-              aws ecr describe-repositories --region ${{ secrets.AWS_REGION }} --query 'repositories[].repositoryName' --output text
-              exit 1
-            fi
-            echo "tag=${TAG}" >> $GITHUB_OUTPUT
-            echo "📌 Latest image tag: ${TAG}"
-          else
-            echo "tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
-            echo "📌 Using specified image tag: ${{ inputs.image_tag }}"
+          echo "🔍 Verifying image tag exists in ECR..."
+          IMAGE_TAG="${{ inputs.image_tag }}"
+          REPO_NAME="${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}"
+          REGION="${{ secrets.AWS_REGION }}"
+          
+          IMAGE_INFO=$(aws ecr describe-images \
+            --repository-name "$REPO_NAME" \
+            --image-ids "imageTag=$IMAGE_TAG" \
+            --region "$REGION" \
+            --output json 2>/dev/null)
+          
+          if [ -z "$IMAGE_INFO" ] || [ "$(echo "$IMAGE_INFO" | jq '.imageDetails | length')" -eq 0 ]; then
+            echo "❌ Image tag '$IMAGE_TAG' NOT FOUND in ECR repository '$REPO_NAME'"
+            echo "📋 Available image tags (latest 20):"
+            aws ecr describe-images \
+              --repository-name "$REPO_NAME" \
+              --region "$REGION" \
+              --query 'sort_by(imageDetails, &imagePushedAt)[-20:].imageTags[]' \
+              --output text
+            exit 1
           fi
+          
+          echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "✅ Image verified: $REPO_NAME:$IMAGE_TAG"
 
       - name: 🔄 Dry-Run Migration
         run: |
@@ -73,7 +79,7 @@ jobs:
           scripts/run-db-migration.sh \
             "${{ inputs.environment }}" \
             "dry" \
-            "${{ steps.latest-tag.outputs.tag }}"
+            "${{ steps.verify-tag.outputs.tag }}"
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -89,7 +95,7 @@ jobs:
           scripts/run-db-migration.sh \
             "${{ inputs.environment }}" \
             "migrate" \
-            "${{ steps.latest-tag.outputs.tag }}"
+            "${{ steps.verify-tag.outputs.tag }}"
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

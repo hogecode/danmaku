@@ -33,7 +33,7 @@ jobs:
     with:
       environment: ${{ github.event.inputs.environment }}
       migration_type: ${{ github.event.inputs.migration_type }}
-      image_tag: ${{ github.event.inputs.image_tag || github.sha }}
+      image_tag: ${{ github.event.inputs.image_tag || format('dev-{0}', github.sha) }}
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

@@ -618,6 +618,15 @@
         "documentation": {}
     },
     {
+        "label": "lambda_handler",
+        "kind": 2,
+        "importPath": "infra.terraform..terraform.modules.rds.rds.examples.role-association-postgres.fixtures.lambda_function",
+        "description": "infra.terraform..terraform.modules.rds.rds.examples.role-association-postgres.fixtures.lambda_function",
+        "peekOfCode": "def lambda_handler(event, context):\n    return \"Triggered by RDS Lambda!\"",
+        "detail": "infra.terraform..terraform.modules.rds.rds.examples.role-association-postgres.fixtures.lambda_function",
+        "documentation": {}
+    },
+    {
         "label": "_Known",
         "kind": 6,
         "importPath": "server.node_modules.flatted.python.flatted",

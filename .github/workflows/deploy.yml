@@ -177,4 +177,19 @@ jobs:
             --services "$NEXTJS_SERVICE" "$NESTJS_SERVICE" \
             --region ${{ secrets.AWS_REGION }} || echo "⚠️ Service stabilization timeout (services may still be deploying)"
           
-          echo "✅ Deployment completed"
+
+  db-migration:
+    needs: deploy
+    uses: ./.github/workflows/db-migrate.yml
+    with:
+      environment: ${{ inputs.environment }}
+      migration_type: migrate
+      image_tag: ${{ inputs.image_tag }}
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      ECR_NESTJS_REPOSITORY_NAME: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
+      ECS_CLUSTER_NAME: ${{ secrets.ECS_CLUSTER_NAME }}
+      DB_SUBNET_IDS: ${{ secrets.DB_SUBNET_IDS }}
+      NESTJS_SECURITY_GROUP_ID: ${{ secrets.NESTJS_SECURITY_GROUP_ID }}
