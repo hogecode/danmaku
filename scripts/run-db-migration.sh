@@ -49,12 +49,38 @@ fi
 
 # Register new task definition
 # Filter out read-only fields that aren't allowed in register-task-definition
+# Also ensure secrets are properly configured from AWS Secrets Manager
 NEW_TASK_DEF=$(echo "$TASK_DEF" | jq \
   --arg IMAGE "$REPO_URI" \
   --argjson CMD "$CMD" \
+  --arg ACCOUNT_ID "$AWS_ACCOUNT_ID" \
+  --arg REGION "$AWS_REGION" \
   'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | 
    .containerDefinitions[0].image = $IMAGE | 
-   .containerDefinitions[0].command = $CMD')
+   .containerDefinitions[0].command = $CMD |
+   # Ensure secrets are set from Secrets Manager
+   if .containerDefinitions[0].secrets == null then
+     .containerDefinitions[0].secrets = [
+       {
+         name = "DB_CREDENTIALS",
+         valueFrom = ($ACCOUNT_ID + ":secret:danmaku/db-credentials::")
+       },
+       {
+         name = "REDIS_CREDENTIALS",
+         valueFrom = ($ACCOUNT_ID + ":secret:danmaku/redis-credentials::")
+       },
+       {
+         name = "APP_SECRETS",
+         valueFrom = ($ACCOUNT_ID + ":secret:danmaku/app-secrets::")
+       },
+       {
+         name = "OAUTH_SECRETS",
+         valueFrom = ($ACCOUNT_ID + ":secret:danmaku/oauth-secrets::")
+       }
+     ]
+   else
+     .containerDefinitions[0].secrets
+   end')
 
 echo "📝 Filtered task definition for registration:"
 echo "$NEW_TASK_DEF" | jq 'keys'
