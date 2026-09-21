@@ -120,20 +120,45 @@ NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
 echo "✅ Registered: $NEW_TASK_DEF_ARN"
 
 # Run task
-# Parse subnets and security groups into proper JSON arrays for AWS CLI
-# Convert comma-separated subnet IDs to JSON array format
-SUBNET_ARRAY=$(echo "$DB_SUBNET_IDS" | jq -R 'split(",") | map(select(length > 0))')
-# Ensure security group is properly formatted
-SG_ARRAY=$(echo "$NESTJS_SECURITY_GROUP_ID" | jq -R 'if test("^sg-") then [.] else split(",") | map(select(length > 0)) end')
+# Create proper network configuration JSON
+echo "🔧 Preparing network configuration..."
+echo "  Subnets: $DB_SUBNET_IDS"
+echo "  Security Group: $NESTJS_SECURITY_GROUP_ID"
+
+# Build network configuration as JSON file to ensure proper formatting
+cat > /tmp/network-config.json <<EOF
+{
+  "awsvpcConfiguration": {
+    "subnets": [$(echo "$DB_SUBNET_IDS" | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')],
+    "securityGroups": ["$NESTJS_SECURITY_GROUP_ID"],
+    "assignPublicIp": "DISABLED"
+  }
+}
+EOF
+
+echo "📋 Network configuration:"
+cat /tmp/network-config.json
 
 TASK_ARN=$(aws ecs run-task \
   --cluster "$ECS_CLUSTER" \
   --task-definition "$NEW_TASK_DEF_ARN" \
   --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=$SUBNET_ARRAY,securityGroups=$SG_ARRAY,assignPublicIp=DISABLED}" \
+  --network-configuration file:///tmp/network-config.json \
   --region "$AWS_REGION" \
   --query 'tasks[0].taskArn' \
-  --output text)
+  --output text 2>&1)
+
+# Check for errors in the response
+if echo "$TASK_ARN" | grep -q "InvalidParameterException\|InvalidGroup"; then
+  echo "❌ Error running task:"
+  echo "$TASK_ARN"
+  echo ""
+  echo "Debugging info:"
+  echo "  ECS_CLUSTER: $ECS_CLUSTER"
+  echo "  DB_SUBNET_IDS: $DB_SUBNET_IDS"
+  echo "  NESTJS_SECURITY_GROUP_ID: $NESTJS_SECURITY_GROUP_ID"
+  exit 1
+fi
 
 echo "🚀 Task ARN: $TASK_ARN"
 
