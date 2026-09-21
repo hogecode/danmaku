@@ -28,12 +28,51 @@ permissions:
   id-token: write
 
 jobs:
+  get-image-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.resolve-tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Resolve image tag
+        id: resolve-tag
+        run: |
+          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+            echo "✅ Using specified image tag: ${{ github.event.inputs.image_tag }}"
+            echo "tag=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "🔍 Fetching latest image tag from ECR..."
+            LATEST_TAG=$(aws ecr describe-images \
+              --repository-name "${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}" \
+              --region "${{ secrets.AWS_REGION }}" \
+              --query 'sort_by(imageDetails, &imagePushedAt)[-1].imageTags[0]' \
+              --output text)
+            
+            if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "None" ]; then
+              echo "❌ No images found in ECR"
+              exit 1
+            fi
+            
+            echo "✅ Using latest image tag: $LATEST_TAG"
+            echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          fi
+
   db-migrate:
+    needs: get-image-tag
     uses: ./.github/workflows/db-migrate.yml
     with:
       environment: ${{ github.event.inputs.environment }}
       migration_type: ${{ github.event.inputs.migration_type }}
-      image_tag: ${{ github.event.inputs.image_tag || format('dev-{0}', github.sha) }}
+      image_tag: ${{ needs.get-image-tag.outputs.image_tag }}
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
