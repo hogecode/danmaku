@@ -430,6 +430,11 @@ module "secrets_manager" {
 
   project_name = var.project_name
   environment  = var.environment
+  common_tags  = local.common_tags
+
+  # Auto-generate Redis credentials with ElastiCache endpoint
+  redis_endpoint = module.cache.redis_endpoint
+  redis_port     = module.cache.redis_port
 
   # Note: This module references existing secrets in AWS Secrets Manager
   # Secrets must be created beforehand via AWS CLI, Console, or CI/CD:

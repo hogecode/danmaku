@@ -1,14 +1,11 @@
 # ========================================
-# AWS Secrets Manager - Reference Existing Secrets
+# AWS Secrets Manager - Manage Secrets
 # ========================================
 # 
-# This module references secrets that are managed externally
-# (via AWS Console, AWS CLI, or automated secret creation)
-# 
-# Secrets are expected to exist with these names:
-# - {project_name}/{environment}/redis/credentials
-# - {project_name}/{environment}/app/secrets
-# - {project_name}/{environment}/oauth/secrets
+# This module creates/manages secrets in AWS Secrets Manager:
+# - {project_name}/{environment}/redis/credentials (auto-created with ElastiCache endpoint)
+# - {project_name}/{environment}/app/secrets (reference: must exist)
+# - {project_name}/{environment}/oauth/secrets (reference: must exist)
 #
 # NOTE: RDS credentials are automatically managed by AWS RDS via Secrets Manager
 # (when manage_master_user_password = true). This secret is NOT referenced here.
@@ -17,13 +14,25 @@
 # ==================================================
 # Data Source: Reference Redis Credentials Secret
 # ==================================================
+# NOTE: The secret must exist. If deleted, restore it first:
+# aws secretsmanager restore-secret --secret-id ${project_name}/${environment}/redis/credentials
 
-data "aws_secretsmanager_secret" "redis_credentials" {
+data "aws_secretsmanager_secret" "redis_credentials_existing" {
   name = "${var.project_name}/${var.environment}/redis/credentials"
 }
 
-data "aws_secretsmanager_secret_version" "redis_credentials" {
-  secret_id = data.aws_secretsmanager_secret.redis_credentials.id
+# ==================================================
+# Update Redis Credentials Secret with ElastiCache endpoint
+# ==================================================
+
+resource "aws_secretsmanager_secret_version" "redis_credentials" {
+  secret_id = data.aws_secretsmanager_secret.redis_credentials_existing.id
+  secret_string = jsonencode({
+    host     = var.redis_endpoint != "" ? var.redis_endpoint : "redis"
+    port     = var.redis_port
+    password = ""
+    db       = 0
+  })
 }
 
 # ==================================================
