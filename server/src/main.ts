@@ -95,6 +95,12 @@ async function bootstrap() {
   process.env.TYPEORM_PASSWORD = dbConfig.password;
   process.env.TYPEORM_DATABASE = dbConfig.database;
 
+  // Construct DATABASE_URL for Drizzle ORM (postgres://)
+  // Format: postgresql://username:password@host:port/database
+  const databaseUrl = `postgresql://${dbConfig.username}:${encodeURIComponent(dbConfig.password)}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`;
+  process.env.DATABASE_URL = databaseUrl;
+  console.log(`✅ DATABASE_URL constructed: postgresql://${dbConfig.username}:***@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`);
+
   // ========================================
   // Parse OAuth secrets from JSON secret (AWS Secrets Manager)
   // ========================================
