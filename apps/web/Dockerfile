@@ -22,8 +22,23 @@ RUN npm ci --legacy-peer-deps
 # Copy source code
 COPY . .
 
-# Build the application
+# Set environment variables for build
+# ECSタスク定義だと、ビルド後なのでも環境変数をここで設定する必要がある
 ENV NEXT_TELEMETRY_DISABLED=1
+
+ARG NEXT_PUBLIC_API_BASE_URL=https://danmaku.cloud
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+
+ARG NEXT_PUBLIC_API_URL=https://danmaku.cloud/api
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
+ARG NEXT_PUBLIC_APP_NAME=Danmaku
+ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
+
+ARG NEXT_PUBLIC_LOG_LEVEL=debug
+ENV NEXT_PUBLIC_LOG_LEVEL=${NEXT_PUBLIC_LOG_LEVEL}
+
+# Build the application
 RUN npm run build --legacy-peer-deps
 
 # Prune dev dependencies for production
