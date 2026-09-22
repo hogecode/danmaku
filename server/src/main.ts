@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import express from 'express';
 import session from 'express-session';
 import { RedisStore } from 'connect-redis';
+import { randomBytes } from 'crypto';
 import { AppModule } from './app.module';
 import { generateOpenAPIYaml } from './utils/openapi-generator';
 import { TraceIdMiddleware } from './common/middleware/trace-id.middleware';
@@ -90,8 +91,12 @@ async function bootstrap() {
     session({
       store: redisStore,
       secret: sessionSecret,
-      resave: false,
+      resave: true,  // ✅ true に戻す：OAuth callback 時にセッション変更を確実に保存
       saveUninitialized: false,
+      genid: (req) => {
+        // ✅ セッションIDを明示的に生成（ensure Redis保存）
+        return randomBytes(16).toString('hex');
+      },
       cookie: {
         secure: cookieSecure,
         httpOnly: true,

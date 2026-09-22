@@ -19,9 +19,9 @@ module "rds" {
   # Instance configuration
   instance_class       = var.rds_instance_class
   allocated_storage    = var.rds_allocated_storage
-  storage_type         = "gp3"
+  storage_type         = "gp3" // General Purpose SSD (gp3)
   storage_encrypted    = true
-  storage_throughput   = var.rds_allocated_storage >= 400 ? 125 : null
+  storage_throughput   = var.rds_allocated_storage >= 400 ? 125 : null // Only set if allocated storage is 400 GiB or more
 
   # Database configuration
   db_name  = var.rds_database_name
@@ -33,7 +33,7 @@ module "rds" {
 
   # Network configuration
   db_subnet_group_name            = aws_db_subnet_group.main.name
-  publicly_accessible            = var.rds_publicly_accessible
+  publicly_accessible            = var.rds_publicly_accessible // false
   vpc_security_group_ids          = [var.rds_security_group_id]
   iam_database_authentication_enabled = true
 
@@ -44,7 +44,7 @@ module "rds" {
   backup_retention_period = var.rds_backup_retention_days
   backup_window           = "03:00-04:00"
   maintenance_window      = "sun:04:00-sun:05:00"
-  copy_tags_to_snapshot   = true
+  copy_tags_to_snapshot   = true // スナップショットにもタグをコピーする設定
   skip_final_snapshot     = var.environment != "prod"
   final_snapshot_identifier_prefix = var.environment == "prod" ? "${var.project_name}-db-final-snapshot" : null
 

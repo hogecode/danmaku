@@ -147,6 +147,12 @@ export class AuthController {
         });
       });
 
+       // ✅ 重要：session.touch() でセッション更新フラグを立てる
+       // これによって Express Session middleware が確実にセッションを Redis に保存する
+       (session as any).touch();
+
+
+
       // クライアントタイプを検出
       const clientType = this.authService.detectClientType(request);
 

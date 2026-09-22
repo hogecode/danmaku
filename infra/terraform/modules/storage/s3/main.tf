@@ -19,10 +19,10 @@ module "alb_logs" {
   bucket = "${var.app_name}-${var.environment}-alb-logs-${random_string.bucket_suffix.result}"
 
   # Block all public access
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  block_public_acls       = true // ブロックパブリックACL
+  block_public_policy     = true // ブロックパブリックポリシー
+  ignore_public_acls      = true // 公開ACLを無視
+  restrict_public_buckets = true // 公開バケットを制限
 
   # Server-side encryption
   server_side_encryption_configuration = {
