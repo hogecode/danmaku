@@ -79,7 +79,7 @@ module "public_alb" {
         healthy_threshold   = 3
         unhealthy_threshold = 3
         timeout             = 10
-        interval            = 30
+        interval            = 60
         path                = "/api/health"
         matcher             = "200"
       }

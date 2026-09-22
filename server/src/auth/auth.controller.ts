@@ -174,19 +174,6 @@ export class AuthController {
         clientType,
       });
 
-      // ✅ @Redirect() デコレータが { url } を HTTP 302 リダイレクトに変換
-      // Express Session ミドルウェアがセッションクッキーを自動設定
-      // ✅ 明示的にリダイレクト（セッションクッキーは Express Session ミドルウェアが自動セット）
-       // 🔴 【最重要】Session debug ログ - trust proxy 設定確認用
-      this.logger.info('[AUTH] Session debug - BEFORE redirect', {
-        sessionId: session.id,
-        sessionUserId: (session as any).userId,
-        cookieHeader: request.headers.cookie || 'NONE',
-        protocol: request.protocol,
-        secure: request.secure,
-        xForwardedProto: request.headers['x-forwarded-proto'],
-      });
-
       response.redirect(callbackResponse.url);
     } catch (error) {
       this.logger.error(`[AUTH] Callback error (${provider})`, error as Error);

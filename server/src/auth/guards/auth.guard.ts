@@ -32,7 +32,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
 
     // ✅ デバッグログ（詳細版）
-    this.logger.info('[AuthGuard] Auth check - detailed', {
+    this.logger.debug('[AuthGuard] Auth check - detailed', {
       sessionId: (request.session as any)?.id,
       userId: (request.session as any)?.userId,
       sessionType: (request.session as any)?.constructor?.name,
@@ -46,7 +46,7 @@ export class AuthGuard implements CanActivate {
 
     // 1. Express Session で設定された userId が存在するかチェック
     if ((request.session as any)?.userId) {
-      this.logger.info('[AuthGuard] ✅ Authenticated via Express Session', {
+      this.logger.debug('[AuthGuard] ✅ Authenticated via Express Session', {
         userId: (request.session as any).userId,
       });
       return true;
@@ -58,7 +58,7 @@ export class AuthGuard implements CanActivate {
       // ✅ Express Session の中にこのヘッダーの sessionId がある場合は認証成功
       // Cookie ベースの Express Session がある場合はそちらを使用
       if ((request.session as any)?.userId) {
-        this.logger.info('[AuthGuard] ✅ Authenticated via Express Session with X-Session-Id', {
+        this.logger.debug('[AuthGuard] ✅ Authenticated via Express Session with X-Session-Id', {
           userId: (request.session as any).userId,
           sessionId: sessionIdFromHeader,
         });
@@ -78,7 +78,7 @@ export class AuthGuard implements CanActivate {
           if (userId) {
             // ✅ Express Session に userId を設定（以降のリクエストで利用可能）
             (request.session as any).userId = userId;
-            this.logger.info('[AuthGuard] ✅ Authenticated via X-Session-Id (from Redis cache)', {
+            this.logger.debug('[AuthGuard] ✅ Authenticated via X-Session-Id (from Redis cache)', {
               userId,
               sessionId: sessionIdFromHeader,
               redisKey,

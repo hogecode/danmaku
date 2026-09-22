@@ -65,6 +65,7 @@ async function bootstrap() {
   // 🔴 【重要】ALB/Cloudflare構成で trust proxy を設定
   // Browser (HTTPS) → Cloudflare/ALB → ECS (HTTP)
   // request.secure を正しく認識させるため
+  // これを書かないと、セッションが正しく認識されず、Secure クッキーが設定されない
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
   pinoLogger.info('✅ Trust proxy enabled for ALB/Cloudflare setup');
 
