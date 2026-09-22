@@ -1,19 +1,16 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { useAppSelector } from '@/lib/store/hooks';
 import { selectSelectedConnectionId } from '@/lib/store/selectors';
 import { useUserSettingsQuery } from '@/hooks/useUserSettings';
 
-export default function WatchPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default function WatchPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   
   // ✅ Redux ストアから選択中のドライブ接続ID を取得
@@ -22,13 +19,9 @@ export default function WatchPage({
   // ✅ ユーザー設定を取得
   const { data: userSettings, isLoading: settingsLoading } = useUserSettingsQuery();
   
-  const params = use(searchParams);
-  const fileId = Array.isArray(params.fileId)
-    ? params.fileId[0]
-    : params.fileId;
-  const folderId = Array.isArray(params.folderId)
-    ? params.folderId[0]
-    : params.folderId;
+  // ✅ useSearchParams() で query parameters を取得
+  const fileId = searchParams.get('fileId');
+  const folderId = searchParams.get('folderId');
 
   // ✅ ユーザー設定からコメント設定を構築
   const commentSettings = userSettings ? {
