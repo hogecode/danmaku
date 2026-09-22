@@ -198,30 +198,6 @@ export class AuthController {
     // 接続ドライブ情報も含めて取得
     return await this.userService.getUserInfo(BigInt(userId));
   }
-   /**
-    * GET /api/auth/debug/session - セッション情報デバッグ
-    * ✅ セッションが正しく設定されているか確認用
-    */
-   @Get('debug/session')
-   async debugSession(
-     @Session() session: Express.Session,
-     @Req() request: Request,
-   ): Promise<any> {
-     return {
-       sessionId: (session as any)?.id,
-       userId: (session as any)?.userId,
-       sessionKeys: Object.keys(session || {}),
-       cookies: request.headers.cookie || '(none)',
-       allCookies: request.cookies || {},
-       sessionContent: JSON.stringify(session || {}),
-       headers: {
-         'x-session-id': request.headers['x-session-id'],
-         'authorization': request.headers.authorization ? '(present)' : '(none)',
-       },
-     };
-   }
-
-
 
   
   /**

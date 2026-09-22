@@ -54,7 +54,7 @@ module "public_alb" {
         healthy_threshold   = 2
         unhealthy_threshold = 2
         timeout             = 5
-        interval            = 30
+        interval            = 60
         path                = "/"
         matcher             = "200"
       }

@@ -21,8 +21,8 @@ export class EncryptionService {
     }
     this.encryptionKey = Buffer.from(keyString, 'hex');
 
-    // アルゴリズムを環境変数から取得（デフォルト: aes-256-cbc）
-    this.algorithm = process.env.ENCRYPTION_ALGORITHM || this.configService.get<string>('ENCRYPTION_ALGORITHM') || 'aes-256-cbc';
+    // アルゴリズムを環境変数から取得（デフォルト: aes-256-gcm）
+    this.algorithm = process.env.ENCRYPTION_ALGORITHM || this.configService.get<string>('ENCRYPTION_ALGORITHM') || 'aes-256-gcm';
 
     // IV は暗号化時に生成、復号時に暗号文から抽出
     // 固定 IV は使用しない（セキュリティ上の問題）
@@ -30,9 +30,9 @@ export class EncryptionService {
   }
 
   /**
-   * トークンを AES-256-CBC で暗号化
+   * トークンを AES-256 で暗号化
    * @param plaintext 平文
-   * @returns base64 エンコードされた暗号文 (IV + ciphertext)
+   * @returns base64 エンコードされた暗号文 (IV + ciphertext[+ authTag])
    */
   encrypt(plaintext: string): string {
     // ランダムな IV を生成
@@ -42,21 +42,35 @@ export class EncryptionService {
     let encrypted = cipher.update(plaintext, 'utf8', 'hex');
     encrypted += cipher.final('hex');
 
-    // IV + ciphertext を結合して base64 エンコード
-    const combined = iv.toString('hex') + ':' + encrypted;
+    // GCM モードの場合、認証タグを取得
+    let authTag = '';
+    if (this.algorithm.includes('gcm')) {
+      authTag = ':' + (cipher as any).getAuthTag().toString('hex');
+    }
+
+    // IV + ciphertext[+ authTag] を結合して base64 エンコード
+    const combined = iv.toString('hex') + ':' + encrypted + authTag;
     return Buffer.from(combined).toString('base64');
   }
 
   /**
-   * トークンを AES-256-CBC で復号
-   * @param encrypted base64 エンコードされた暗号文 (IV + ciphertext)
+   * トークンを AES-256 で復号
+   * @param encrypted base64 エンコードされた暗号文 (IV + ciphertext[+ authTag])
    * @returns 平文
    */
   decrypt(encrypted: string): string {
     try {
       // Base64 デコード
       const combined = Buffer.from(encrypted, 'base64').toString('utf8');
-      const [ivHex, ciphertext] = combined.split(':');
+      const parts = combined.split(':');
+
+      if (parts.length < 2) {
+        throw new Error('Invalid encrypted format');
+      }
+
+      const ivHex = parts[0];
+      const ciphertext = parts[1];
+      const authTagHex = parts[2]; // GCM の場合のみ存在
 
       if (!ivHex || !ciphertext) {
         throw new Error('Invalid encrypted format');
@@ -64,6 +78,12 @@ export class EncryptionService {
 
       const iv = Buffer.from(ivHex, 'hex');
       const decipher = crypto.createDecipheriv(this.algorithm, this.encryptionKey, iv);
+
+      // GCM モードの場合、認証タグをセット
+      if (this.algorithm.includes('gcm') && authTagHex) {
+        const authTag = Buffer.from(authTagHex, 'hex');
+        (decipher as any).setAuthTag(authTag);
+      }
 
       let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
       decrypted += decipher.final('utf8');

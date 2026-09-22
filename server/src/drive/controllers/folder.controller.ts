@@ -11,6 +11,7 @@ import { FolderService } from '../services/folder.service';
 import { AuthGuard } from '../../auth/guards';
 import { FolderListDto } from '../dto';
 import { Express } from 'express';
+import { LoggerService } from '../../common/logger/logger.service';
 
 /**
  * ドライブフォルダ・ファイル閲覧 Controller
@@ -19,7 +20,9 @@ import { Express } from 'express';
 @Controller('api/drive')
 @UseGuards(AuthGuard)
 export class FolderController {
-  constructor(private readonly folderService: FolderService) {}
+  constructor(private readonly folderService: FolderService,
+    private readonly logger: LoggerService,
+  ) {}
 
   /**
    * GET /api/drive/connections/:connectionId/files
@@ -32,15 +35,39 @@ export class FolderController {
     @Query('folderId') folderId: string = 'root',
     @Session() session: Express.Session & { userId?: string },
   ): Promise<FolderListDto> {
-    if (!session.userId) {
-      throw new BadRequestException('User ID not found in session');
-    }
+    try {
+      if (!session.userId) {
+        throw new BadRequestException('User ID not found in session');
+      }
 
-    return this.folderService.listFolderContents(
-      BigInt(session.userId),
-      BigInt(connectionId),
-      folderId,
-    );
+      this.logger.debug('[FOLDER] listFolderByConnection', {
+        userId: session.userId,
+        connectionId,
+        folderId,
+      });
+
+      const result = await this.folderService.listFolderContents(
+        BigInt(session.userId),
+        BigInt(connectionId),
+        folderId,
+      );
+
+      this.logger.debug('[FOLDER] listFolderByConnection success', {
+        userId: session.userId,
+        connectionId,
+        itemCount: result.items?.length || 0,
+      });
+
+      return result;
+    } catch (error) {
+      this.logger.error('[FOLDER] listFolderByConnection error', error as Error, {
+        userId: session.userId,
+        connectionId,
+        folderId,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      });
+      throw error;
+    }
   }
 
   /**
@@ -55,19 +82,46 @@ export class FolderController {
     @Query('query') query: string,
     @Session() session: Express.Session & { userId?: string },
   ): Promise<FolderListDto> {
-    if (!session.userId) {
-      throw new BadRequestException('User ID not found in session');
-    }
+    try {
+      if (!session.userId) {
+        throw new BadRequestException('User ID not found in session');
+      }
 
-    if (!folderId) {
-      throw new BadRequestException('folderId is required');
-    }
+      if (!folderId) {
+        throw new BadRequestException('folderId is required');
+      }
 
-    return this.folderService.searchInFolder(
-      BigInt(session.userId),
-      BigInt(connectionId),
-      folderId,
-      query,
-    );
+      this.logger.debug('[FOLDER] searchByConnection', {
+        userId: session.userId,
+        connectionId,
+        folderId,
+        query,
+      });
+
+      const result = await this.folderService.searchInFolder(
+        BigInt(session.userId),
+        BigInt(connectionId),
+        folderId,
+        query,
+      );
+
+      this.logger.debug('[FOLDER] searchByConnection success', {
+        userId: session.userId,
+        connectionId,
+        query,
+        itemCount: result.items?.length || 0,
+      });
+
+      return result;
+    } catch (error) {
+      this.logger.error('[FOLDER] searchByConnection error', error as Error, {
+        userId: session.userId,
+        connectionId,
+        folderId,
+        query,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      });
+      throw error;
+    }
   }
 }
