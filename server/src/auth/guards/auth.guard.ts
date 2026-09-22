@@ -32,7 +32,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
 
     // ✅ デバッグログ
-    this.logger.debug('[AuthGuard] Auth check - detailed', {
+    this.logger.info('[AuthGuard] Auth check - detailed', {
       sessionId: (request.session as any)?.id,
       userId: (request.session as any)?.userId,
       sessionType: (request.session as any)?.constructor?.name,
@@ -45,7 +45,7 @@ export class AuthGuard implements CanActivate {
 
     // 1. Express Session で設定された userId が存在するかチェック
     if ((request.session as any)?.userId) {
-      this.logger.debug('[AuthGuard] ✅ Authenticated via Express Session', {
+      this.logger.info('[AuthGuard] ✅ Authenticated via Express Session', {
         userId: (request.session as any).userId,
       });
       return true;
@@ -57,7 +57,7 @@ export class AuthGuard implements CanActivate {
       // ✅ Express Session の中にこのヘッダーの sessionId がある場合は認証成功
       // Cookie ベースの Express Session がある場合はそちらを使用
       if ((request.session as any)?.userId) {
-        this.logger.debug('[AuthGuard] ✅ Authenticated via Express Session with X-Session-Id', {
+        this.logger.info('[AuthGuard] ✅ Authenticated via Express Session with X-Session-Id', {
           userId: (request.session as any).userId,
           sessionId: sessionIdFromHeader,
         });
@@ -77,7 +77,7 @@ export class AuthGuard implements CanActivate {
           if (userId) {
             // ✅ Express Session に userId を設定（以降のリクエストで利用可能）
             (request.session as any).userId = userId;
-            this.logger.debug('[AuthGuard] ✅ Authenticated via X-Session-Id (from Redis cache)', {
+            this.logger.info('[AuthGuard] ✅ Authenticated via X-Session-Id (from Redis cache)', {
               userId,
               sessionId: sessionIdFromHeader,
               redisKey,
@@ -111,7 +111,7 @@ export class AuthGuard implements CanActivate {
         const decoded = jwt.verify(token, secret) as any;
         // JWT から取得した userId をセッションに保存
         (request.session as any).userId = decoded.sub;
-        this.logger.debug('[AuthGuard] ✅ Authenticated via JWT (Authorization header)', {
+        this.logger.info('[AuthGuard] ✅ Authenticated via JWT (Authorization header)', {
           userId: decoded.sub,
         });
         return true;
@@ -135,7 +135,7 @@ export class AuthGuard implements CanActivate {
         const decoded = jwt.verify(queryToken, secret) as any;
         // JWT から取得した userId をセッションに保存
         (request.session as any).userId = decoded.sub;
-        this.logger.debug('[AuthGuard] ✅ Authenticated via JWT (query parameter)', {
+        this.logger.info('[AuthGuard] ✅ Authenticated via JWT (query parameter)', {
           userId: decoded.sub,
         });
         return true;
