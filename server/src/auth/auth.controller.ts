@@ -152,14 +152,6 @@ export class AuthController {
         });
       });
 
-       // ✅ 重要：session.touch() でセッション更新フラグを立てる
-       // これによって Express Session middleware が確実にセッションを Redis に保存する
-        // ✅ 【重要】touch() を呼び出す
-        // これにより Express Session が Set-Cookie ヘッダーを追加する
-        // touch() はセッションの expiration を更新するだけで、
-        // 既存の userId を消さない
-        (session as any).touch();
-
       // クライアントタイプを検出
       const clientType = this.authService.detectClientType(request);
 
@@ -185,13 +177,14 @@ export class AuthController {
       // ✅ @Redirect() デコレータが { url } を HTTP 302 リダイレクトに変換
       // Express Session ミドルウェアがセッションクッキーを自動設定
       // ✅ 明示的にリダイレクト（セッションクッキーは Express Session ミドルウェアが自動セット）
-       // 🔴 【重要】レスポンスヘッダを確認（Set-Cookie が存在するか）
-      const setCookieHeader = response.getHeader('set-cookie');
-      this.logger.info('[AUTH] ✅ Response headers BEFORE redirect', {
-        sessionId: sessionId.substring(0, 10) + '...',
-        setCookieExists: !!setCookieHeader,
-        setCookieValue: setCookieHeader ? (Array.isArray(setCookieHeader) ? setCookieHeader[0] : setCookieHeader) : 'NOT SET',
-        location: callbackResponse.url,
+       // 🔴 【最重要】Session debug ログ - trust proxy 設定確認用
+      this.logger.info('[AUTH] Session debug - BEFORE redirect', {
+        sessionId: session.id,
+        sessionUserId: (session as any).userId,
+        cookieHeader: request.headers.cookie || 'NONE',
+        protocol: request.protocol,
+        secure: request.secure,
+        xForwardedProto: request.headers['x-forwarded-proto'],
       });
 
       response.redirect(callbackResponse.url);

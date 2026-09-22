@@ -62,6 +62,12 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, { bodyParser: true });
 
+  // 🔴 【重要】ALB/Cloudflare構成で trust proxy を設定
+  // Browser (HTTPS) → Cloudflare/ALB → ECS (HTTP)
+  // request.secure を正しく認識させるため
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  pinoLogger.info('✅ Trust proxy enabled for ALB/Cloudflare setup');
+
   // ✅ Pino ロギングを NestJS に統合
   app.useLogger(pinoLogger as any);
   
@@ -71,9 +77,6 @@ async function bootstrap() {
   // ✅ JSON ボディパーサーを BEFORE session middleware
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-  // ✅ Cookie パーサーを登録（重要：Express Session より前に登録必須）
-  app.use(cookieParser(sessionSecret));
 
   // ✅ Cookie domain を FRONTEND_URL から推定
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -95,12 +98,8 @@ async function bootstrap() {
     session({
       store: redisStore,
       secret: sessionSecret,
-      resave: true,  // ✅ true に戻す：OAuth callback 時にセッション変更を確実に保存
-      saveUninitialized: true,  // ✅ true: OAuth callback で新規セッションに userId を設定する場合、Redis に保存する
-      genid: (req) => {
-        // ✅ セッションIDを明示的に生成（ensure Redis保存）
-        return randomBytes(16).toString('hex');
-      },
+      resave: false,  // 🔴 false: OAuth callback で明示的に save() するため不要
+      saveUninitialized: false,  // 🔴 false: 同様に不要
       cookie: {
         secure: cookieSecure,
         httpOnly: true,
