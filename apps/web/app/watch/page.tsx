@@ -21,7 +21,7 @@ export default function WatchPage() {
   
   // ✅ useSearchParams() で query parameters を取得
   const fileId = searchParams.get('fileId');
-  const folderId = searchParams.get('folderId');
+  const folderId = searchParams.get('folderId') || undefined;
 
   // ✅ ユーザー設定からコメント設定を構築
   const commentSettings = userSettings ? {
