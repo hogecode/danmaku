@@ -8,9 +8,9 @@ module "nextjs_ecr" {
 
   repository_name                = var.ecr_nextjs_repository_name
   repository_type                = "private"
-  repository_image_tag_mutability = var.ecr_image_tag_mutability
+  repository_image_tag_mutability = var.ecr_image_tag_mutability // "MUTABLE", "IMMUTABLE"
   
-  repository_image_scan_on_push   = var.ecr_image_scan_on_push
+  repository_image_scan_on_push   = var.ecr_image_scan_on_push // true
 
   # Lifecycle policy
   repository_lifecycle_policy = jsonencode({

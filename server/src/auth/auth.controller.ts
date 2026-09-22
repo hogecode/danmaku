@@ -77,13 +77,13 @@ export class AuthController {
    * モバイルクライアントにはセッション ID を DeepLink で返す
    */
   @Get('callback/:provider')
-  @Redirect('http://localhost:8080/home', 302)  // デフォルトのリダイレクト（動的 URL で上書き可）
   async callbackWithProvider(
     @Param('provider') provider: ProviderType,
     @Query() query: CallbackQueryDto,
     @Session() session: Express.Session,
     @Req() request: Request,
-  ): Promise<{ url: string; statusCode?: number }> {
+    @Res() response: Response,
+  ): Promise<void> {
     if (query.error) {
       const errorMsg = `Authorization failed: ${query.error_description || query.error}`;
       this.logger.error(
@@ -171,7 +171,8 @@ export class AuthController {
 
       // ✅ @Redirect() デコレータが { url } を HTTP 302 リダイレクトに変換
       // Express Session ミドルウェアがセッションクッキーを自動設定
-      return { url: callbackResponse.url, statusCode: 302 };
+      // ✅ 明示的にリダイレクト（セッションクッキーは Express Session ミドルウェアが自動セット）
+       response.redirect(callbackResponse.url);
     } catch (error) {
       this.logger.error(`[AUTH] Callback error (${provider})`, error as Error);
       const errorMsg =
@@ -195,6 +196,30 @@ export class AuthController {
     // 接続ドライブ情報も含めて取得
     return await this.userService.getUserInfo(BigInt(userId));
   }
+   /**
+    * GET /api/auth/debug/session - セッション情報デバッグ
+    * ✅ セッションが正しく設定されているか確認用
+    */
+   @Get('debug/session')
+   async debugSession(
+     @Session() session: Express.Session,
+     @Req() request: Request,
+   ): Promise<any> {
+     return {
+       sessionId: (session as any)?.id,
+       userId: (session as any)?.userId,
+       sessionKeys: Object.keys(session || {}),
+       cookies: request.headers.cookie || '(none)',
+       allCookies: request.cookies || {},
+       sessionContent: JSON.stringify(session || {}),
+       headers: {
+         'x-session-id': request.headers['x-session-id'],
+         'authorization': request.headers.authorization ? '(present)' : '(none)',
+       },
+     };
+   }
+
+
 
   
   /**

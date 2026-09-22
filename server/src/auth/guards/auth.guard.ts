@@ -31,12 +31,13 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
 
-    // ✅ デバッグログ
+    // ✅ デバッグログ（詳細版）
     this.logger.info('[AuthGuard] Auth check - detailed', {
       sessionId: (request.session as any)?.id,
       userId: (request.session as any)?.userId,
       sessionType: (request.session as any)?.constructor?.name,
       sessionKeys: Object.keys(request.session || {}),
+      sessionContent: JSON.stringify(request.session || {}),
       cookies: request.headers.cookie ? '(present)' : '(missing)',
       cookieSessionId: request.cookies?.['danmaku.session.id'] || '(not found)',
       headerSessionId: request.headers['x-session-id'],

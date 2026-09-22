@@ -73,7 +73,8 @@ async function bootstrap() {
   // ✅ Cookie domain を FRONTEND_URL から推定
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   const frontendDomain = new URL(frontendUrl).hostname;
-  const cookieDomain = process.env.NODE_ENV === 'production' 
+  // ✅ ローカル開発では domain を設定しない（localhost への送信を確保）
+  const cookieDomain = process.env.NODE_ENV === 'production' && frontendDomain !== 'localhost'
     ? frontendDomain.replace(/^www\./, '') // www を除去、例: danmaku.cloud
     : undefined;
 
@@ -89,8 +90,8 @@ async function bootstrap() {
     session({
       store: redisStore,
       secret: sessionSecret,
-      resave: true,
-      saveUninitialized: true,
+      resave: false,
+      saveUninitialized: false,
       cookie: {
         secure: cookieSecure,
         httpOnly: true,
