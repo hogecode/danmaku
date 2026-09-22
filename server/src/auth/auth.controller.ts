@@ -138,9 +138,13 @@ export class AuthController {
             this.logger.error('[AUTH] Failed to save session', err);
             reject(err);
           } else {
-            this.logger.info('[AUTH] Session saved successfully', {
+            // ✅ callback 直後にセッション状態を再度確認
+            this.logger.info('[AUTH] Session save callback success', {
               sessionId: sessionId.substring(0, 10) + '...',
-              userId: userInfo.id,
+              userId: (session as any).userId,
+              sessionHasUserId: !!(session as any).userId,
+              sessionKeys: Object.keys(session),
+              fullSession: JSON.stringify(session),
             });
             resolve();
           }
