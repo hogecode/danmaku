@@ -5,6 +5,7 @@ import express from 'express';
 import session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import { randomBytes } from 'crypto';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { generateOpenAPIYaml } from './utils/openapi-generator';
 import { TraceIdMiddleware } from './common/middleware/trace-id.middleware';
@@ -71,6 +72,9 @@ async function bootstrap() {
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+  // ✅ Cookie パーサーを登録（重要：Express Session より前に登録必須）
+  app.use(cookieParser(sessionSecret));
+
   // ✅ Cookie domain を FRONTEND_URL から推定
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   const frontendDomain = new URL(frontendUrl).hostname;
@@ -92,7 +96,7 @@ async function bootstrap() {
       store: redisStore,
       secret: sessionSecret,
       resave: true,  // ✅ true に戻す：OAuth callback 時にセッション変更を確実に保存
-      saveUninitialized: false,
+      saveUninitialized: true,  // ✅ true: OAuth callback で新規セッションに userId を設定する場合、Redis に保存する
       genid: (req) => {
         // ✅ セッションIDを明示的に生成（ensure Redis保存）
         return randomBytes(16).toString('hex');
