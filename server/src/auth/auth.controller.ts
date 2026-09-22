@@ -146,6 +146,20 @@ export class AuthController {
               sessionKeys: Object.keys(session),
               fullSession: JSON.stringify(session),
             });
+
+            // 🔴 【最重要】callback 直後に Redis に直接アクセスして確認
+            // これで実際に Redis に何が保存されたかわかる
+            this.redis.get(`session:${sessionId}`).then((redisData) => {
+              this.logger.info('[AUTH] ✅ Redis data RIGHT AFTER save() callback', {
+                sessionId: sessionId.substring(0, 10) + '...',
+                redisDataLength: redisData ? redisData.length : 0,
+                redisHasUserId: redisData ? redisData.includes('"userId"') : false,
+                redisDataPreview: redisData ? redisData.substring(0, 200) : 'null',
+              });
+            }).catch((err) => {
+              this.logger.error('[AUTH] ❌ Failed to read Redis after save()', err);
+            });
+
             resolve();
           }
         });
@@ -153,7 +167,8 @@ export class AuthController {
 
        // ✅ 重要：session.touch() でセッション更新フラグを立てる
        // これによって Express Session middleware が確実にセッションを Redis に保存する
-       (session as any).touch();
+        // 🔴 touch() removed - causes userId to disappear
+        // (session as any).touch();
 
       // クライアントタイプを検出
       const clientType = this.authService.detectClientType(request);
@@ -253,3 +268,4 @@ export class AuthController {
     return { message: 'Logged out successfully' };
   }
 }
+
