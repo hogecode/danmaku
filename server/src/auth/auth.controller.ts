@@ -151,32 +151,6 @@ export class AuthController {
        // これによって Express Session middleware が確実にセッションを Redis に保存する
        (session as any).touch();
 
-       // ✅ セッションクッキーを明示的に設定（Express Session middleware のフォールバック）
-       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-       const frontendDomain = new URL(frontendUrl).hostname;
-       const cookieDomain = process.env.NODE_ENV === 'production' && frontendDomain !== 'localhost'
-         ? frontendDomain.replace(/^www\./, '')
-         : undefined;
-
-       response.cookie('danmaku.session.id', sessionId, {
-         secure: process.env.NODE_ENV === 'production',
-         httpOnly: true,
-         sameSite: 'lax',
-         maxAge: 14 * 24 * 60 * 60 * 1000,
-         path: '/',
-         domain: cookieDomain,
-       });
-
-       this.logger.info('[AUTH] Session cookie set explicitly', {
-         sessionId: sessionId.substring(0, 10) + '...',
-         domain: cookieDomain,
-         secure: process.env.NODE_ENV === 'production',
-       });
-
-
-
-
-
       // クライアントタイプを検出
       const clientType = this.authService.detectClientType(request);
 

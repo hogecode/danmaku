@@ -111,7 +111,7 @@ export const EnvironmentSchema = z.object({
   DB_CREDENTIALS: z.string().optional(),
   REDIS_CREDENTIALS: z.string().optional(),
   OAUTH_SECRETS: z.string().optional(),
-}).superRefine((data, ctx) => {
+}).superRefine((data: Environment, ctx: z.RefinementCtx) => {
   // Google OAuth 検証
   if (data.GOOGLE_OAUTH_ENABLED === 'true') {
     if (!data.GOOGLE_CLIENT_ID) {

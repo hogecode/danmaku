@@ -89,6 +89,22 @@ paths:
       summary: GET /api/auth/me - ユーザー情報取得
       tags:
         - Auth
+  /api/auth/debug/session:
+    get:
+      operationId: AuthController_debugSession
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+      summary: |-
+        GET /api/auth/debug/session - セッション情報デバッグ
+        ✅ セッションが正しく設定されているか確認用
+      tags:
+        - Auth
   /api/auth/logout:
     post:
       operationId: AuthController_logout
@@ -404,6 +420,19 @@ paths:
         すべての設定をデフォルト値に戻します。
       tags:
         - UserSettings
+  /api/health:
+    get:
+      operationId: HealthController_health
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+      tags:
+        - Health
 info:
   title: danmaku API
   description: Danmaku API documentation

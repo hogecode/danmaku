@@ -62,9 +62,21 @@ export async function createSessionRedisClient(
 export async function initializeBootstrap(): Promise<{
   redisClient: RedisClientType;
 }> {
-  // ✅ 全秘密をパース（NestFactory.create 前に実行）
-  const { redisConfig } = loadSecretsToProcessEnv();
+  let redisConfig: RedisSecrets;
 
+  if(process.env.NODE_ENV == 'production') {
+    // ✅ 全秘密をパース（NestFactory.create 前に実行）
+    const secrets = loadSecretsToProcessEnv();
+    redisConfig = secrets.redisConfig;
+  } else {
+    // ローカル開発環境では .env から設定
+    redisConfig = {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379', 10),
+      password: process.env.REDIS_PASSWORD,
+      db: parseInt(process.env.REDIS_DB || '0', 10),
+    };
+  }
   // ✅ Redis セッションストアクライアントを初期化
   const redisClient = await createSessionRedisClient(redisConfig);
 

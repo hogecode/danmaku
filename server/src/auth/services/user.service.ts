@@ -102,9 +102,14 @@ export class UserService {
    * ユーザーをデータベースに登録または更新
    */
   async upsertUser(googleUser: GoogleUserInfoDto) {
-    const existingUser = await this.db.query.users.findFirst({
-      where: eq(users.email, googleUser.email),
-    });
+    // ✅ query API の代わりに select() を使用
+    const existingUsers = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.email, googleUser.email))
+      .limit(1);
+    
+    const existingUser = existingUsers[0] || null;
 
     const now = new Date();
 
