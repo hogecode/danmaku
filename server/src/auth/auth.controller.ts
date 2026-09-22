@@ -154,8 +154,11 @@ export class AuthController {
 
        // ✅ 重要：session.touch() でセッション更新フラグを立てる
        // これによって Express Session middleware が確実にセッションを Redis に保存する
-        // 🔴 touch() removed - causes userId to disappear
-        // (session as any).touch();
+        // ✅ 【重要】touch() を呼び出す
+        // これにより Express Session が Set-Cookie ヘッダーを追加する
+        // touch() はセッションの expiration を更新するだけで、
+        // 既存の userId を消さない
+        (session as any).touch();
 
       // クライアントタイプを検出
       const clientType = this.authService.detectClientType(request);
