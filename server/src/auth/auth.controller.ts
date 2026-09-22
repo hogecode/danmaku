@@ -147,19 +147,6 @@ export class AuthController {
               fullSession: JSON.stringify(session),
             });
 
-            // 🔴 【最重要】callback 直後に Redis に直接アクセスして確認
-            // これで実際に Redis に何が保存されたかわかる
-            this.redis.get(`session:${sessionId}`).then((redisData) => {
-              this.logger.info('[AUTH] ✅ Redis data RIGHT AFTER save() callback', {
-                sessionId: sessionId.substring(0, 10) + '...',
-                redisDataLength: redisData ? redisData.length : 0,
-                redisHasUserId: redisData ? redisData.includes('"userId"') : false,
-                redisDataPreview: redisData ? redisData.substring(0, 200) : 'null',
-              });
-            }).catch((err) => {
-              this.logger.error('[AUTH] ❌ Failed to read Redis after save()', err);
-            });
-
             resolve();
           }
         });
@@ -195,7 +182,16 @@ export class AuthController {
       // ✅ @Redirect() デコレータが { url } を HTTP 302 リダイレクトに変換
       // Express Session ミドルウェアがセッションクッキーを自動設定
       // ✅ 明示的にリダイレクト（セッションクッキーは Express Session ミドルウェアが自動セット）
-       response.redirect(callbackResponse.url);
+       // 🔴 【重要】レスポンスヘッダを確認（Set-Cookie が存在するか）
+      const setCookieHeader = response.getHeader('set-cookie');
+      this.logger.info('[AUTH] ✅ Response headers BEFORE redirect', {
+        sessionId: sessionId.substring(0, 10) + '...',
+        setCookieExists: !!setCookieHeader,
+        setCookieValue: setCookieHeader ? (Array.isArray(setCookieHeader) ? setCookieHeader[0] : setCookieHeader) : 'NOT SET',
+        location: callbackResponse.url,
+      });
+
+      response.redirect(callbackResponse.url);
     } catch (error) {
       this.logger.error(`[AUTH] Callback error (${provider})`, error as Error);
       const errorMsg =
