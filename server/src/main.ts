@@ -70,6 +70,21 @@ async function bootstrap() {
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+  // ✅ Cookie domain を FRONTEND_URL から推定
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendDomain = new URL(frontendUrl).hostname;
+  const cookieDomain = process.env.NODE_ENV === 'production' 
+    ? frontendDomain.replace(/^www\./, '') // www を除去、例: danmaku.cloud
+    : undefined;
+
+  pinoLogger.info({
+    secure: cookieSecure,
+    domain: cookieDomain,
+    sameSite: 'lax',
+    frontendUrl,
+    frontendDomain,
+  }, '🍪 Session Cookie Configuration');
+
   app.use(
     session({
       store: redisStore,
@@ -79,10 +94,10 @@ async function bootstrap() {
       cookie: {
         secure: cookieSecure,
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax',
+        sameSite: 'lax',
         maxAge: 14 * 24 * 60 * 60 * 1000,
         path: '/',
-        domain: process.env.NODE_ENV === 'production' ? '.danmaku.cloud' : undefined,
+        domain: cookieDomain,
       },
       name: 'danmaku.session.id',
     }),

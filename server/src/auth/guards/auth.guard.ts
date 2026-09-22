@@ -32,9 +32,13 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
 
     // ✅ デバッグログ
-    this.logger.debug('[AuthGuard] Auth check', {
+    this.logger.debug('[AuthGuard] Auth check - detailed', {
       sessionId: (request.session as any)?.id,
       userId: (request.session as any)?.userId,
+      sessionType: (request.session as any)?.constructor?.name,
+      sessionKeys: Object.keys(request.session || {}),
+      cookies: request.headers.cookie ? '(present)' : '(missing)',
+      cookieSessionId: request.cookies?.['danmaku.session.id'] || '(not found)',
       headerSessionId: request.headers['x-session-id'],
       authHeader: !!request.headers.authorization,
     });
