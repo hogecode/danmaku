@@ -1,28 +1,32 @@
 import { relations } from "drizzle-orm/relations";
-import { users, localAuth, userSettings, favorites, playlists, playlistItems, screenshots, auditLogs, playbackHistory, authIdentities, driveConnections } from "./schema";
+import { users, userSettings, localAuth, favorites, playlists, playlistItems, screenshots, auditLogs, playbackHistory, authIdentities, driveConnections } from "./schema";
 
-export const localAuthRelations = relations(localAuth, ({one}) => ({
+export const userSettingsRelations = relations(userSettings, ({one}) => ({
 	user: one(users, {
-		fields: [localAuth.userId],
+		fields: [userSettings.userId],
 		references: [users.id]
 	}),
 }));
 
 export const usersRelations = relations(users, ({many}) => ({
-	localAuths: many(localAuth),
 	userSettings: many(userSettings),
+	localAuths: many(localAuth),
 	favorites: many(favorites),
 	playlists: many(playlists),
 	screenshots: many(screenshots),
 	auditLogs: many(auditLogs),
 	playbackHistories: many(playbackHistory),
-	authIdentities: many(authIdentities),
-	driveConnections: many(driveConnections),
+	authIdentities: many(authIdentities, {
+		relationName: "authIdentities_userId_users_id"
+	}),
+	driveConnections: many(driveConnections, {
+		relationName: "driveConnections_userId_users_id"
+	}),
 }));
 
-export const userSettingsRelations = relations(userSettings, ({one}) => ({
+export const localAuthRelations = relations(localAuth, ({one}) => ({
 	user: one(users, {
-		fields: [userSettings.userId],
+		fields: [localAuth.userId],
 		references: [users.id]
 	}),
 }));
@@ -73,13 +77,15 @@ export const playbackHistoryRelations = relations(playbackHistory, ({one}) => ({
 export const authIdentitiesRelations = relations(authIdentities, ({one}) => ({
 	user: one(users, {
 		fields: [authIdentities.userId],
-		references: [users.id]
+		references: [users.id],
+		relationName: "authIdentities_userId_users_id"
 	}),
 }));
 
 export const driveConnectionsRelations = relations(driveConnections, ({one}) => ({
 	user: one(users, {
 		fields: [driveConnections.userId],
-		references: [users.id]
+		references: [users.id],
+		relationName: "driveConnections_userId_users_id"
 	}),
 }));

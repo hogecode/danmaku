@@ -1,12 +1,25 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { UserSettingsDto, UpdateUserSettingsDto } from '@/lib/generated';
+import { useEffect } from "react";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { UserSettingsDto, UpdateUserSettingsDto } from "@/lib/generated";
+import { settingsFormSchema, SettingsFormData } from "./settingsValidation";
 import {
-  Card, CardContent, CardHeader, Divider, Box,
-  FormControl, InputLabel, Select, MenuItem,
-  FormControlLabel, Switch, TextField, Slider, Button, Stack,
-  Alert, Typography,
-} from '@mui/material';
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+  Button,
+  Stack,
+  Alert,
+  FormHelperText,
+} from "@mui/material";
 
 interface Props {
   settings: UserSettingsDto;
@@ -16,46 +29,58 @@ interface Props {
 }
 
 export default function SettingsForm(p: Props) {
-  const [data, setData] = useState<UpdateUserSettingsDto>({});
-  const [ok, setOk] = useState(false);
-
-  useEffect(() => {
-    setData({
-      theme: p.settings.theme,
-      language: p.settings.language,
-      auto_play_next: p.settings.auto_play_next,
-      playback_speed: p.settings.playback_speed,
-      danmaku_enabled: p.settings.danmaku_enabled,
-      danmaku_opacity: p.settings.danmaku_opacity,
+  const {
+    register, 
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    setValue,
+    control,
+  } = useForm<SettingsFormData>({
+    resolver: zodResolver(settingsFormSchema as any),
+    defaultValues: {
+      theme: p.settings.theme as 'light' | 'dark',
+      language: p.settings.language as 'jp' | 'en',
       danmaku_max_count: p.settings.danmaku_max_count,
-      danmaku_display_duration: p.settings.danmaku_display_duration,
-      ng_words_reg: p.settings.ng_words_reg || '',
+      ng_words_reg: p.settings.ng_words_reg || [],
+    },
+  });
+
+  // 初期値が変わった時にフォームをリセット
+  useEffect(() => {
+    reset({
+      theme: p.settings.theme as 'light' | 'dark',
+      language: p.settings.language as 'jp' | 'en',
+      danmaku_max_count: p.settings.danmaku_max_count,
+      ng_words_reg: p.settings.ng_words_reg || [],
     });
-  }, [p.settings]);
+  }, [p.settings, reset]);
 
-  const ch = (k: string, v: any) => {
-    setData(d => ({ ...d, [k]: v }));
-    setOk(false);
-  };
+  const ngWordsText = watch('ng_words_reg');
 
-  const save = async () => {
+  const onSubmit: SubmitHandler<any> = async (data: SettingsFormData) => {
     try {
-      console.log('[SettingsForm] sending data:', data);
-      await p.onUpdate(data);
-      setOk(true);
-      setTimeout(() => setOk(false), 3000);
+      // ng_words_reg は配列なので、UpdateUserSettingsDto に変換
+      const dto: UpdateUserSettingsDto = {
+        theme: data.theme,
+        language: data.language,
+        danmaku_max_count: data.danmaku_max_count,
+        ng_words_reg: data.ng_words_reg,
+      };
+
+      await p.onUpdate(dto);
     } catch (e) {
       console.error('Failed:', e);
     }
   };
 
-  const rst = async () => {
+  const handleReset = async () => {
     if (confirm('リセットしますか？')) {
       try {
         await p.onReset();
-        setOk(true);
-        setTimeout(() => setOk(false), 3000);
       } catch (e) {
+        // TODO: errorを捕捉
         console.error('Failed:', e);
       }
     }
@@ -70,68 +95,121 @@ export default function SettingsForm(p: Props) {
   );
 
   return (
-    <>
+    <form onSubmit={handleSubmit(onSubmit)}>
       {p.error && <Alert severity="error" sx={{ mb: 3 }}>{p.error}</Alert>}
-      {ok && <Alert severity="success" sx={{ mb: 3 }}>保存しました</Alert>}
 
+      {/* Display Settings */}
       {card('📱 表示', (
         <Stack spacing={3}>
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>テーマ</InputLabel>
-              <Select value={data.theme || 'light'} label="テーマ" onChange={(e) => ch('theme', e.target.value)}>
-                <MenuItem value="light">ライト</MenuItem>
-                <MenuItem value="dark">ダーク</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>言語</InputLabel>
-              <Select value={data.language || 'jp'} label="言語" onChange={(e) => ch('language', e.target.value)}>
-                <MenuItem value="jp">日本語</MenuItem>
-                <MenuItem value="en">English</MenuItem>
-              </Select>
-            </FormControl>
+            <Controller
+              name="theme"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth error={!!errors.theme}>
+                  <InputLabel>テーマ</InputLabel>
+                  <Select
+                    {...field}
+                    label="テーマ"
+                    value={field.value || 'light'}
+                  >
+                    <MenuItem value="light">ライト</MenuItem>
+                    <MenuItem value="dark">ダーク</MenuItem>
+                  </Select>
+                  {errors.theme && <FormHelperText>{errors.theme.message}</FormHelperText>}
+                </FormControl>
+              )}
+            />
+
+            <Controller
+              name="language"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth error={!!errors.language}>
+                  <InputLabel>言語</InputLabel>
+                  <Select
+                    {...field}
+                    label="言語"
+                    value={field.value || 'jp'}
+                  >
+                    <MenuItem value="jp">日本語</MenuItem>
+                    <MenuItem value="en">English</MenuItem>
+                  </Select>
+                  {errors.language && <FormHelperText>{errors.language.message}</FormHelperText>}
+                </FormControl>
+              )}
+            />
           </Box>
         </Stack>
       ))}
 
-      {card('▶️ 再生', (
-        <Stack spacing={3}>
-          <FormControlLabel control={<Switch checked={data.auto_play_next || false} onChange={(e) => ch('auto_play_next', e.target.checked)} />} label="自動再生" />
-          <FormControl fullWidth sx={{ maxWidth: '50%' }}>
-            <InputLabel>速度</InputLabel>
-            <Select value={data.playback_speed || '1.0'} label="速度" onChange={(e) => ch('playback_speed', e.target.value)}>
-              <MenuItem value="0.5">0.5x</MenuItem>
-              <MenuItem value="0.75">0.75x</MenuItem>
-              <MenuItem value="1.0">1.0x</MenuItem>
-              <MenuItem value="1.25">1.25x</MenuItem>
-              <MenuItem value="1.5">1.5x</MenuItem>
-              <MenuItem value="2.0">2.0x</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-      ))}
-
+      {/* Danmaku Settings */}
       {card('💬 ダンマク', (
         <Stack spacing={3}>
-          <FormControlLabel control={<Switch checked={data.danmaku_enabled || true} onChange={(e) => ch('danmaku_enabled', e.target.checked)} />} label="有効化" />
-          <Box>
-            <Typography>不透明度: {(parseFloat(data.danmaku_opacity || '1.0') * 100).toFixed(0)}%</Typography>
-            <Slider min={0} max={1} step={0.1} value={parseFloat(data.danmaku_opacity || '1.0')} onChange={(e, v) => ch('danmaku_opacity', (v as number).toString())} />
-          </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-            <TextField fullWidth label="最大表示数" type="number" value={data.danmaku_max_count || 1000} onChange={(e) => ch('danmaku_max_count', parseInt(e.target.value))} />
-            <TextField fullWidth label="表示時間 (ms)" type="number" value={data.danmaku_display_duration || 5000} onChange={(e) => ch('danmaku_display_duration', parseInt(e.target.value))} />
-          </Box>
+          <TextField
+            fullWidth
+            type="number"
+            label="最大表示数"
+            {...register('danmaku_max_count', { valueAsNumber: true })}
+            error={!!errors.danmaku_max_count}
+            helperText={errors.danmaku_max_count?.message}
+            slotProps={{
+              htmlInput: { min: 1, max: 10000 },
+            }}
+          />
         </Stack>
       ))}
 
-      {card('🚫 NGワード', <TextField fullWidth multiline rows={4} label="正規表現" placeholder="word1|word2" value={data.ng_words_reg || ''} onChange={(e) => ch('ng_words_reg', e.target.value)} />)}
+      {/* NG Word Settings */}
+      {card('🚫 NGワード', (
+        <Stack spacing={2}>
+          <TextField
+            fullWidth
+            multiline
+            minRows={4}
+            maxRows={8}
+            label="正規表現（1行に1つ）"
+            placeholder="aaa|bbb&#10;ccc&#10;asd"
+            value={ngWordsText.join('\n')}
+            onChange={(e) => {
+              const lines = e.target.value.split('\n').filter(l => l.trim().length > 0);
+              setValue('ng_words_reg', lines);
+            }}
+            error={!!errors.ng_words_reg}
+            helperText={
+              errors.ng_words_reg?.message ||
+              `登録済み: ${ngWordsText.length}個`
+            }
+          />
+          {ngWordsText.length > 0 && (
+            <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+              <strong>登録済みの正規表現:</strong>
+              <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+                {ngWordsText.map((pattern, idx) => (
+                  <li key={idx} style={{ marginBottom: '4px' }}>
+                    <code>{pattern}</code>
+                  </li>
+                ))}
+              </ul>
+            </Box>
+          )}
+        </Stack>
+      ))}
 
       <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-        <Button variant="contained" color="primary" onClick={save} size="large">💾 保存</Button>
-        <Button variant="outlined" color="warning" onClick={rst} size="large">🔄 リセット</Button>
+        <Button type="submit" variant="contained" color="primary" size="large">
+          💾 保存
+        </Button>
+        <Button
+          type="button"
+          variant="outlined"
+          color="warning"
+          onClick={handleReset}
+          size="large"
+        >
+          🔄 リセット
+        </Button>
       </Stack>
-    </>
+    </form>
   );
 }
