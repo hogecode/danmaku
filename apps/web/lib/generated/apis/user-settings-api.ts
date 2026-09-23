@@ -92,7 +92,7 @@ export const UserSettingsApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
-         * @summary PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。
+         * @summary PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。 更新可能なフィールド: theme, language, danmaku_max_count, ng_words_reg
          * @param {UpdateUserSettingsDto} updateUserSettingsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -160,7 +160,7 @@ export const UserSettingsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。
+         * @summary PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。 更新可能なフィールド: theme, language, danmaku_max_count, ng_words_reg
          * @param {UpdateUserSettingsDto} updateUserSettingsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -200,7 +200,7 @@ export const UserSettingsApiFactory = function (configuration?: Configuration, b
         },
         /**
          * 
-         * @summary PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。
+         * @summary PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。 更新可能なフィールド: theme, language, danmaku_max_count, ng_words_reg
          * @param {UpdateUserSettingsDto} updateUserSettingsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -237,7 +237,7 @@ export class UserSettingsApi extends BaseAPI {
 
     /**
      * 
-     * @summary PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。
+     * @summary PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。 更新可能なフィールド: theme, language, danmaku_max_count, ng_words_reg
      * @param {UpdateUserSettingsDto} updateUserSettingsDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

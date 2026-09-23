@@ -4,6 +4,7 @@ import {
   varchar,
   integer,
   text,
+  jsonb,
   timestamp,
   boolean,
   index,
@@ -19,19 +20,14 @@ export const userSettings = pgTable('user_settings', {
   // Display Settings
   theme: varchar('theme', { length: 20 }).default('light'), // 'light', 'dark'
   language: varchar('language', { length: 10 }).default('jp'), // 'jp', 'en', etc
-  
-  // Playback Settings
-  auto_play_next: boolean('auto_play_next').default(false),
-  playback_speed: varchar('playback_speed', { length: 10 }).default('1.0'),
-  
+    
   // Danmaku (Comment) Settings
-  danmaku_enabled: boolean('danmaku_enabled').default(true),
-  danmaku_opacity: varchar('danmaku_opacity', { length: 5 }).default('1.0'), // 0.0 - 1.0
-  danmaku_max_count: integer('danmaku_max_count').default(1000), // Maximum comments displayed
-  danmaku_display_duration: integer('danmaku_display_duration').default(5000), // milliseconds
-  
+  danmaku_max_count: integer('danmaku_max_count').default(1000), // Maximum comments displayed  
   // NG Word Settings
-  ng_words_reg: text('ng_words_reg'), // JSON: ["word1", "word2", ...]
+  ng_words_reg: jsonb('ng_words_reg')
+    .$type<string[]>()
+    .default([])
+    .notNull(), // 正規表現配列: ["aaa|bbb", "ccc", "asd"]
   
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

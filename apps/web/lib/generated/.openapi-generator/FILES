@@ -5,6 +5,7 @@ apis/app-api.ts
 apis/auth-api.ts
 apis/drive-connection-api.ts
 apis/folder-api.ts
+apis/health-api.ts
 apis/nicovideo-api.ts
 apis/player-api.ts
 apis/user-settings-api.ts
@@ -24,6 +25,7 @@ docs/FileItemDto.md
 docs/FolderApi.md
 docs/FolderListDto.md
 docs/GenerateVideoTokenResponseDto.md
+docs/HealthApi.md
 docs/LoginResponseDto.md
 docs/NicovideoApi.md
 docs/PlayerApi.md

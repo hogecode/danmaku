@@ -374,6 +374,12 @@ paths:
     patch:
       operationId: UserSettingsController_updateSettings
       parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserSettingsDto'
       responses:
         '200':
           description: ''
@@ -385,6 +391,7 @@ paths:
         PATCH /api/user-settings - ユーザー設定を更新
 
         指定されたフィールドのみを更新します。
+        更新可能なフィールド: theme, language, danmaku_max_count, ng_words_reg
       tags:
         - UserSettings
   /api/user-settings/reset:
@@ -646,21 +653,12 @@ components:
           type: string
         language:
           type: string
-        auto_play_next:
-          type: boolean
-        playback_speed:
-          type: string
-        danmaku_enabled:
-          type: boolean
-        danmaku_opacity:
-          type: string
         danmaku_max_count:
           type: number
-        danmaku_display_duration:
-          type: number
         ng_words_reg:
-          type: string
-          nullable: true
+          type: array
+          items:
+            type: string
         created_at:
           format: date-time
           type: string
@@ -672,12 +670,20 @@ components:
         - user_id
         - theme
         - language
-        - auto_play_next
-        - playback_speed
-        - danmaku_enabled
-        - danmaku_opacity
         - danmaku_max_count
-        - danmaku_display_duration
         - ng_words_reg
         - created_at
         - updated_at
+    UpdateUserSettingsDto:
+      type: object
+      properties:
+        theme:
+          type: string
+        language:
+          type: string
+        danmaku_max_count:
+          type: number
+        ng_words_reg:
+          type: array
+          items:
+            type: string

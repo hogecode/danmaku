@@ -17,12 +17,7 @@
 export interface UpdateUserSettingsDto {
     'theme'?: string;
     'language'?: string;
-    'auto_play_next'?: boolean;
-    'playback_speed'?: string;
-    'danmaku_enabled'?: boolean;
-    'danmaku_opacity'?: string;
     'danmaku_max_count'?: number;
-    'danmaku_display_duration'?: number;
-    'ng_words_reg'?: string | null;
+    'ng_words_reg'?: Array<string>;
 }
 

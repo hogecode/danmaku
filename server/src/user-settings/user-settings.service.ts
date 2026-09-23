@@ -40,13 +40,8 @@ export class UserSettingsService {
         user_id: userId,
         theme: 'light',
         language: 'jp',
-        auto_play_next: false,
-        playback_speed: '1.0',
-        danmaku_enabled: true,
-        danmaku_opacity: '1.0',
         danmaku_max_count: 1000,
-        danmaku_display_duration: 5000,
-        ng_words_reg: null,
+        ng_words_reg: [],
       })
       .returning();
 
@@ -80,12 +75,7 @@ export class UserSettingsService {
     const fieldsToUpdate = [
       'theme',
       'language',
-      'auto_play_next',
-      'playback_speed',
-      'danmaku_enabled',
-      'danmaku_opacity',
       'danmaku_max_count',
-      'danmaku_display_duration',
       'ng_words_reg',
     ];
 
@@ -123,13 +113,8 @@ export class UserSettingsService {
     const resetDto: UpdateUserSettingsDto = {
       theme: 'light',
       language: 'jp',
-      auto_play_next: false,
-      playback_speed: '1.0',
-      danmaku_enabled: true,
-      danmaku_opacity: '1.0',
       danmaku_max_count: 1000,
-      danmaku_display_duration: 5000,
-      ng_words_reg: null,
+      ng_words_reg: [],
     };
 
     return this.updateSettings(userId, resetDto);
@@ -145,13 +130,8 @@ export class UserSettingsService {
       user_id: data.user_id ? data.user_id.toString() : '',
       theme: data.theme,
       language: data.language,
-      auto_play_next: data.auto_play_next,
-      playback_speed: data.playback_speed,
-      danmaku_enabled: data.danmaku_enabled,
-      danmaku_opacity: data.danmaku_opacity,
       danmaku_max_count: data.danmaku_max_count,
-      danmaku_display_duration: data.danmaku_display_duration,
-      ng_words_reg: data.ng_words_reg,
+      ng_words_reg: data.ng_words_reg || [],
       created_at: data.created_at,
       updated_at: data.updated_at,
     };

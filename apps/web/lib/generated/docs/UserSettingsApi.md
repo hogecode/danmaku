@@ -6,7 +6,7 @@ All URIs are relative to *http://localhost*
 |------------- | ------------- | -------------|
 |[**userSettingsControllerGetSettings**](#usersettingscontrollergetsettings) | **GET** /api/user-settings | GET /api/user-settings - ユーザー設定を取得  現在のユーザーの設定を取得します。 存在しない場合はデフォルト値で自動作成します。|
 |[**userSettingsControllerResetSettings**](#usersettingscontrollerresetsettings) | **PATCH** /api/user-settings/reset | PATCH /api/user-settings/reset - ユーザー設定をリセット  すべての設定をデフォルト値に戻します。|
-|[**userSettingsControllerUpdateSettings**](#usersettingscontrollerupdatesettings) | **PATCH** /api/user-settings | PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。|
+|[**userSettingsControllerUpdateSettings**](#usersettingscontrollerupdatesettings) | **PATCH** /api/user-settings | PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。 更新可能なフィールド: theme, language, danmaku_max_count, ng_words_reg|
 
 # **userSettingsControllerGetSettings**
 > UserSettingsDto userSettingsControllerGetSettings()

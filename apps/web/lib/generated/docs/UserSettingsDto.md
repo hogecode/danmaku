@@ -5,17 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **number** |  | [default to undefined]
-**user_id** | **number** |  | [default to undefined]
+**id** | **string** |  | [default to undefined]
+**user_id** | **string** |  | [default to undefined]
 **theme** | **string** |  | [default to undefined]
 **language** | **string** |  | [default to undefined]
-**auto_play_next** | **boolean** |  | [default to undefined]
-**playback_speed** | **string** |  | [default to undefined]
-**danmaku_enabled** | **boolean** |  | [default to undefined]
-**danmaku_opacity** | **string** |  | [default to undefined]
 **danmaku_max_count** | **number** |  | [default to undefined]
-**danmaku_display_duration** | **number** |  | [default to undefined]
-**ng_words_reg** | **string** |  | [default to undefined]
+**ng_words_reg** | **Array&lt;string&gt;** |  | [default to undefined]
 **created_at** | **string** |  | [default to undefined]
 **updated_at** | **string** |  | [default to undefined]
 
@@ -29,12 +24,7 @@ const instance: UserSettingsDto = {
     user_id,
     theme,
     language,
-    auto_play_next,
-    playback_speed,
-    danmaku_enabled,
-    danmaku_opacity,
     danmaku_max_count,
-    danmaku_display_duration,
     ng_words_reg,
     created_at,
     updated_at,

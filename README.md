@@ -2,6 +2,8 @@
 
 https://danmaku.cloud
 
+![Network](./photo/network.png)
+
 ---
 
 ## 🏗️ アーキテクチャ概要
@@ -11,7 +13,7 @@ https://danmaku.cloud
 ```
 ┌─────────────────────────────────────────┐
 │     クライアント層                       │
-│  (Next.js / React Native / Flutter)       │
+│  (Next.js / React Native / Flutter)     │
 └────────────┬────────────────────────────┘
              │
       ┌──────▼──────────┐
@@ -36,6 +38,7 @@ https://danmaku.cloud
 | **mobile** | React Native + Custom Video Player |
 | **desktop** | Flutter + Custom Video Player |
 | **Backend** | NestJS + Node.js |
+| **DB** | PostgreSQL(RDS) + Redis |
 | **CDN** | Cloudflare |
 | **Infra** | AWS ECS Fargate + ALB + terraform |
 | **CI/CD** | GitHub Actions |

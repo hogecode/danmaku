@@ -48,6 +48,7 @@ export class UserSettingsController {
    * PATCH /api/user-settings - ユーザー設定を更新
    *
    * 指定されたフィールドのみを更新します。
+   * 更新可能なフィールド: theme, language, danmaku_max_count, ng_words_reg
    *
    * @param updateDto 更新対象のフィールド
    * @returns 更新されたユーザー設定
@@ -57,23 +58,21 @@ export class UserSettingsController {
   @HttpCode(200)
   async updateSettings(
     @Session() session: Express.Session,
-    @Body() updateDto: any,
+    @Body() updateDto: UpdateUserSettingsDto,
   ): Promise<UserSettingsDto> {
     const userId = (session as any).userId;
     if (!userId) {
       throw new BadRequestException('User ID not found in session');
     }
 
-    this.logger.log(`[PATCH] updateDto type: ${typeof updateDto}, keys: ${Object.keys(updateDto || {})}, value: ${JSON.stringify(updateDto)}`);
-    this.logger.log(`[PATCH] instanceof UpdateUserSettingsDto: ${updateDto instanceof UpdateUserSettingsDto}`);
-
-    // ✅ UpdateUserSettingsDto として明示的にキャスト
-    const dto = updateDto as UpdateUserSettingsDto;
-    this.logger.log(`[PATCH] after cast, dto: ${JSON.stringify(dto)}`);
+    this.logger.log(`[PATCH] updateDto:`, { 
+      keys: Object.keys(updateDto || {}), 
+      value: JSON.stringify(updateDto) 
+    });
 
     return this.userSettingsService.updateSettings(
       BigInt(userId),
-      dto,
+      updateDto,
     );
   }
 
