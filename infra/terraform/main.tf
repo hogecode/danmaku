@@ -474,32 +474,32 @@ module "cicd" {
 # ========================================
 /*
 module "cloudflare" {
-  count  = var.enable_cloudflare && var.cloudflare_api_token != "" ? 1 : 0
+  count  = var.enable_cloudflare ? 1 : 0
   source = "./modules/cdn/cloudflare"
 
-  domain_name              = var.domain_name
-  subdomain_prefix         = ""
-  environment              = var.environment
-  alb_dns_name             = module.alb.public_alb_dns_name
-  cloudflare_account_id    = var.cloudflare_account_id
-  
-  ssl_mode                 = var.cloudflare_ssl_mode
-  min_tls_version          = "1.2"
-  security_level           = var.cloudflare_security_level
-  enable_bot_fight_mode    = var.environment != "dev"
-  cache_level              = var.environment == "dev" ? "simplified" : "aggressive"
-  browser_cache_ttl        = var.cloudflare_cache_ttl
-  enable_minify            = var.enable_cloudflare_minify
-  enable_rocket_loader     = var.environment != "dev"
+  domain_name           = var.domain_name
+  subdomain_prefix      = ""
+  environment           = var.environment
+  alb_dns_name          = module.alb.public_alb_dns_name
+  cloudflare_account_id = var.cloudflare_account_id
+
+  ssl_mode                  = var.cloudflare_ssl_mode
+  min_tls_version           = "1.2"
+  security_level            = var.cloudflare_security_level
+  enable_bot_fight_mode     = var.environment != "dev"
+  cache_level               = var.environment == "dev" ? "simplified" : "aggressive"
+  browser_cache_ttl         = var.cloudflare_cache_ttl
+  enable_minify             = var.enable_cloudflare_minify
+  enable_rocket_loader      = var.environment != "dev"
   enable_hotlink_protection = var.environment == "prod"
-  development_mode         = var.environment == "dev"
-  enable_rate_limiting     = var.enable_cloudflare_rate_limiting && var.environment != "dev"
-  api_rate_limit_threshold = 1000
-  api_rate_limit_period    = 3600
-  enable_cache_rules       = true
-  enable_logpush           = false
-  s3_logpush_bucket        = ""
-  common_tags              = local.common_tags
+  development_mode          = var.environment == "dev"
+  enable_rate_limiting      = var.enable_cloudflare_rate_limiting && var.environment != "dev"
+  api_rate_limit_threshold  = 1000
+  api_rate_limit_period     = 3600
+  enable_cache_rules        = true
+  enable_logpush            = false
+  s3_logpush_bucket         = ""
+  common_tags               = local.common_tags
 
   depends_on = [module.alb]
 }

@@ -1,17 +1,29 @@
-# Cloudflare CDN Module
+# Cloudflare CDN & Security Module
 
-このモジュールは、Cloudflareを使用したDNS、SSL/TLS、キャッシング、セキュリティ設定を管理します。
+Complete Cloudflare infrastructure management with advanced features for DNS, SSL/TLS, caching, security, analytics, and DDoS protection.
 
-## 概要
+## Overview
 
 Cloudflareモジュールの主な機能：
 
-- **DNS管理**: ALBへのCNAMEレコード設定
-- **SSL/TLS**: Full Strictモード、自動HTTPS リダイレクト
-- **キャッシング**: ページルール、ブラウザキャッシュ設定
-- **セキュリティ**: WAF、レート制限、Bot対策
-- **パフォーマンス**: 自動minify、Rocket Loader、Brotli圧縮
-- **ログ記録**: Logpush（S3）対応
+### Core Features
+- ✅ **DNS管理**: ALBへのCNAMEレコード設定（修正済み）
+- ✅ **SSL/TLS**: Full Strictモード、自動HTTPS リダイレクト
+- ✅ **Advanced キャッシング**: キャッシュルール、Next.js assets最適化
+- ✅ **Rate Limiting**: API・認証エンドポイント制限（新規実装）
+- ✅ **Bot Management**: Bot Fight Mode実装（新規実装）
+- ✅ **Web Analytics**: Cloudflare Analytics統合（新規実装）
+
+### Security Features (New)
+- ✅ **WAF Rules**: OWASP Core Rule Set、SQL Injection対策
+- ✅ **DDoS Protection**: Advanced DDoS mitigation（本番環境）
+- ✅ **Custom SSL/mTLS**: 自社証明書、相互TLS認証対応
+
+### Performance & Logging (New)
+- ✅ **Logpush**: HTTPリクエスト、ファイアウォール、Bot検出ログをS3へ
+- ✅ **Cloudflare Workers**: ルート設定、画像最適化
+- ✅ **HTTP/2, HTTP/3**: モダンプロトコル対応
+- ✅ **Early Hints**: ページロード最適化
 
 ## ネットワーク構成
 
@@ -271,9 +283,46 @@ cloudflare_dns_records   # DNS CNAME レコード
 cloudflare_configuration # SSL, Security, Caching設定
 ```
 
+## Version Update - Cloudflare Provider v5 Compatibility
+
+### v5 Compatibility Updates (v5.0+ 対応)
+- ✅ **Provider Version**: `~> 5.0` に更新
+- ✅ **WAF Rules**: `cloudflare_waf_rule` (legacy) → `cloudflare_firewall_filter` + `cloudflare_firewall_rule` に変更
+- ✅ **Rate Limiting**: `cloudflare_rate_limit` (deprecated) → `cloudflare_firewall_filter` + `cloudflare_firewall_rule` に変更
+- ✅ **mTLS**: `cloudflare_client_certificate_hosted_certificate` → `cloudflare_certificate_pack` に変更
+- ✅ **mtls_csr_pem Variable**: 削除（v5では不要）
+
+## Recent Updates (改善履歴)
+
+### Fixed Issues (修正内容)
+- ✅ **WWW レコード ロジック**: 単純化。常にALBへ指す
+- ✅ **Bot Fight Mode**: Zone Settings に統合実装
+- ✅ **日本語コメント**: 英語に統一
+- ✅ **depends_on**: 一貫性確保
+
+### New Implementations (新規機能)
+- ✅ **Rate Limiting**: API（1000req/h）と認証（100req/h）エンドポイント分離
+- ✅ **Logpush**: HTTP リクエスト、ファイアウォール、Bot検出ログ
+- ✅ **Cache Rules**: Next.js (/_next/) パス追加
+- ✅ **WAF Rules**: OWASP CRS + SQL Injection
+- ✅ **DDoS Protection**: HTTP/2, HTTP/3, Early Hints
+- ✅ **Cloudflare Workers**: ルート管理、画像最適化
+- ✅ **Custom SSL/mTLS**: 自社証明書対応
+- ✅ **Web Analytics**: Token 統合
+
+### Variable Additions (新規変数)
+- `auth_rate_limit_threshold`, `auth_rate_limit_period`
+- `web_analytics_token`
+- `enable_waf_rules`, `enable_workers_routes`
+- `enable_custom_ssl`, `enable_mtls`
+- その他多数
+
 ## 参考リンク
 
 - [Cloudflare Terraform Provider](https://registry.terraform.io/providers/cloudflare/cloudflare/)
 - [Cloudflare API Documentation](https://developers.cloudflare.com/api/)
 - [Zone Setup Guide](https://developers.cloudflare.com/dns/setup/)
 - [SSL/TLS Configuration](https://developers.cloudflare.com/ssl/edge-certificates/)
+- [WAF Rules](https://developers.cloudflare.com/waf/rules/)
+- [Logpush](https://developers.cloudflare.com/logs/logpush/)
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/)

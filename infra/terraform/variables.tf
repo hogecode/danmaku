@@ -576,15 +576,10 @@ variable "github_oidc_subject_claim" {
 # ========================================
 
 variable "cloudflare_api_token" {
-  description = "Cloudflare API Token for managing DNS, SSL, and CDN settings"
+  description = "Cloudflare API Token for managing DNS, SSL, and CDN settings. Set via TF_VAR_cloudflare_api_token or CLOUDFLARE_API_TOKEN environment variable."
   type        = string
-  sensitive   = true
   default     = ""
-
-  validation {
-    condition     = var.cloudflare_api_token == "" || length(var.cloudflare_api_token) > 20
-    error_message = "Cloudflare API Token must be valid or empty string"
-  }
+  sensitive   = true
 }
 
 variable "cloudflare_account_id" {

@@ -167,6 +167,28 @@ variable "api_rate_limit_period" {
   }
 }
 
+variable "auth_rate_limit_threshold" {
+  description = "Authentication endpoint rate limit threshold (stricter)"
+  type        = number
+  default     = 100
+
+  validation {
+    condition     = var.auth_rate_limit_threshold > 0
+    error_message = "Auth rate limit threshold must be > 0"
+  }
+}
+
+variable "auth_rate_limit_period" {
+  description = "Authentication endpoint rate limit period in seconds"
+  type        = number
+  default     = 3600
+
+  validation {
+    condition     = var.auth_rate_limit_period > 0
+    error_message = "Auth rate limit period must be > 0"
+  }
+}
+
 # ========================================
 # Logging
 # ========================================
@@ -213,4 +235,84 @@ variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)
   default     = {}
+}
+
+# ========================================
+# Web Analytics Configuration
+# ========================================
+
+variable "web_analytics_token" {
+  description = "Cloudflare Web Analytics token"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+# ========================================
+# WAF Rules Configuration
+# ========================================
+
+variable "enable_waf_rules" {
+  description = "Enable WAF (Web Application Firewall) rules"
+  type        = bool
+  default     = true
+}
+
+# ========================================
+# Cloudflare Workers Routes
+# ========================================
+
+variable "enable_workers_routes" {
+  description = "Enable Cloudflare Workers routes"
+  type        = bool
+  default     = false
+}
+
+variable "worker_script_name" {
+  description = "Name of the Cloudflare Worker script to deploy"
+  type        = string
+  default     = ""
+}
+
+variable "enable_image_optimization" {
+  description = "Enable image optimization via Workers"
+  type        = bool
+  default     = true
+}
+
+# ========================================
+# Custom SSL Configuration
+# ========================================
+
+variable "enable_custom_ssl" {
+  description = "Enable custom SSL certificate"
+  type        = bool
+  default     = false
+}
+
+variable "custom_ssl_certificate" {
+  description = "Custom SSL certificate (PEM format)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "custom_ssl_key" {
+  description = "Custom SSL private key (PEM format)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+# custom_ssl_geo_restrictions removed in v5
+# Use Cloudflare API or dashboard to configure geo-restrictions separately
+
+# ========================================
+# mTLS (Mutual TLS) Configuration
+# ========================================
+
+variable "enable_mtls" {
+  description = "Enable mutual TLS authentication (requires Enterprise plan)"
+  type        = bool
+  default     = false
 }

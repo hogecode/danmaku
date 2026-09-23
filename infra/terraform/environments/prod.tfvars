@@ -9,9 +9,10 @@
 # NOTE: This file is tracked in version control as a template
 
 # Basic Configuration
-environment  = "prod"
-project_name = "ecs-sample"
-aws_region   = "ap-northeast-1"
+environment    = "prod"
+project_name   = "ecs-sample"
+aws_region     = "ap-northeast-1"
+aws_account_id = "123456789012" # Replace with your actual AWS Account ID
 
 # Network Configuration
 vpc_cidr                 = "10.0.0.0/16"
@@ -232,12 +233,6 @@ nestjs_environment_variables = [
   }
 ]
 
-# ========================================
-# AWS Account ID (Required for Secrets Manager ARN)
-# ========================================
-# Set your AWS Account ID here
-# Example: aws sts get-caller-identity --query Account --output text
-aws_account_id = "885545925004"
 
 # ========================================
 # NestJS Secrets (AWS Secrets Manager)
@@ -297,8 +292,7 @@ domain_name = "danmaku.cloud" # Primary domain name (e.g., example.com)
 # Cloudflare Configuration
 # ========================================
 enable_cloudflare = true
-# cloudflare_api_token must be set via environment variable TF_VAR_cloudflare_api_token
-cloudflare_api_token            = ""
+# NOTE: cloudflare_api_token is managed via TF_VAR_cloudflare_api_token environment variable
 cloudflare_ssl_mode             = "full"
 cloudflare_security_level       = "high"
 enable_cloudflare_minify        = true
@@ -306,9 +300,8 @@ enable_cloudflare_rate_limiting = true
 cloudflare_cache_ttl            = 3600
 
 # Monitoring & Logging (CloudWatch, CloudTrail)
-cloudwatch_logs_kms_key_id = ""    # Optional: KMS key ID for CloudWatch Logs encryption
-enable_cloudtrail          = false # Enable CloudTrail for audit logging
-cloudtrail_bucket_name     = ""    # S3 bucket for CloudTrail logs (required if enable_cloudtrail is true)
+enable_cloudtrail      = false # Enable CloudTrail for audit logging
+cloudtrail_bucket_name = ""    # S3 bucket for CloudTrail logs (required if enable_cloudtrail is true)
 
 # CI/CD
 github_token = "" # IMPORTANT: Set your GitHub personal access token for CodePipeline (sensitive - never commit with value)

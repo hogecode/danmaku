@@ -2,9 +2,10 @@
 # Development Environment Configuration
 # ========================================
 
-environment  = "dev"
-project_name = "ecs-sample"
-aws_region   = "ap-northeast-1"
+environment    = "dev"
+project_name   = "ecs-sample"
+aws_region     = "ap-northeast-1"
+aws_account_id = "123456789012" # Replace with your actual AWS Account ID
 
 vpc_cidr                 = "10.0.0.0/16"
 availability_zones       = ["ap-northeast-1a"]
@@ -73,8 +74,8 @@ domain_name = "danmaku.cloud"
 # ========================================
 # Cloudflare Configuration (Dev)
 # ========================================
-enable_cloudflare               = true
-cloudflare_api_token            = ""
+enable_cloudflare = true
+# NOTE: cloudflare_api_token is managed via TF_VAR_cloudflare_api_token environment variable
 cloudflare_ssl_mode             = "full"
 cloudflare_security_level       = "medium"
 enable_cloudflare_minify        = false
