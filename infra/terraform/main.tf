@@ -15,24 +15,24 @@ module "vpc" {
   source = "./modules/network/vpc"
 
   # Basic configuration
-  project_name              = var.project_name
-  environment               = var.environment
-  aws_region                = var.aws_region
-  
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
   # Network CIDR configuration
-  vpc_cidr                  = var.vpc_cidr
-  availability_zones        = var.availability_zones
-  public_subnet_cidrs       = var.public_subnet_cidrs
+  vpc_cidr            = var.vpc_cidr
+  availability_zones  = var.availability_zones
+  public_subnet_cidrs = var.public_subnet_cidrs
   # TODO: CIDRを見直す
-  private_app_subnet_cidrs  = var.private_app_subnet_cidrs
-  private_api_subnet_cidrs  = var.private_api_subnet_cidrs
-  private_db_subnet_cidrs   = var.private_db_subnet_cidrs
-  
+  private_app_subnet_cidrs = var.private_app_subnet_cidrs
+  private_api_subnet_cidrs = var.private_api_subnet_cidrs
+  private_db_subnet_cidrs  = var.private_db_subnet_cidrs
+
   # NAT Gateway & Flow Logs (auto-configured by environment)
-  enable_nat_gateway        = var.enable_nat_gateway
-  nat_gateway_count         = local.nat_gateway_count
-  enable_vpc_flow_logs      = local.enable_vpc_flow_logs
-  
+  enable_nat_gateway   = var.enable_nat_gateway
+  nat_gateway_count    = local.nat_gateway_count
+  enable_vpc_flow_logs = local.enable_vpc_flow_logs
+
   # Tags
   tags = local.common_tags
 }
@@ -57,11 +57,11 @@ module "security_group" {
 module "kms" {
   source = "./modules/security/kms"
 
-  project_name            = var.project_name
-  environment             = var.environment
-  enable_kms_encryption   = var.enable_kms_encryption
+  project_name             = var.project_name
+  environment              = var.environment
+  enable_kms_encryption    = var.enable_kms_encryption
   kms_deletion_window_days = var.kms_deletion_window_days
-  common_tags             = local.common_tags
+  common_tags              = local.common_tags
 
   depends_on = [module.security_group]
 }
@@ -74,10 +74,10 @@ module "kms" {
 module "certificates" {
   source = "./modules/cdn/certificates"
 
-  app_name                  = var.project_name
-  environment               = var.environment
-  domain_name              = var.domain_name
-  common_tags              = local.common_tags
+  app_name    = var.project_name
+  environment = var.environment
+  domain_name = var.domain_name
+  common_tags = local.common_tags
 
   depends_on = [module.vpc]
 }
@@ -90,14 +90,14 @@ module "certificates" {
 module "alb" {
   source = "./modules/network/alb"
 
-  project_name                    = var.project_name
-  environment                     = var.environment
-  vpc_id                          = module.vpc.vpc_id
-  public_subnet_ids              = module.vpc.public_subnets
-  alb_public_security_group_id   = module.security_group.alb_public_security_group_id
+  project_name                 = var.project_name
+  environment                  = var.environment
+  vpc_id                       = module.vpc.vpc_id
+  public_subnet_ids            = module.vpc.public_subnets
+  alb_public_security_group_id = module.security_group.alb_public_security_group_id
 
   # HTTPS configuration (optional)
-  enable_https        = var.enable_https
+  enable_https = var.enable_https
   # Use ACM certificate from certificates module
   alb_certificate_arn = var.enable_https ? module.certificates.certificate_arn : ""
 
@@ -182,12 +182,12 @@ resource "aws_lb_listener_rule" "https_api_to_nestjs" {
 # ========================================
 module "ecr" {
   source = "./modules/compute/ecr"
-  
+
   # ECR Configuration
-  ecr_nextjs_repository_name     = var.ecr_nextjs_repository_name
-  ecr_nestjs_repository_name  = var.ecr_nestjs_repository_name
-  ecr_image_scan_on_push         = var.ecr_image_scan_on_push
-  ecr_image_tag_mutability       = var.ecr_image_tag_mutability
+  ecr_nextjs_repository_name = var.ecr_nextjs_repository_name
+  ecr_nestjs_repository_name = var.ecr_nestjs_repository_name
+  ecr_image_scan_on_push     = var.ecr_image_scan_on_push
+  ecr_image_tag_mutability   = var.ecr_image_tag_mutability
 }
 
 
@@ -213,27 +213,27 @@ module "storage" {
 module "rds" {
   source = "./modules/database/rds"
 
-  project_name              = var.project_name
-  environment               = var.environment
-  private_db_subnet_ids     = module.vpc.private_db_subnets
-  rds_security_group_id     = module.security_group.rds_security_group_id
+  project_name          = var.project_name
+  environment           = var.environment
+  private_db_subnet_ids = module.vpc.private_db_subnets
+  rds_security_group_id = module.security_group.rds_security_group_id
 
   # RDS Engine Configuration
-  rds_engine                = var.rds_engine
-  rds_engine_version        = var.rds_engine_version
-  rds_instance_class        = local.rds_instance_class
-  rds_allocated_storage     = var.rds_allocated_storage
-  rds_database_name         = var.rds_database_name
-  rds_username              = var.rds_username
+  rds_engine            = var.rds_engine
+  rds_engine_version    = var.rds_engine_version
+  rds_instance_class    = local.rds_instance_class
+  rds_allocated_storage = var.rds_allocated_storage
+  rds_database_name     = var.rds_database_name
+  rds_username          = var.rds_username
 
   # High Availability
   rds_multi_az              = local.rds_multi_az
   rds_backup_retention_days = local.rds_backup_retention_days
   rds_publicly_accessible   = var.rds_publicly_accessible
 
-   # Monitoring & Parameters
+  # Monitoring & Parameters
   rds_parameter_group_family = var.rds_parameter_group_family
-  rds_parameters            = var.rds_parameters
+  rds_parameters             = var.rds_parameters
   enable_enhanced_monitoring = var.enable_enhanced_monitoring
 
   # RDS depends only on infrastructure, not on secrets versions
@@ -272,7 +272,7 @@ locals {
       # または NestJS タスクの IP を直接指定（CloudMap 未使用時）
       {
         name  = "API_URL"
-        value = "http://nestjs-service:3001"  # CloudMap/Service Discovery 使用時
+        value = "http://nestjs-service:3001" # CloudMap/Service Discovery 使用時
       },
       {
         name  = "NODE_ENV"
@@ -285,44 +285,44 @@ locals {
 module "ecs" {
   source = "./modules/compute/ecs"
 
-  project_name              = var.project_name
-  environment               = var.environment
-  aws_region                = var.aws_region
-  vpc_id                    = module.vpc.vpc_id
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+  vpc_id       = module.vpc.vpc_id
 
   # ECR Configuration
-  ecr_nextjs_repository_name     = var.ecr_nextjs_repository_name
-  ecr_nestjs_repository_name  = var.ecr_nestjs_repository_name
-  ecr_nextjs_repository_url      = module.ecr.nextjs_repository_url
-  ecr_nestjs_repository_url   = module.ecr.nestjs_repository_url
-  ecr_image_scan_on_push         = var.ecr_image_scan_on_push
-  ecr_image_tag_mutability       = var.ecr_image_tag_mutability
+  ecr_nextjs_repository_name = var.ecr_nextjs_repository_name
+  ecr_nestjs_repository_name = var.ecr_nestjs_repository_name
+  ecr_nextjs_repository_url  = module.ecr.nextjs_repository_url
+  ecr_nestjs_repository_url  = module.ecr.nestjs_repository_url
+  ecr_image_scan_on_push     = var.ecr_image_scan_on_push
+  ecr_image_tag_mutability   = var.ecr_image_tag_mutability
 
   # ECS Cluster Configuration
-  enable_container_insights      = local.enable_container_insights
-  enable_fargate_spot            = local.enable_fargate_spot
-  capacity_provider_base_count   = local.capacity_provider_base_count
-  capacity_provider_spot_weight  = local.capacity_provider_spot_weight
+  enable_container_insights     = local.enable_container_insights
+  enable_fargate_spot           = local.enable_fargate_spot
+  capacity_provider_base_count  = local.capacity_provider_base_count
+  capacity_provider_spot_weight = local.capacity_provider_spot_weight
 
   # Logging Configuration
   logs_retention_days = local.logs_retention_days
 
   # Network Configuration
-  private_app_subnet_ids    = module.vpc.private_app_subnets
-  private_api_subnet_ids    = module.vpc.private_api_subnets
-  nextjs_security_group_id  = module.security_group.nextjs_security_group_id
+  private_app_subnet_ids   = module.vpc.private_app_subnets
+  private_api_subnet_ids   = module.vpc.private_api_subnets
+  nextjs_security_group_id = module.security_group.nextjs_security_group_id
   nestjs_security_group_id = module.security_group.nestjs_security_group_id
 
   # Load Balancer Configuration
-  alb_dns_name               = module.alb.public_alb_dns_name
-  nextjs_target_group_arn   = module.alb.nextjs_target_group_arn
-  nestjs_target_group_arn   = module.alb.nestjs_target_group_arn
+  alb_dns_name            = module.alb.public_alb_dns_name
+  nextjs_target_group_arn = module.alb.nextjs_target_group_arn
+  nestjs_target_group_arn = module.alb.nestjs_target_group_arn
 
   # RDS Database Configuration
-  rds_endpoint        = module.rds.db_instance_address
-  rds_port            = module.rds.db_instance_port
-  rds_database_name   = module.rds.db_instance_name
-  rds_engine          = var.rds_engine
+  rds_endpoint      = module.rds.db_instance_address
+  rds_port          = module.rds.db_instance_port
+  rds_database_name = module.rds.db_instance_name
+  rds_engine        = var.rds_engine
 
   # NextJS Environment Variables (with dynamic ALB DNS reference)
   nextjs_environment_variables = local.nextjs_environment_variables_merged
@@ -333,8 +333,8 @@ module "ecs" {
 
   # Secrets Manager Configuration
   # RDS credentials are automatically managed by AWS RDS (manage_master_user_password = true)
-  rds_master_user_secret_arn   = module.rds.db_instance_master_user_secret_arn
-  
+  rds_master_user_secret_arn = module.rds.db_instance_master_user_secret_arn
+
   # Other secrets (Redis, App, OAuth) are manually created in AWS Secrets Manager
   redis_credentials_secret_arn = module.secrets_manager.redis_credentials_secret_arn
   app_secrets_secret_arn       = module.secrets_manager.app_secrets_secret_arn
@@ -349,35 +349,35 @@ module "ecs" {
 module "bastion_ec2" {
   source = "./modules/compute/bastion-ec2"
 
-  project_name              = var.project_name
-  environment               = var.environment
-  aws_region                = var.aws_region
-  
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
   # Network Configuration
   vpc_id                    = module.vpc.vpc_id
   private_subnet_ids        = module.vpc.private_api_subnets
   bastion_security_group_id = module.security_group.bastion_security_group_id
-  
+
   # EC2 Configuration
-  enable_bastion        = var.enable_bastion
-  bastion_instance_type = var.bastion_instance_type
+  enable_bastion           = var.enable_bastion
+  bastion_instance_type    = var.bastion_instance_type
   bastion_root_volume_size = var.bastion_root_volume_size
-  
+
   # Logging Configuration
   logs_retention_days = local.logs_retention_days
-  
+
   # Database Configuration
   rds_endpoint                   = module.rds.rds_instance_endpoint
   rds_master_username            = var.rds_username
   rds_master_password_secret_arn = var.rds_master_password_secret_arn
   rds_database_name              = var.rds_database_name
-  
+
   # Application Database Configuration
-  app_db_username  = var.app_db_username
-  app_db_password  = var.app_db_password
+  app_db_username       = var.app_db_username
+  app_db_password       = var.app_db_password
   db_read_only_password = var.db_read_only_password
-  db_engine        = var.rds_engine
-  
+  db_engine             = var.rds_engine
+
   # Tags
   tags = local.common_tags
 
@@ -391,16 +391,16 @@ module "bastion_ec2" {
 module "cache" {
   source = "./modules/database/cache"
 
-  app_name              = var.project_name
-  environment           = var.environment
-  private_subnets      = module.vpc.private_app_subnets
-  redis_security_group_id = module.security_group.redis_security_group_id
-  redis_node_type      = "cache.t3.micro"
+  app_name                 = var.project_name
+  environment              = var.environment
+  private_subnets          = module.vpc.private_app_subnets
+  redis_security_group_id  = module.security_group.redis_security_group_id
+  redis_node_type          = "cache.t3.micro"
   snapshot_retention_limit = 5
-  snapshot_window      = "03:00-05:00"
-  maintenance_window   = "sun:05:00-sun:06:00"
-  common_tags          = local.common_tags
-  
+  snapshot_window          = "03:00-05:00"
+  maintenance_window       = "sun:05:00-sun:06:00"
+  common_tags              = local.common_tags
+
   depends_on = [module.vpc, module.security_group]
 }
 
@@ -412,11 +412,11 @@ module "cache" {
 module "monitoring" {
   source = "./modules/monitoring/cloudwatch"
 
-  app_name                     = var.project_name
-  environment                  = var.environment
-  cloudwatch_logs_kms_key_id   = var.enable_kms_encryption ? module.kms.cloudwatch_logs_key_id : var.cloudwatch_logs_kms_key_id
-  cloudtrail_bucket_name       = var.cloudtrail_bucket_name
-  common_tags                  = local.common_tags
+  app_name                   = var.project_name
+  environment                = var.environment
+  cloudwatch_logs_kms_key_id = var.enable_kms_encryption ? module.kms.cloudwatch_logs_key_id : var.cloudwatch_logs_kms_key_id
+  cloudtrail_bucket_name     = var.cloudtrail_bucket_name
+  common_tags                = local.common_tags
 
   depends_on = [module.ecs, module.rds, module.alb, module.kms]
 }

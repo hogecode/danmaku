@@ -5,7 +5,7 @@
 # ========================================
 
 module "rds" {
-  source = "terraform-aws-modules/rds/aws"
+  source  = "terraform-aws-modules/rds/aws"
   version = "~> 6.0"
 
   identifier = "${var.project_name}-db-${var.environment}"
@@ -17,35 +17,35 @@ module "rds" {
   major_engine_version = var.rds_engine == "mysql" ? "8.0" : "14"
 
   # Instance configuration
-  instance_class       = var.rds_instance_class
-  allocated_storage    = var.rds_allocated_storage
-  storage_type         = "gp3" // General Purpose SSD (gp3)
-  storage_encrypted    = true
-  storage_throughput   = var.rds_allocated_storage >= 400 ? 125 : null // Only set if allocated storage is 400 GiB or more
+  instance_class     = var.rds_instance_class
+  allocated_storage  = var.rds_allocated_storage
+  storage_type       = "gp3" // General Purpose SSD (gp3)
+  storage_encrypted  = true
+  storage_throughput = var.rds_allocated_storage >= 400 ? 125 : null // Only set if allocated storage is 400 GiB or more
 
   # Database configuration
-  db_name  = var.rds_database_name
-  
+  db_name = var.rds_database_name
+
   # Master user configuration
   # manage_master_user_password = true の場合、username を指定し、password は AWS が自動生成・管理する
-  username = var.rds_username != "" ? var.rds_username : (var.rds_engine == "mysql" ? "admin" : "postgres")
+  username                    = var.rds_username != "" ? var.rds_username : (var.rds_engine == "mysql" ? "admin" : "postgres")
   manage_master_user_password = true
 
   # Network configuration
-  db_subnet_group_name            = aws_db_subnet_group.main.name
-  publicly_accessible            = var.rds_publicly_accessible // false
-  vpc_security_group_ids          = [var.rds_security_group_id]
+  db_subnet_group_name                = aws_db_subnet_group.main.name
+  publicly_accessible                 = var.rds_publicly_accessible // false
+  vpc_security_group_ids              = [var.rds_security_group_id]
   iam_database_authentication_enabled = true
 
   # High Availability
   multi_az = var.rds_multi_az
 
   # Backup & Recovery
-  backup_retention_period = var.rds_backup_retention_days
-  backup_window           = "03:00-04:00"
-  maintenance_window      = "sun:04:00-sun:05:00"
-  copy_tags_to_snapshot   = true // スナップショットにもタグをコピーする設定
-  skip_final_snapshot     = var.environment != "prod"
+  backup_retention_period          = var.rds_backup_retention_days
+  backup_window                    = "03:00-04:00"
+  maintenance_window               = "sun:04:00-sun:05:00"
+  copy_tags_to_snapshot            = true // スナップショットにもタグをコピーする設定
+  skip_final_snapshot              = var.environment != "prod"
   final_snapshot_identifier_prefix = var.environment == "prod" ? "${var.project_name}-db-final-snapshot" : null
 
   # Enhanced Monitoring
@@ -56,7 +56,7 @@ module "rds" {
       "error",
       "slowquery",
       "audit"
-    ] : [
+      ] : [
       "postgresql",
       "upgrade"
     ]
@@ -67,14 +67,14 @@ module "rds" {
   # Deletion Protection
   deletion_protection = var.environment == "prod" ? true : false
 
-   # Parameter Group
-   # TODO: locals内でパラメータのリストを作成して、forループで変換する
-   parameters = [
-     for k, v in var.rds_parameters : {
-       name  = k
-       value = v
-     }
-   ]
+  # Parameter Group
+  # TODO: locals内でパラメータのリストを作成して、forループで変換する
+  parameters = [
+    for k, v in var.rds_parameters : {
+      name  = k
+      value = v
+    }
+  ]
 
   tags = {
     Name = "${var.project_name}-db-${var.environment}"

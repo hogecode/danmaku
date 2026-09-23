@@ -229,14 +229,14 @@ output "project_name" {
 output "github_secrets_json" {
   description = "JSON formatted GitHub Secrets for CI/CD configuration"
   value = jsonencode({
-    AWS_REGION                    = var.aws_region
-    AWS_ACCOUNT_ID                = data.aws_caller_identity.current.account_id
-    AWS_ROLE_ARN                  = module.cicd.github_oidc_role_arn
-    ECR_NEXTJS_REPOSITORY_NAME    = var.ecr_nextjs_repository_name
-    ECR_NESTJS_REPOSITORY_NAME    = var.ecr_nestjs_repository_name
-    ECS_CLUSTER_NAME              = module.ecs.ecs_cluster_name
-    ECS_NEXTJS_SERVICE_NAME       = module.ecs.nextjs_service_name
-    ECS_NESTJS_SERVICE_NAME       = module.ecs.nestjs_service_name
+    AWS_REGION                 = var.aws_region
+    AWS_ACCOUNT_ID             = data.aws_caller_identity.current.account_id
+    AWS_ROLE_ARN               = module.cicd.github_oidc_role_arn
+    ECR_NEXTJS_REPOSITORY_NAME = var.ecr_nextjs_repository_name
+    ECR_NESTJS_REPOSITORY_NAME = var.ecr_nestjs_repository_name
+    ECS_CLUSTER_NAME           = module.ecs.ecs_cluster_name
+    ECS_NEXTJS_SERVICE_NAME    = module.ecs.nextjs_service_name
+    ECS_NESTJS_SERVICE_NAME    = module.ecs.nestjs_service_name
   })
 }
 

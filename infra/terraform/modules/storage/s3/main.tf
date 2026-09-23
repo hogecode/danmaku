@@ -13,7 +13,7 @@ resource "random_string" "bucket_suffix" {
 # ALB Access Logs Bucket
 # ========================================
 module "alb_logs" {
-  source = "terraform-aws-modules/s3-bucket/aws"
+  source  = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 4.0"
 
   bucket = "${var.app_name}-${var.environment}-alb-logs-${random_string.bucket_suffix.result}"
@@ -43,7 +43,7 @@ module "alb_logs" {
         Principal = {
           Service = "logdelivery.elasticloadbalancing.amazonaws.com"
         }
-        Action = "s3:PutObject"
+        Action   = "s3:PutObject"
         Resource = "${module.alb_logs.s3_bucket_arn}/alb/AWSLogs/${var.caller_identity_account_id}/*"
       },
       {
@@ -104,7 +104,7 @@ module "alb_logs" {
 # CloudTrail Logs Bucket
 # ========================================
 module "cloudtrail" {
-  source = "terraform-aws-modules/s3-bucket/aws"
+  source  = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 4.0"
 
   bucket = "${var.app_name}-${var.environment}-cloudtrail-${random_string.bucket_suffix.result}"
@@ -170,7 +170,7 @@ module "cloudtrail" {
 # Application Filesystem Bucket
 # ========================================
 module "app_filesystem" {
-  source = "terraform-aws-modules/s3-bucket/aws"
+  source  = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 4.0"
 
   bucket = "${var.app_name}-${var.environment}-filesystem-${random_string.bucket_suffix.result}"
@@ -279,7 +279,7 @@ module "app_filesystem" {
 # AWS Config Bucket
 # ========================================
 module "config" {
-  source = "terraform-aws-modules/s3-bucket/aws"
+  source  = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 4.0"
 
   bucket = "${var.app_name}-${var.environment}-config-${random_string.bucket_suffix.result}"

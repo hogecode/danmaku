@@ -20,7 +20,7 @@
 
 # ALB Public Security Group
 module "alb_public_sg" {
-  source = "terraform-aws-modules/security-group/aws"
+  source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
   name        = "${var.project_name}-alb-public-sg-${var.environment}"
@@ -40,7 +40,7 @@ module "alb_public_sg" {
 
 # Next.js ECS Security Group
 module "nextjs_sg" {
-  source = "terraform-aws-modules/security-group/aws"
+  source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
   name        = "${var.project_name}-nextjs-sg-${var.environment}"
@@ -78,7 +78,7 @@ module "nextjs_sg" {
 
 # Go Server ECS Security Group (NestJS)
 module "nestjs_sg" {
-  source = "terraform-aws-modules/security-group/aws"
+  source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
   name        = "${var.project_name}-nestjs-sg-${var.environment}"
@@ -107,16 +107,16 @@ module "nestjs_sg" {
 
 # RDS Security Group
 module "rds_sg" {
-  source = "terraform-aws-modules/security-group/aws"
+  source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
   name        = "${var.project_name}-rds-sg-${var.environment}"
   description = "Security group for RDS database"
   vpc_id      = var.vpc_id
 
-  ingress_rules       = []
-  egress_rules        = ["all-all"]
-  egress_cidr_blocks  = ["0.0.0.0/0"]
+  ingress_rules      = []
+  egress_rules       = ["all-all"]
+  egress_cidr_blocks = ["0.0.0.0/0"]
 
   tags = {
     Name = "${var.project_name}-rds-sg-${var.environment}"
@@ -125,16 +125,16 @@ module "rds_sg" {
 
 # Bastion Security Group
 module "bastion_sg" {
-  source = "terraform-aws-modules/security-group/aws"
+  source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
   name        = "${var.project_name}-bastion-sg-${var.environment}"
   description = "Security group for Bastion host"
   vpc_id      = var.vpc_id
 
-  ingress_rules       = []
-  egress_rules        = ["mysql-tcp", "postgresql-tcp", "https-443-tcp"]
-  egress_cidr_blocks  = ["0.0.0.0/0"]
+  ingress_rules           = []
+  egress_rules            = ["mysql-tcp", "postgresql-tcp", "https-443-tcp"]
+  egress_cidr_blocks      = ["0.0.0.0/0"]
   egress_ipv6_cidr_blocks = ["::/0"]
 
   tags = {
@@ -144,7 +144,7 @@ module "bastion_sg" {
 
 # VPC Endpoints Security Group
 module "vpc_endpoints_sg" {
-  source = "terraform-aws-modules/security-group/aws"
+  source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
   name        = "${var.project_name}-vpc-endpoints-sg-${var.environment}"
@@ -153,12 +153,12 @@ module "vpc_endpoints_sg" {
 
   ingress_rules       = ["https-443-tcp"]
   ingress_cidr_blocks = [var.vpc_cidr]
-  
+
   # Allow ingress from security groups (will be added via separate rules)
   ingress_with_source_security_group_id = []
 
-  egress_rules        = ["all-all"]
-  egress_cidr_blocks  = ["0.0.0.0/0"]
+  egress_rules       = ["all-all"]
+  egress_cidr_blocks = ["0.0.0.0/0"]
 
   tags = {
     Name = "${var.project_name}-vpc-endpoints-sg-${var.environment}"
@@ -167,16 +167,16 @@ module "vpc_endpoints_sg" {
 
 # Redis Security Group (for future use)
 module "redis_sg" {
-  source = "terraform-aws-modules/security-group/aws"
+  source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
   name        = "${var.project_name}-redis-sg-${var.environment}"
   description = "Security group for Redis cache"
   vpc_id      = var.vpc_id
 
-  ingress_rules       = []
-  egress_rules        = ["all-all"]
-  egress_cidr_blocks  = ["0.0.0.0/0"]
+  ingress_rules      = []
+  egress_rules       = ["all-all"]
+  egress_cidr_blocks = ["0.0.0.0/0"]
 
   tags = {
     Name = "${var.project_name}-redis-sg-${var.environment}"

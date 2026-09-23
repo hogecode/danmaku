@@ -6,15 +6,15 @@ module "public_alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "~> 9.0"
 
-  name            = "${var.project_name}-public-alb-${var.environment}"
-  internal        = false
+  name               = "${var.project_name}-public-alb-${var.environment}"
+  internal           = false
   load_balancer_type = "application"
-  vpc_id          = var.vpc_id
-  subnets         = var.public_subnet_ids
-  security_groups = [var.alb_public_security_group_id]
+  vpc_id             = var.vpc_id
+  subnets            = var.public_subnet_ids
+  security_groups    = [var.alb_public_security_group_id]
 
-  enable_deletion_protection = var.environment == "prod" ? true : false
-  enable_http2               = true
+  enable_deletion_protection       = var.environment == "prod" ? true : false
+  enable_http2                     = true
   enable_cross_zone_load_balancing = true
 
   # Listeners configuration with default forward to Next.js
@@ -22,8 +22,8 @@ module "public_alb" {
   listeners = merge(
     {
       http = {
-        port        = 80
-        protocol    = "HTTP"
+        port     = 80
+        protocol = "HTTP"
         forward = {
           target_group_key = "nextjs-blue"
         }
@@ -45,10 +45,10 @@ module "public_alb" {
   target_groups = {
     # Next.js Target Group (Blue/Green)
     nextjs-blue = {
-      name             = "${var.project_name}-nextjs-blue-${var.environment}"
-      backend_protocol = "HTTP"
-      backend_port     = 3000
-      target_type      = "ip"
+      name              = "${var.project_name}-nextjs-blue-${var.environment}"
+      backend_protocol  = "HTTP"
+      backend_port      = 3000
+      target_type       = "ip"
       create_attachment = false
       health_check = {
         healthy_threshold   = 2
@@ -70,10 +70,10 @@ module "public_alb" {
 
     # NestJS Target Group (Blue/Green)
     nestjs-blue = {
-      name             = "${var.project_name}-nestjs-blue-${var.environment}"
-      backend_protocol = "HTTP"
-      backend_port     = 3001
-      target_type      = "ip"
+      name              = "${var.project_name}-nestjs-blue-${var.environment}"
+      backend_protocol  = "HTTP"
+      backend_port      = 3001
+      target_type       = "ip"
       create_attachment = false
       health_check = {
         healthy_threshold   = 3

@@ -16,25 +16,25 @@ resource "aws_elasticache_subnet_group" "redis" {
 
 # Redis Replication Group (Cluster Mode Disabled - Single Primary)
 resource "aws_elasticache_replication_group" "redis" {
-  replication_group_id       = "${var.app_name}-${var.environment}-redis"
-  description                = "Redis cluster for ${var.app_name}-${var.environment}"
-  engine                     = "redis"
-  engine_version             = "7.0"
-  node_type                  = var.redis_node_type
-  num_cache_clusters         = 1
-  parameter_group_name       = aws_elasticache_parameter_group.redis.name
-  port                       = 6379
-  subnet_group_name          = aws_elasticache_subnet_group.redis.name
-  security_group_ids         = [var.redis_security_group_id]
-  
+  replication_group_id = "${var.app_name}-${var.environment}-redis"
+  description          = "Redis cluster for ${var.app_name}-${var.environment}"
+  engine               = "redis"
+  engine_version       = "7.0"
+  node_type            = var.redis_node_type
+  num_cache_clusters   = 1
+  parameter_group_name = aws_elasticache_parameter_group.redis.name
+  port                 = 6379
+  subnet_group_name    = aws_elasticache_subnet_group.redis.name
+  security_group_ids   = [var.redis_security_group_id]
+
   # Automatic Failover (requires 2 or more nodes, disabled for single node)
   automatic_failover_enabled = false
-  
+
   # Backup & Snapshot Configuration
   snapshot_retention_limit = var.snapshot_retention_limit
   snapshot_window          = var.snapshot_window
   maintenance_window       = var.maintenance_window
-  
+
   # Tags
   tags = merge(var.common_tags, {
     Name = "${var.app_name}-${var.environment}-redis"

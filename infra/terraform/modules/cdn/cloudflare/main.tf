@@ -54,7 +54,7 @@ resource "cloudflare_zone_settings_override" "main" {
 
   settings {
     # SSL/TLS
-    ssl                      = var.ssl_mode // flexible, full, full_strict
+    ssl                      = var.ssl_mode        // flexible, full, full_strict
     min_tls_version          = var.min_tls_version // "1.0", "1.1", "1.2", "1.3"
     tls_1_3                  = "on"
     automatic_https_rewrites = "on"
@@ -64,7 +64,7 @@ resource "cloudflare_zone_settings_override" "main" {
     security_level = var.security_level // essentially_off, low, medium, high, under_attack
 
     # Caching
-    cache_level       = var.cache_level // "bypass", "basic", "simplified", "aggressive", "cache_everything"
+    cache_level       = var.cache_level       // "bypass", "basic", "simplified", "aggressive", "cache_everything"
     browser_cache_ttl = var.browser_cache_ttl // 1800 seconds (30 minutes)
     always_online     = var.environment == "prod" ? "on" : "off"
 
@@ -75,11 +75,11 @@ resource "cloudflare_zone_settings_override" "main" {
       js   = var.enable_minify
     }
 
-    rocket_loader      = var.enable_rocket_loader ? "on" : "off" // Rocket Loader for asynchronous JavaScript loading
-    brotli             = "on" // brotli compression
-    email_obfuscation  = "on" //メールアドレスの難読化
+    rocket_loader      = var.enable_rocket_loader ? "on" : "off"      // Rocket Loader for asynchronous JavaScript loading
+    brotli             = "on"                                         // brotli compression
+    email_obfuscation  = "on"                                         //メールアドレスの難読化
     hotlink_protection = var.enable_hotlink_protection ? "on" : "off" // Hotlink protection for images and other assets
-    development_mode   = var.development_mode ? "on" : "off" // Development mode for bypassing cache during development
+    development_mode   = var.development_mode ? "on" : "off"          // Development mode for bypassing cache during development
   }
 
   depends_on = [data.cloudflare_zone.main]

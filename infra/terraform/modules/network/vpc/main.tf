@@ -8,7 +8,7 @@ module "vpc" {
   name = "${var.project_name}-vpc-${var.environment}"
   cidr = var.vpc_cidr
 
-  azs             = var.availability_zones
+  azs            = var.availability_zones
   public_subnets = var.public_subnet_cidrs
 
   # Private subnets - Application Layer
@@ -17,17 +17,17 @@ module "vpc" {
   # Additional private subnets for different layers
   # This is handled separately since terraform-aws-modules VPC doesn't support multiple private subnet groups directly
 
-  enable_nat_gateway   = var.enable_nat_gateway
-  single_nat_gateway   = var.nat_gateway_count == 1 ? true : false
+  enable_nat_gateway     = var.enable_nat_gateway
+  single_nat_gateway     = var.nat_gateway_count == 1 ? true : false
   one_nat_gateway_per_az = var.nat_gateway_count == 2 ? true : false
 
   enable_dns_hostnames = true
   enable_dns_support   = true
 
   # VPC Flow Logs
-  enable_flow_log                      = var.enable_vpc_flow_logs
-  create_flow_log_cloudwatch_iam_role  = var.enable_vpc_flow_logs
-  create_flow_log_cloudwatch_log_group = var.enable_vpc_flow_logs
+  enable_flow_log                                 = var.enable_vpc_flow_logs
+  create_flow_log_cloudwatch_iam_role             = var.enable_vpc_flow_logs
+  create_flow_log_cloudwatch_log_group            = var.enable_vpc_flow_logs
   flow_log_cloudwatch_log_group_retention_in_days = var.enable_vpc_flow_logs ? 7 : null
 
   # Tags
@@ -161,7 +161,7 @@ resource "aws_vpc_endpoint" "secrets_manager" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = aws_subnet.private_api[*].id
+  subnet_ids         = aws_subnet.private_api[*].id
   security_group_ids = [var.vpc_endpoints_security_group_id != "" ? var.vpc_endpoints_security_group_id : aws_security_group.vpc_endpoints_default[0].id]
 
   tags = {
@@ -176,14 +176,14 @@ resource "aws_vpc_endpoint" "logs" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
+  subnet_ids         = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
   security_group_ids = [var.vpc_endpoints_security_group_id != "" ? var.vpc_endpoints_security_group_id : aws_security_group.vpc_endpoints_default[0].id]
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = "*"
         Action = [
           "logs:CreateLogStream",
@@ -207,14 +207,14 @@ resource "aws_vpc_endpoint" "ecr_api" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
+  subnet_ids         = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
   security_group_ids = [var.vpc_endpoints_security_group_id != "" ? var.vpc_endpoints_security_group_id : aws_security_group.vpc_endpoints_default[0].id]
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = "*"
         Action = [
           "ecr:GetAuthorizationToken",
@@ -241,14 +241,14 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
+  subnet_ids         = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
   security_group_ids = [var.vpc_endpoints_security_group_id != "" ? var.vpc_endpoints_security_group_id : aws_security_group.vpc_endpoints_default[0].id]
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = "*"
         Action = [
           "ecr:GetAuthorizationToken",
@@ -268,7 +268,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
 # Default Security Group for VPC Endpoints (if not provided)
 resource "aws_security_group" "vpc_endpoints_default" {
   count = var.vpc_endpoints_security_group_id == "" ? 1 : 0
-  
+
   name        = "${var.project_name}-vpc-endpoints-default-sg-${var.environment}"
   description = "Default Security group for VPC Endpoints"
   vpc_id      = module.vpc.vpc_id
@@ -301,7 +301,7 @@ resource "aws_vpc_endpoint" "monitoring" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
+  subnet_ids         = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
   security_group_ids = [var.vpc_endpoints_security_group_id != "" ? var.vpc_endpoints_security_group_id : aws_security_group.vpc_endpoints_default[0].id]
 
   tags = {
@@ -316,7 +316,7 @@ resource "aws_vpc_endpoint" "ssm" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
+  subnet_ids         = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
   security_group_ids = [var.vpc_endpoints_security_group_id != "" ? var.vpc_endpoints_security_group_id : aws_security_group.vpc_endpoints_default[0].id]
 
   tags = {
@@ -331,7 +331,7 @@ resource "aws_vpc_endpoint" "ssmmessages" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
+  subnet_ids         = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
   security_group_ids = [var.vpc_endpoints_security_group_id != "" ? var.vpc_endpoints_security_group_id : aws_security_group.vpc_endpoints_default[0].id]
 
   tags = {
@@ -346,7 +346,7 @@ resource "aws_vpc_endpoint" "ec2messages" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
+  subnet_ids         = slice(module.vpc.private_subnets, 0, length(var.availability_zones))
   security_group_ids = [var.vpc_endpoints_security_group_id != "" ? var.vpc_endpoints_security_group_id : aws_security_group.vpc_endpoints_default[0].id]
 
   tags = {

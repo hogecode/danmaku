@@ -39,9 +39,9 @@ resource "aws_cloudwatch_log_group" "xray" {
 # ========================================
 
 resource "aws_service_discovery_private_dns_namespace" "ecs" {
-  name            = "${var.project_name}.local"
-  vpc             = var.vpc_id
-  description     = "Private DNS namespace for ECS Service Discovery (${var.environment})"
+  name        = "${var.project_name}.local"
+  vpc         = var.vpc_id
+  description = "Private DNS namespace for ECS Service Discovery (${var.environment})"
 
   tags = {
     Name = "${var.project_name}-dns-namespace-${var.environment}"
@@ -116,8 +116,8 @@ resource "aws_iam_role_policy" "ecs_task_execution_custom" {
         Resource = "arn:aws:logs:${var.aws_region}:*:log-group:/ecs/*"
       },
       {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue"]
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
         Resource = [
           "arn:aws:secretsmanager:${var.aws_region}:*:secret:${var.project_name}/*",
           "arn:aws:secretsmanager:${var.aws_region}:*:secret:rds!*"
@@ -216,8 +216,8 @@ resource "aws_iam_role_policy" "ecs_task_role_nestjs" {
         Resource = "*"
       },
       {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue"]
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
         Resource = [
           "arn:aws:secretsmanager:${var.aws_region}:*:secret:${var.project_name}/*",
           "arn:aws:secretsmanager:${var.aws_region}:*:secret:rds!*"
@@ -283,7 +283,7 @@ resource "aws_ecs_task_definition" "nextjs" {
         }
       }
       environment = var.nextjs_environment_variables
-      secrets = var.nextjs_secrets
+      secrets     = var.nextjs_secrets
     }
   ])
 
@@ -391,11 +391,11 @@ resource "aws_ecs_task_definition" "nestjs" {
 
 # Next.js Service
 resource "aws_ecs_service" "nextjs" {
-  name            = "${var.project_name}-nextjs-service"
-  cluster         = module.ecs_cluster.cluster_id
-  task_definition = aws_ecs_task_definition.nextjs.arn
-  desired_count   = var.nextjs_desired_count
-  launch_type     = "FARGATE"
+  name                   = "${var.project_name}-nextjs-service"
+  cluster                = module.ecs_cluster.cluster_id
+  task_definition        = aws_ecs_task_definition.nextjs.arn
+  desired_count          = var.nextjs_desired_count
+  launch_type            = "FARGATE"
   enable_execute_command = true
 
   network_configuration {
@@ -419,6 +419,11 @@ resource "aws_ecs_service" "nextjs" {
     type = "ECS"
   }
 
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
   lifecycle {
     ignore_changes = [desired_count]
   }
@@ -433,9 +438,9 @@ resource "aws_ecs_service" "nextjs" {
 # ========================================
 
 resource "aws_service_discovery_service" "nestjs" {
-  name            = "nestjs-service"
-  namespace_id    = aws_service_discovery_private_dns_namespace.ecs.id
-  description     = "Service discovery for NestJS API service"
+  name         = "nestjs-service"
+  namespace_id = aws_service_discovery_private_dns_namespace.ecs.id
+  description  = "Service discovery for NestJS API service"
 
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.ecs.id
@@ -458,17 +463,17 @@ resource "aws_service_discovery_service" "nestjs" {
 
 # NestJS Service
 resource "aws_ecs_service" "nestjs" {
-  name            = "${var.project_name}-nestjs-service"
-  cluster         = module.ecs_cluster.cluster_id
-  task_definition = aws_ecs_task_definition.nestjs.arn
-  desired_count   = var.nestjs_desired_count
-  launch_type     = "FARGATE"
-  enable_execute_command = true
+  name                   = "${var.project_name}-nestjs-service"
+  cluster                = module.ecs_cluster.cluster_id
+  task_definition        = aws_ecs_task_definition.nestjs.arn
+  desired_count          = var.nestjs_desired_count
+  launch_type            = "FARGATE"
+  enable_execute_command = true // Enable ECS Exec
 
   network_configuration {
     subnets          = var.private_api_subnet_ids
     security_groups  = [var.nestjs_security_group_id]
-    assign_public_ip = false
+    assign_public_ip = false // Do not assign a public IP
   }
 
   load_balancer {
@@ -482,8 +487,15 @@ resource "aws_ecs_service" "nestjs" {
     registry_arn = aws_service_discovery_service.nestjs.arn
   }
 
+  # Deployment Controller Configuration
   deployment_controller {
     type = "ECS"
+  }
+
+  # Deployment Circuit Breaker Configuration
+  deployment_circuit_breaker {
+    enable   = true // Enable deployment circuit breaker
+    rollback = true // Rollback on deployment failure
   }
 
   lifecycle {

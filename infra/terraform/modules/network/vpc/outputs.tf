@@ -104,17 +104,17 @@ output "internet_gateway_id" {
 output "vpc_endpoints" {
   description = "Map of VPC Endpoints created"
   value = {
-    s3               = aws_vpc_endpoint.s3.id
-    dynamodb         = aws_vpc_endpoint.dynamodb.id
-    secrets_manager  = aws_vpc_endpoint.secrets_manager.id
-    logs             = aws_vpc_endpoint.logs.id
-    ecr_api          = aws_vpc_endpoint.ecr_api.id
-    ecr_dkr          = aws_vpc_endpoint.ecr_dkr.id
-    monitoring       = aws_vpc_endpoint.monitoring.id
-    ssm              = aws_vpc_endpoint.ssm.id
-    ssmmessages      = aws_vpc_endpoint.ssmmessages.id
-    ec2messages      = aws_vpc_endpoint.ec2messages.id
-    sqs              = aws_vpc_endpoint.sqs.id
+    s3              = aws_vpc_endpoint.s3.id
+    dynamodb        = aws_vpc_endpoint.dynamodb.id
+    secrets_manager = aws_vpc_endpoint.secrets_manager.id
+    logs            = aws_vpc_endpoint.logs.id
+    ecr_api         = aws_vpc_endpoint.ecr_api.id
+    ecr_dkr         = aws_vpc_endpoint.ecr_dkr.id
+    monitoring      = aws_vpc_endpoint.monitoring.id
+    ssm             = aws_vpc_endpoint.ssm.id
+    ssmmessages     = aws_vpc_endpoint.ssmmessages.id
+    ec2messages     = aws_vpc_endpoint.ec2messages.id
+    sqs             = aws_vpc_endpoint.sqs.id
   }
 }
 

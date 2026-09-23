@@ -6,11 +6,11 @@ module "nextjs_ecr" {
   source  = "terraform-aws-modules/ecr/aws"
   version = "~> 1.0"
 
-  repository_name                = var.ecr_nextjs_repository_name
-  repository_type                = "private"
+  repository_name                 = var.ecr_nextjs_repository_name
+  repository_type                 = "private"
   repository_image_tag_mutability = var.ecr_image_tag_mutability // "MUTABLE", "IMMUTABLE"
-  
-  repository_image_scan_on_push   = var.ecr_image_scan_on_push // true
+
+  repository_image_scan_on_push = var.ecr_image_scan_on_push // true
 
   # Lifecycle policy
   repository_lifecycle_policy = jsonencode({
@@ -53,11 +53,11 @@ module "nestjs_ecr" {
   source  = "terraform-aws-modules/ecr/aws"
   version = "~> 1.0"
 
-  repository_name                = var.ecr_nestjs_repository_name
-  repository_type                = "private"
+  repository_name                 = var.ecr_nestjs_repository_name
+  repository_type                 = "private"
   repository_image_tag_mutability = var.ecr_image_tag_mutability
-  
-  repository_image_scan_on_push   = var.ecr_image_scan_on_push
+
+  repository_image_scan_on_push = var.ecr_image_scan_on_push
 
   # Lifecycle policy
   repository_lifecycle_policy = jsonencode({

@@ -77,11 +77,11 @@ resource "aws_sns_topic_subscription" "health_check_email" {
 # ========================================
 
 resource "aws_cloudtrail" "main" {
-  count          = var.enable_cloudtrail ? 1 : 0
-  name           = "${var.app_name}-${var.environment}-cloudtrail"
-  s3_bucket_name = var.cloudtrail_bucket_name
+  count                 = var.enable_cloudtrail ? 1 : 0
+  name                  = "${var.app_name}-${var.environment}-cloudtrail"
+  s3_bucket_name        = var.cloudtrail_bucket_name
   is_multi_region_trail = true
-  depends_on = [aws_s3_bucket_policy.cloudtrail]
+  depends_on            = [aws_s3_bucket_policy.cloudtrail]
 
   tags = merge(var.common_tags, {
     Name = "${var.app_name}-${var.environment}-cloudtrail"
