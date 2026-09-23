@@ -160,6 +160,7 @@ async function bootstrap() {
 
   const port = Number(process.env.PORT || 3001);
 
+  // 0.0.0.0: Listen on all network interfaces
   await app.listen(port, '0.0.0.0');
 
   pinoLogger.info(`🚀 NestJS listening on 0.0.0.0:${port}`);
