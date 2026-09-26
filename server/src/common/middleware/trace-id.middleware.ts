@@ -57,6 +57,12 @@ export class TraceIdMiddleware implements NestMiddleware {
       // ✅ レスポンス完了時にログを出力
       const startTime = Date.now();
       res.on('finish', () => {
+        // ✅ ヘルスチェックエンドポイントはログを出力しない
+        // （頻繁にコールされるため、ログノイズを削減）
+        if (req.url === '/api/health' || req.url.startsWith('/api/health?')) {
+          return;
+        }
+
         const duration = Date.now() - startTime;
         const logLevel = getLogLevel(res.statusCode);
 
