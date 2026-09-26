@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { selectConnections, selectSelectedConnection } from '@/lib/store/selectors';
 import { selectConnection } from '@/lib/store/slices/drivesSlice';
@@ -9,6 +10,7 @@ import type { DriveConnectionDto } from '@/lib/generated';
  * ドライブ接続を切り替えるセレクター
  */
 export function DriveSelector() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const connections = useAppSelector(selectConnections);
   const selectedConnection = useAppSelector(selectSelectedConnection);
@@ -29,10 +31,16 @@ export function DriveSelector() {
     );
   }
 
+  const handleConnectionChange = (connectionId: string) => {
+    dispatch(selectConnection(connectionId));
+    // 別のコネクションが選択されたら、ルートフォルダへ遷移
+    router.push(`/drive?connectionId=${connectionId}`);
+  };
+
   return (
     <select
       value={selectedConnection?.id || ''}
-      onChange={(e) => dispatch(selectConnection(e.target.value))}
+      onChange={(e) => handleConnectionChange(e.target.value)}
       className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
     >
       {connections.map((connection) => (
