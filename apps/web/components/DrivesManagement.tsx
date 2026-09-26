@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import {
   selectSelectedConnection,
@@ -39,6 +39,7 @@ interface DrivesManagementProps {
  * ドライブ管理コンポーネント
  */
 export function DrivesManagement({ onDriveSelect }: DrivesManagementProps) {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const selectedConnection = useAppSelector(selectSelectedConnection);
@@ -80,6 +81,8 @@ export function DrivesManagement({ onDriveSelect }: DrivesManagementProps) {
   const handleSelectDrive = (driveId: string) => {
     dispatch(selectConnection(driveId));
     onDriveSelect?.(driveId);
+    // /network ページに遷移
+    router.push(`/drive?connectionId=${driveId}`);
   };
 
   // ドライブを削除
