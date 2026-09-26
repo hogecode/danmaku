@@ -29,7 +29,6 @@ export function middleware(request: NextRequest) {
     '/network',
     '/nicovideo',
     '/playlist',
-    '/download',
     '/screenshot',
     '/settings',
     '/watched-history',
