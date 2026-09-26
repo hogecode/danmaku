@@ -28,7 +28,7 @@ import {
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 
-type NavPath = '/' | '/drive' | '/network' | '/playlist' | '/screenshot' | '/download' | '/watched-history' | '/settings';
+type NavPath = '/' | '/drive' | '/network' | '/playlist' | '/screenshot'  | '/watched-history' | '/settings';
 
 interface NavItem {
   label: string;
@@ -42,7 +42,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'ドライブ', icon: <CloudIcon />, path: '/drive' },
   { label: 'プレイリスト', icon: <PlaylistIcon />, path: '/playlist' },
   { label: 'スクリーンショット', icon: <ImageIcon />, path: '/screenshot' },
-  { label: 'ダウンロード', icon: <DownloadIcon />, path: '/download' },
   { label: '視聴履歴', icon: <HistoryIcon />, path: '/watched-history' },
   { label: '設定', icon: <SettingsIcon />, path: '/settings' },
 ];
