@@ -25,11 +25,11 @@ export default function WatchPage() {
 
   // ✅ ユーザー設定からコメント設定を構築
   const commentSettings = userSettings ? {
-    speedRate: 1, // デフォルト値
-    fontSize: 25, // デフォルト値
-    opacity: parseFloat(userSettings.danmaku_opacity || '0.7'),
+    speedRate: 1,
+    fontSize: 25,
+    opacity: 0.7, // デフォルト値
     maxCount: userSettings.danmaku_max_count || 100,
-    displayDuration: userSettings.danmaku_display_duration || 5,
+    displayDuration: 5, // デフォルト値
     closeFormAfterSend: false,
   } : {
     speedRate: 1,
@@ -44,19 +44,12 @@ export default function WatchPage() {
   const playerSettings = userSettings ? {
     theme: userSettings.theme || '#E64F97',
     autoplay: true,
-    playbackSpeed: parseFloat(userSettings.playback_speed || '1'),
   } : {
     theme: '#E64F97',
     autoplay: true,
-    playbackSpeed: 1,
   };
 
-  // 未認証の場合はログインページへリダイレクト
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/auth/login');
-    }
-  }, [isAuthenticated, authLoading, router]);
+
 
   // 認証中
   if (authLoading) {

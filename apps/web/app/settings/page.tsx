@@ -29,11 +29,7 @@ export default function SettingsPage() {
   } = useUserSettings();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/auth/login');
-    }
-  }, [isAuthenticated, authLoading, router]);
+
 
   const isLoading = authLoading || settingsLoading;
 

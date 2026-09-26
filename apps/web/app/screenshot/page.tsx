@@ -22,11 +22,7 @@ export default function ScreenshotPage() {
   const { user, loading, isAuthenticated } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/auth/login');
-    }
-  }, [isAuthenticated, loading, router]);
+
 
   if (loading) {
     return (

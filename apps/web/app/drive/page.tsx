@@ -61,11 +61,7 @@ export default function DrivePage() {
 
   const searchMutation = useFolderSearch(connectionId);
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/auth/login');
-    }
-  }, [isAuthenticated, authLoading, router]);
+
 
   const handleFolderClick = useCallback(
     (clickedFolderId: string, clickedFolderName?: string) => {

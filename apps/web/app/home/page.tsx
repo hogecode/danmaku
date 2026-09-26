@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from '@/components/Sidebar';
@@ -24,15 +24,9 @@ import {
 import { Menu as MenuIcon } from '@mui/icons-material';
 
 export default function HomePage() {
-  const router = useRouter();
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/auth/login');
-    }
-  }, [isAuthenticated, loading, router]);
+  const router = useRouter();
 
   if (loading) {
     return (
@@ -54,7 +48,7 @@ export default function HomePage() {
     );
   }
 
-  if (!isAuthenticated || !user) return null;
+  if (!user) return null;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>

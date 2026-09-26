@@ -25,12 +25,7 @@ export default function NetworkPage() {
   const { isAuthenticated, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // 未認証の場合はログインページへリダイレクト
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/auth/login');
-    }
-  }, [isAuthenticated, loading, router]);
+
 
   if (loading) {
     return (

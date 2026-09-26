@@ -17,11 +17,7 @@ export default function NicovideDownloadPage() {
   const [currentTask, setCurrentTask] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'video' | 'comments'>('video');
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/auth/login');
-    }
-  }, [isAuthenticated, authLoading, router]);
+
 
   if (authLoading) {
     return (
