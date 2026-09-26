@@ -294,7 +294,7 @@ export class DriveConnectionOAuthService {
       `[DriveConnectionOAuthService] Preparing Web client response (${provider})`,
     );
     const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
-    const redirectUrl = `${frontendUrl}/settings?tab=drives&status=connected&provider=${provider}&connectionId=${connectionResult.connectionId}`;
+    const redirectUrl = `${frontendUrl}/drive?connectionId=${connectionResult.connectionId}`;
 
     return {
       type: 'redirect',
