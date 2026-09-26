@@ -11,6 +11,7 @@ import { generateOpenAPIYaml } from './utils/openapi-generator';
 import { TraceIdMiddleware } from './common/middleware/trace-id.middleware';
 import { pinoLogger } from './common/logger/pino.logger';
 import { getSecretValue } from './common/utils/secret-parser.util';
+import { getTaskDefinitionRevision } from './common/utils/ecs-metadata.util';
 import { initializeBootstrap } from './config';
 import { EnvironmentSchema } from './config/environment.schema';
 
@@ -45,7 +46,22 @@ async function bootstrap() {
   const { redisClient } = await initializeBootstrap();
 
   // ========================================
-  // ✅ 2. Validate environment variables (AFTER secrets are loaded)
+  // ✅ 2. Retrieve ECS Task Definition Revision
+  // ✅ Sets IMAGE_VERSION for logging (overrides environment variable if set)
+  // ========================================
+  if (process.env.NODE_ENV === 'production') {
+    const taskRevision = await getTaskDefinitionRevision();
+    // IMAGE_VERSION が環境変数で既に設定されていない場合のみ、タスク定義リビジョンを使用
+    if (!process.env.IMAGE_VERSION || process.env.IMAGE_VERSION === 'unknown') {
+      process.env.IMAGE_VERSION = taskRevision;
+      pinoLogger.info({ imageVersion: taskRevision }, '📦 IMAGE_VERSION set from ECS task definition');
+    } else {
+      pinoLogger.info({ imageVersion: process.env.IMAGE_VERSION, taskRevision }, '📦 IMAGE_VERSION already set (using environment variable, ignoring ECS revision)');
+    }
+  }
+
+  // ========================================
+  // ✅ 3. Validate environment variables (AFTER secrets are loaded)
   // ✅ Now GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, etc. are available in process.env
   // ========================================
   //await validateEnvironment();
