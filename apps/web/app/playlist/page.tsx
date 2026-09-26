@@ -22,8 +22,6 @@ export default function PlaylistPage() {
   const { user, loading, isAuthenticated } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-
-
   if (loading) {
     return (
       <Box
@@ -44,7 +42,6 @@ export default function PlaylistPage() {
     );
   }
 
-  if (!isAuthenticated || !user) return null;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>

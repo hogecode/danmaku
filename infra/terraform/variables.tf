@@ -666,5 +666,20 @@ variable "nestjs_secrets" {
   default = []
 }
 
+# ========================================
+# Docker Image Tags (from CI/CD)
+# ========================================
+
+variable "nextjs_image_tag" {
+  description = "Docker image tag for Next.js (e.g., 'latest', 'a1b2c3d', 'v1.2.3'). Set by CI/CD pipeline."
+  type        = string
+  default     = "latest"
+}
+
+variable "nestjs_image_tag" {
+  description = "Docker image tag for NestJS (e.g., 'latest', 'a1b2c3d', 'v1.2.3'). Set by CI/CD pipeline."
+  type        = string
+  default     = "latest"
+}
 
 

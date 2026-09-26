@@ -60,22 +60,33 @@ export class TraceIdMiddleware implements NestMiddleware {
         const duration = Date.now() - startTime;
         const logLevel = getLogLevel(res.statusCode);
 
-        // 開発環境: シンプルな1行ログ
+        // 環境情報とイメージバージョンを取得
+        const environment = process.env.NODE_ENV || 'unknown';
+        const imageVersion = process.env.IMAGE_VERSION || 'unknown';
+        // userId をセッション/認証情報から取得
+        const userId = (req as any).user?.id || (req as any).session?.userId;
+        const userAgent = req.get('user-agent');
+
+        // 開発環境: シンプルな1行ログ（ただし環境情報とバージョンは含める）
         if (isDevelopment) {
           const logMessage = `${req.method} ${req.url} → ${res.statusCode} (${duration}ms)`;
           pinoLogger[logLevel](logMessage);
         } else {
-          // 本番環境: 詳細ログ（traceId付き）
+          // 本番環境: 詳細ログ（environment, imageVersion付き）
           pinoLogger[logLevel](
             {
+              environment,
+              imageVersion,
               method: req.method,
               url: req.url,
               statusCode: res.statusCode,
               duration: `${duration}ms`,
               traceId,
               ip: req.ip,
+              userId,
+              userAgent,
             },
-            `${req.method} ${req.url} ${res.statusCode} - ${duration}ms`,
+            `${req.method} ${req.url} ${res.statusCode} - ${duration}ms [${environment}@${imageVersion}]`,
           );
         }
       });

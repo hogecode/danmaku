@@ -325,6 +325,16 @@ resource "aws_ecs_task_definition" "nestjs" {
       }
       environment = concat(
         var.nestjs_environment_variables,
+        [
+          {
+            name  = "IMAGE_VERSION"
+            value = var.nestjs_image_tag
+          },
+          {
+            name  = "NODE_ENV"
+            value = "production"
+          }
+        ],
         var.rds_endpoint != "" ? [
           {
             name  = "DB_HOST"

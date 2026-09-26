@@ -6,6 +6,9 @@ on:
 env:
   ENVIRONMENT: dev
   IMAGE_TAG: dev-${{ github.sha }}
+  # Extract short commit hash for image tagging
+  COMMIT_HASH: ${{ github.sha }}
+  SHORT_SHA: ${{ github.sha }}
 
 permissions:
   contents: read # Read-only access to repository contents
@@ -13,10 +16,20 @@ permissions:
   security-events: write # Required for security scanning (SARIF upload)
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      short_sha: ${{ steps.get-sha.outputs.short_sha }}
+    steps:
+      - name: Get short commit SHA
+        id: get-sha
+        run: echo "short_sha=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
   build:
+    needs: setup
     uses: ./.github/workflows/build.yml
     with:
-      image_tag: dev-${{ github.sha }}
+      image_tag: dev-${{ needs.setup.outputs.short_sha }}
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -25,10 +38,10 @@ jobs:
       ECR_NESTJS_REPOSITORY_NAME: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
 
   scan:
-    needs: build
+    needs: [setup, build]
     uses: ./.github/workflows/scan.yml
     with:
-      image_tag: dev-${{ github.sha }}
+      image_tag: dev-${{ needs.setup.outputs.short_sha }}
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -37,11 +50,11 @@ jobs:
       ECR_NESTJS_REPOSITORY_NAME: ${{ secrets.ECR_NESTJS_REPOSITORY_NAME }}
 
   deploy:
-    needs: scan
+    needs: [setup, scan]
     uses: ./.github/workflows/deploy.yml
     with:
       environment: dev
-      image_tag: dev-${{ github.sha }}
+      image_tag: dev-${{ needs.setup.outputs.short_sha }}
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

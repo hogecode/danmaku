@@ -1,32 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from '@/components/Sidebar';
 import {
-  Container,
-  Card,
-  CardContent,
-  CardHeader,
-  Typography,
-  Button,
   Box,
-  Avatar,
-  Stack,
-  Paper,
-  CircularProgress,
-  Divider,
   AppBar,
   Toolbar,
   IconButton,
+  Typography,
+  CircularProgress,
+  Container,
+  Card,
+  CardContent,
 } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
 
 export default function HomePage() {
-  const { user, loading } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
+  const { user, loading, isAuthenticated } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) {
     return (
@@ -48,7 +42,6 @@ export default function HomePage() {
     );
   }
 
-  if (!user) return null;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
@@ -75,85 +68,16 @@ export default function HomePage() {
         </AppBar>
         <Box sx={{ flex: 1, overflow: 'auto' }}>
           <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' }, gap: 3 }}>
-              <Box>
-                <Card sx={{ position: 'sticky', top: 24, boxShadow: 3 }}>
-                  <CardContent>
-                    <Box sx={{ textAlign: 'center' }}>
-                      {user.picture_url && (
-                        <Avatar
-                          src={user.picture_url}
-                          alt={user.name}
-                          sx={{ width: 100, height: 100, mx: 'auto', mb: 2, border: '4px solid', borderColor: 'primary.main' }}
-                        />
-                      )}
-                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-                        {user.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {user.email}
-                      </Typography>
-                      {user.last_login && (
-                        <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default', mt: 2 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                            Last Login
-                          </Typography>
-                          <Typography variant="body2">
-                            {new Date(user.last_login).toLocaleDateString()}
-                          </Typography>
-                        </Paper>
-                      )}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-              <Box>
-                <Stack spacing={3}>
-                  <Card sx={{ boxShadow: 3 }}>
-                    <CardHeader
-                      title="Google Drive"
-                      titleTypographyProps={{ variant: 'h5', sx: { fontWeight: 700 } }}
-                    />
-                    <Divider />
-                    <CardContent>
-                      <Stack spacing={2}>
-                        <Typography variant="body1" color="text.secondary">
-                          Browse video files in Google Drive and stream MP4 files.
-                        </Typography>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          size="large"
-                          onClick={() => router.push('/drive')}
-                        >
-                          Open Drive →
-                        </Button>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                  {user.drives && user.drives.length > 0 && (
-                    <Card sx={{ boxShadow: 3 }}>
-                      <CardHeader
-                        title={`Connected Drives (${user.drives.length})`}
-                        titleTypographyProps={{ variant: 'h6', sx: { fontWeight: 700 } }}
-                      />
-                      <Divider />
-                      <CardContent>
-                        <Stack spacing={1}>
-                          {user.drives.map((drive, idx) => (
-                            <Paper key={idx} variant="outlined" sx={{ p: 1.5, bgcolor: 'background.default' }}>
-                              <Typography variant="body2">
-                                <strong>{drive.provider}</strong>: {drive.provider || 'Unnamed'}
-                              </Typography>
-                            </Paper>
-                          ))}
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  )}
-                </Stack>
-              </Box>
-            </Box>
+            <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
+              ホーム
+            </Typography>
+            <Card>
+              <CardContent>
+                <Typography color="text.secondary">
+                  ホームコンテンツ実装予定
+                </Typography>
+              </CardContent>
+            </Card>
           </Container>
         </Box>
       </Box>

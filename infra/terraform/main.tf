@@ -298,6 +298,10 @@ module "ecs" {
   ecr_image_scan_on_push     = var.ecr_image_scan_on_push
   ecr_image_tag_mutability   = var.ecr_image_tag_mutability
 
+  # Image Tags (from CI/CD pipeline or default to latest)
+  nextjs_image_tag = var.nextjs_image_tag
+  nestjs_image_tag = var.nestjs_image_tag
+
   # ECS Cluster Configuration
   enable_container_insights     = local.enable_container_insights
   enable_fargate_spot           = local.enable_fargate_spot
