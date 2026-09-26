@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from '@/components/Sidebar';
 import { useFolderList, useFolderSearch } from '@/hooks/useFolder';
@@ -35,6 +35,7 @@ import { Menu as MenuIcon } from '@mui/icons-material';
  */
 export default function DrivePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
 
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -49,11 +50,36 @@ export default function DrivePage() {
 
   const { data: connections, isLoading: isConnectionsLoading } = useDriveConnections();
 
+  // URLクエリパラメータを取得
+  const connectionIdParam = searchParams?.get('connectionId');
+  const folderIdParam = searchParams?.get('folderId');
+
+  // connections を Redux に設定
   useEffect(() => {
     if (connections && connections.length > 0) {
       dispatch(setConnections(connections));
     }
   }, [connections, dispatch]);
+
+  // connectionId を初期化（URLパラメータ優先）
+  useEffect(() => {
+    if (connectionIdParam) {
+      // URLパラメータがある場合、そのconnectionを選択
+      dispatch(selectConnection(connectionIdParam));
+    } else if (!selectedConnection && connections && connections.length > 0) {
+      // selectedConnectionがない場合、最初のconnectionを選択
+      dispatch(selectConnection(connections[0].id));
+    }
+  }, [connectionIdParam, connections, selectedConnection, dispatch]);
+
+  // folderId を初期化（URLパラメータ優先）
+  useEffect(() => {
+    if (folderIdParam) {
+      setFolderId(folderIdParam);
+    } else {
+      setFolderId('root');
+    }
+  }, [folderIdParam]);
 
   const connectionId = selectedConnection?.id || connections?.[0]?.id || '';
 
@@ -62,14 +88,23 @@ export default function DrivePage() {
   const searchMutation = useFolderSearch(connectionId);
 
 
-
+  // フォルダーをクリックしたときの処理
   const handleFolderClick = useCallback(
     (clickedFolderId: string, clickedFolderName?: string) => {
       setFolderId(clickedFolderId);
       setFolderName(clickedFolderName ?? folderName);
       setSearchResults(null);
+
+      // URLにクエリパラメータを付与
+      const params = new URLSearchParams();
+      if (connectionId) {
+        params.append('connectionId', connectionId.toString());
+      }
+      params.append('folderId', clickedFolderId);
+
+      router.push(`/drive?${params.toString()}`);
     },
-    [folderName],
+    [folderName, connectionId, router],
   );
 
   const handleSearch = useCallback(
@@ -103,13 +138,6 @@ export default function DrivePage() {
     },
     [router],
   );
-
-  if (authLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-      </Box>
-    );
-  }
 
   if (!isAuthenticated) {
     return null;
