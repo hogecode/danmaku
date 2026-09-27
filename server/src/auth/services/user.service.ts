@@ -259,6 +259,46 @@ export class UserService {
   }
 
   /**
+   * メールアドレスからユーザーを取得
+   * （ダミーログイン用）
+   */
+  async getUserByEmail(email: string): Promise<UserInfoDto | null> {
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    // 接続済みドライブ情報を取得
+    const driveConns = await this.db.query.driveConnections.findMany({
+      where: and(
+        eq(driveConnections.user_id, user.id),
+        eq(driveConnections.is_active, true),
+      ),
+    });
+
+    // DriveConnectionDto に変換
+    const drives: DriveConnectionDto[] = driveConns.map((conn) => ({
+      id: String(conn.id),
+      provider: conn.provider_name,
+      account: conn.provider_account_email || conn.provider_account_id,
+      status: this.getConnectionStatus(conn),
+      connected_at: conn.created_at,
+    }));
+
+    return {
+      id: String(user.id),
+      email: user.email,
+      name: user.name || undefined,
+      picture_url: user.picture_url,
+      last_login: user.last_login,
+      drives,
+    };
+  }
+
+  /**
    * ログアウト処理（全Driveトークンを無効化）
    */
   async logout(userId: bigint): Promise<void> {

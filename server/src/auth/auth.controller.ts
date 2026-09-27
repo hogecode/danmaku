@@ -12,6 +12,8 @@ import {
   HttpCode,
   Param,
   Inject,
+  ForbiddenException,
+  Body,
 } from '@nestjs/common';
 import type { Express, Request, Response } from 'express';
 import Redis from 'ioredis';
@@ -20,11 +22,7 @@ import { UserService } from './services/user.service';
 import { TokenService } from './services/token.service';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitGuard, AuthGuard } from './guards';
-import {
-  LoginResponseDto,
-  CallbackQueryDto,
-  UserInfoDto,
-} from './dto';
+import { LoginResponseDto, CallbackQueryDto, UserInfoDto } from './dto';
 import { LoggerService } from '../common/logger/logger.service';
 import { ProviderType } from '../drive/constants';
 
@@ -62,17 +60,16 @@ export class AuthController {
       this.logger.error(
         `[AUTH] Failed to generate authorization URL for ${provider}`,
         error as Error,
-        { provider }
+        { provider },
       );
       throw new BadRequestException('Failed to initiate login');
     }
   }
 
-  
   /**
    * GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック
    * 例: GET /api/auth/callback/onedrive
-   * 
+   *
    * DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
    * モバイルクライアントにはセッション ID を DeepLink で返す
    */
@@ -155,7 +152,7 @@ export class AuthController {
 
       // ✅ Express Session ミドルウェアが自動的にセッションクッキーをセット
       // @Redirect() デコレータが { url } を HTTP 302 リダイレクトに変換
-      
+
       this.logger.debug('[AUTH] Redirecting with session', {
         sessionId: sessionId.substring(0, 10) + '...',
         userId: userInfo.id,
@@ -172,23 +169,28 @@ export class AuthController {
     }
   }
 
-
   /**
    * GET /api/auth/me - ユーザー情報取得
    */
   @Get('me')
   @UseGuards(AuthGuard)
   async getUserInfo(@Session() session: Express.Session): Promise<UserInfoDto> {
-    const userId = (session as any).userId;
-    if (!userId) {
-      throw new BadRequestException('User ID not found in session');
+    try {
+      const userId = (session as any).userId;
+      if (!userId) {
+        throw new BadRequestException('User ID not found in session');
+      }
+      // 接続ドライブ情報も含めて取得
+      return await this.userService.getUserInfo(BigInt(userId));
+    } catch (error) {
+      this.logger.error('[AUTH] Failed to get user info', error as Error);
+      throw new BadRequestException(
+        'Failed to get user info: ' +
+          (error instanceof Error ? error.message : 'Unknown error'),
+      );
     }
-
-    // 接続ドライブ情報も含めて取得
-    return await this.userService.getUserInfo(BigInt(userId));
   }
 
-  
   /**
    * POST /api/auth/logout - ログアウト
    */
@@ -198,18 +200,113 @@ export class AuthController {
   async logout(
     @Session() session: Express.Session,
   ): Promise<{ message: string }> {
-    const userId = (session as any).userId;
-    if (!userId) {
-      throw new BadRequestException('User ID not found in session');
+    try {
+      const userId = (session as any).userId;
+      if (!userId) {
+        throw new BadRequestException('User ID not found in session');
+      }
+
+      // 全てのログインサービスからログアウト
+      await this.userService.logout(BigInt(userId));
+
+      // セッションを破棄（Express Session API）
+      (session as any).destroy?.(() => {});
+
+      return { message: 'Logged out successfully' };
+    } catch (error) {
+      this.logger.error('[AUTH] Logout failed', error as Error);
+      throw new BadRequestException(
+        'Logout failed: ' +
+          (error instanceof Error ? error.message : 'Unknown error'),
+      );
+    }
+  }
+
+  /**
+   * POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）
+   *
+   * DBに保存されたユーザー情報を使用してセッションを作成
+   * これにより、実際のGoogleアクセストークンなどを使用できる
+   */
+  @Post('dummy-login')
+  @HttpCode(200)
+  async dummyLogin(
+    @Session() session: Express.Session,
+    @Res() response: Response,
+  ) {
+    // 開発環境のみで有効化
+    if (process.env.NODE_ENV !== 'development') {
+      throw new ForbiddenException(
+        'Dummy login is only available in development environment',
+      );
     }
 
-    // 全てのログインサービスからログアウト
-    await this.userService.logout(BigInt(userId));
+    try {
+      const dummyEmail = 'shun1031000@gmail.com';
 
-    // セッションを破棄（Express Session API）
-    (session as any).destroy?.(() => {});
+      // DBからダミーユーザー情報を取得
+      const userInfo = await this.userService.getUserByEmail(dummyEmail);
 
-    return { message: 'Logged out successfully' };
+      if (!userInfo) {
+        throw new BadRequestException(
+          `User with email ${dummyEmail} not found in database. Please ensure the user exists and has connected at least one drive.`,
+        );
+      }
+
+      // ✅ セッションに userId をセット
+      (session as any).userId = userInfo.id;
+
+      // ✅ セッション保存（必須）
+      await new Promise<void>((resolve, reject) => {
+        const sessionWithSave = session as Express.Session & {
+          save(callback: (err: Error | null) => void): void;
+        };
+
+        sessionWithSave.save((err: Error | null) => {
+          if (err) {
+            this.logger.error(
+              '[AUTH] Failed to save session for dummy login',
+              err,
+            );
+            reject(err);
+          } else {
+            this.logger.debug('[AUTH] Session saved for dummy login', {
+              userId: userInfo.id,
+            });
+            resolve();
+          }
+        });
+      });
+
+      // ✅ レスポンス（Web: クッキーは自動的にセット、モバイル: sessionId を含める）
+      const responseData = {
+        id: userInfo.id,
+        email: userInfo.email,
+        name: userInfo.name,
+        picture_url: userInfo.picture_url,
+        drives: userInfo.drives,
+        sessionId: session.id, // モバイル用
+      };
+
+      this.logger.info('[AUTH] Dummy login successful', {
+        userId: userInfo.id,
+        email: userInfo.email,
+        sessionId: session.id?.substring(0, 10) + '...',
+      });
+
+      return response.json(responseData);
+    } catch (error) {
+      this.logger.error('[AUTH] Dummy login failed', error as Error);
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
+      throw new BadRequestException(
+        'Dummy login failed: ' +
+          (error instanceof Error ? error.message : 'Unknown error'),
+      );
+    }
   }
 }
-
