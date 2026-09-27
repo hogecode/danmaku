@@ -23,10 +23,29 @@ export async function getTaskDefinitionRevision(): Promise<string> {
     const response = await axios.get(`${metadataUri}/task`);
     const taskMetadata = response.data;
 
+    // デバッグ：完全なレスポンスをログ出力
+    pinoLogger.debug(
+      { fullMetadata: JSON.stringify(taskMetadata, null, 2) },
+      '📋 Full ECS Task Metadata response',
+    );
+
     // taskDefinitionArn 例:
     // "arn:aws:ecs:ap-northeast-1:123456789:task-definition/danmaku-nestjs:71"
     // 末尾の番号がリビジョン番号
-    const taskDefinitionArn = taskMetadata.TaskDefinitionArn as string;
+    // 注：v4では TaskDefinitionArn ではなく taskDefinitionArn (小文字) かもしれない
+    const taskDefinitionArn = 
+      taskMetadata.TaskDefinitionArn || 
+      taskMetadata.taskDefinitionArn ||
+      taskMetadata.taskArn;
+    
+    if (!taskDefinitionArn) {
+      pinoLogger.warn(
+        { availableKeys: Object.keys(taskMetadata) },
+        '⚠️ TaskDefinitionArn not found - checking available keys',
+      );
+      return 'unknown';
+    }
+    
     const revision = taskDefinitionArn.split(':').pop() || 'unknown';
 
     pinoLogger.info(
