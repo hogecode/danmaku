@@ -5,12 +5,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import type { VideoPlayerHandle } from '@/components/VideoPlayer';
-import { NicovideoCommentImporter } from '@/components/NicovideoCommentImporter';
-import { KakologCommentImporter } from '@/components/KakologCommentImporter';
+import { CommentImporterModal } from '@/components/CommentImporterModal';
 import { useAppSelector } from '@/lib/store/hooks';
 import { selectSelectedConnectionId } from '@/lib/store/selectors';
 import { useUserSettingsQuery } from '@/hooks/useUserSettings';
 import type { DPlayerCommentDto } from '@/lib/generated';
+import Image from 'next/image';
 
 /**
  * コメント重複排除
@@ -53,41 +53,20 @@ export default function WatchPage() {
   // ✅ ニコ動コメント状態
   const [nicovideoComments, setNicovideoComments] = useState<DPlayerCommentDto[]>([]);
   const [importSuccess, setImportSuccess] = useState(false);
+  
+  // ✅ モーダル状態
+  const [isCommentImporterModalOpen, setIsCommentImporterModalOpen] = useState(false);
 
 
 
   /**
-   * ニコ動コメントをインポート
+   * コメントをインポート
    * 
+   * ニコ動 / 過去ログの両方で使用
    * initialComments prop を変更すると、VideoPlayer が自動的に
    * DPlayer を再初期化してコメントをリロードする
    */
-  const handleNicovideoCommentsImported = (
-    comments: DPlayerCommentDto[],
-    mergeMode: boolean
-  ) => {
-    // コメント状態を更新 → VideoPlayer に渡される initialComments が変更される
-    const mergedComments = mergeMode 
-      ? [...nicovideoComments, ...comments]
-      : comments;
-
-    // ✅ 重複コメントを排除
-    const dedupedComments = deduplicateComments(mergedComments);
-    
-    setNicovideoComments(dedupedComments);
-    setImportSuccess(true);
-
-    setTimeout(() => {
-      setImportSuccess(false);
-    }, 3000);
-  };
-
-  /**
-   * Kakolog（過去ログ）コメントをインポート
-   * 
-   * ニコ動と同じフロー
-   */
-  const handleKakologCommentsImported = (
+  const handleCommentsImported = (
     comments: DPlayerCommentDto[],
     mergeMode: boolean
   ) => {
@@ -201,13 +180,28 @@ export default function WatchPage() {
           </p>
         </div>
 
-        <NicovideoCommentImporter
-          onCommentsImported={handleNicovideoCommentsImported}
-          isDisabled={settingsLoading}
-        />
+        {/* ニコニコロゴをクリックしてモーダルを表示 */}
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={() => setIsCommentImporterModalOpen(true)}
+            className="p-3 hover:opacity-80 transition"
+            title="コメント インポーター"
+          >
+            <Image
+              src="/photos/logo/niconico.png"
+              alt="ニコニコ動画"
+              width={30}
+              height={30}
+              className="cursor-pointer"
+            />
+          </button>
+        </div>
 
-        <KakologCommentImporter
-          onCommentsImported={handleKakologCommentsImported}
+        {/* コメント インポーター モーダル */}
+        <CommentImporterModal
+          isOpen={isCommentImporterModalOpen}
+          onClose={() => setIsCommentImporterModalOpen(false)}
+          onCommentsImported={handleCommentsImported}
           isDisabled={settingsLoading}
         />
 

@@ -7,6 +7,7 @@ import type { DPlayerCommentDto } from '@/lib/generated/models';
 interface NicovideoCommentImporterProps {
   onCommentsImported: (comments: DPlayerCommentDto[], mergeMode: boolean) => void;
   isDisabled?: boolean;
+  isModalContent?: boolean; // モーダル内での表示かどうか（スタイル調整用）
 }
 
 /**
@@ -16,6 +17,7 @@ interface NicovideoCommentImporterProps {
 export function NicovideoCommentImporter({
   onCommentsImported,
   isDisabled = false,
+  isModalContent = false,
 }: NicovideoCommentImporterProps) {
   const [videoId, setVideoId] = useState('');
   const [mergeMode, setMergeMode] = useState(false); // false = 置き換え, true = マージ
@@ -51,8 +53,8 @@ export function NicovideoCommentImporter({
   };
 
   return (
-    <div className="bg-gray-700 rounded-lg p-6 mt-6">
-      <h3 className="text-lg font-bold mb-4">🎬 ニコ動コメント インポート</h3>
+    <div className={isModalContent ? "" : "bg-gray-700 rounded-lg p-6 mt-6"}>
+      {!isModalContent && <h3 className="text-lg font-bold mb-4">🎬 ニコ動コメント インポート</h3>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* 動画ID入力 */}

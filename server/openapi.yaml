@@ -99,6 +99,20 @@ paths:
       summary: POST /api/auth/logout - ログアウト
       tags:
         - Auth
+  /api/auth/dummy-login:
+    post:
+      operationId: AuthController_dummyLogin
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）
+
+        DBに保存されたユーザー情報を使用してセッションを作成
+        これにより、実際のGoogleアクセストークンなどを使用できる
+      tags:
+        - Auth
   /api/drive-connections:
     get:
       operationId: DriveConnectionController_list

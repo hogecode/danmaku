@@ -32,7 +32,6 @@ export async function getTaskDefinitionRevision(): Promise<string> {
     // taskDefinitionArn 例:
     // "arn:aws:ecs:ap-northeast-1:123456789:task-definition/danmaku-nestjs:71"
     // 末尾の番号がリビジョン番号
-    // 注：v4では TaskDefinitionArn ではなく taskDefinitionArn (小文字) かもしれない
     const taskDefinitionArn = 
       taskMetadata.TaskDefinitionArn || 
       taskMetadata.taskDefinitionArn ||

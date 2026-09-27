@@ -7,6 +7,7 @@ import type { KakologCommentDto } from '@/lib/generated/models';
 interface KakologCommentImporterProps {
   onCommentsImported: (comments: KakologCommentDto[], mergeMode: boolean) => void;
   isDisabled?: boolean;
+  isModalContent?: boolean; // モーダル内での表示かどうか（スタイル調整用）
 }
 
 /**
@@ -16,6 +17,7 @@ interface KakologCommentImporterProps {
 export function KakologCommentImporter({
   onCommentsImported,
   isDisabled = false,
+  isModalContent = false,
 }: KakologCommentImporterProps) {
   const [channelId, setChannelId] = useState('');
   const [startDateTime, setStartDateTime] = useState('');
@@ -79,8 +81,8 @@ export function KakologCommentImporter({
     convertToUnixTimestamp(startDateTime) < convertToUnixTimestamp(endDateTime);
 
   return (
-    <div className="bg-gray-700 rounded-lg p-6 mt-6">
-      <h3 className="text-lg font-bold mb-4">📺 Kakolog（過去ログ）コメント インポート</h3>
+    <div className={isModalContent ? "" : "bg-gray-700 rounded-lg p-6 mt-6"}>
+      {!isModalContent && <h3 className="text-lg font-bold mb-4">📺 Kakolog（過去ログ）コメント インポート</h3>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* チャンネルID入力 */}
