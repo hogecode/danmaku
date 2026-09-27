@@ -77,8 +77,7 @@ export class LoggerService {
     this.pinoLogger.error(
       {
         traceId: getTraceId(),
-        error: error?.message || error,
-        stack: error?.stack,
+        error,
         ...metadata,
       },
       message,
@@ -93,27 +92,10 @@ export class LoggerService {
     this.pinoLogger.fatal(
       {
         traceId: getTraceId(),
-        error: error?.message || error,
-        stack: error?.stack,
+        error,
         ...metadata,
       },
       message,
-    );
-  }
-
-  /**
-   * パフォーマンス計測用ロギング（DEBUG レベル）
-   * 用途: 関数実行時間、クエリ実行時間などの計測
-   */
-  performance(functionName: string, durationMs: number, metadata?: Record<string, any>) {
-    this.pinoLogger.debug(
-      {
-        traceId: getTraceId(),
-        functionName,
-        durationMs,
-        ...metadata,
-      },
-      `⏱️ ${functionName} took ${durationMs}ms`,
     );
   }
 }

@@ -8,6 +8,7 @@
  */
 
 import pino from 'pino';
+import pinoCaller from 'pino-caller';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -28,12 +29,41 @@ const getLogLevel = (): string => {
 };
 
 /**
+ * スタックトレースを見やすくフォーマット
+ * @param stack - スタックトレース文字列
+ * @param maxLines - 表示する最大行数
+ * @returns フォーマット済みスタックトレース
+ */
+const formatStackTrace = (stack: string | undefined, maxLines: number = 10): string => {
+  if (!stack) return '';
+  return stack
+    .split('\n')
+    .slice(0, maxLines)
+    .join('\n');
+};
+
+/**
+ * エラーオブジェクトのシリアライザー
+ * Pinoでエラーを構造化された形式で出力
+ */
+const errorSerializer = (err: any): Record<string, any> => {
+  if (!err) return {};
+
+  return {
+    type: err.constructor?.name || 'Error',
+    message: err.message,
+    stack: formatStackTrace(err.stack),
+    code: err.code,
+  };
+};
+
+/**
  * Pino logger インスタンス
  * 
  * 開発環境: pino-pretty で見やすくフォーマット、DEBUG以上を表示
  * 本番環境: JSON形式で構造化ログ、INFO以上を表示
  */
-const basePinoLogger = pino(
+let basePinoLogger = pino(
   {
     // ✅ ログレベル（環境変数で制御可能）
     level: getLogLevel(),
@@ -58,6 +88,12 @@ const basePinoLogger = pino(
         traceId: getTraceId(),
       };
     },
+
+    // ✅ エラーとカスタムフィールドのシリアライザー
+    serializers: {
+      error: errorSerializer,
+      err: errorSerializer,
+    },
   },
   // ✅ 開発環境では pino-pretty を使用（見やすくフォーマット）
   isDevelopment
@@ -65,16 +101,26 @@ const basePinoLogger = pino(
         target: 'pino-pretty',
         options: {
           colorize: true,
-          singleLine: true,
+          singleLine: false,  // ✅ マルチラインでスタックトレースを見やすく
           translateTime: false,
-          // 不要なメタデータを隠す
+          // ✅ スタックトレースを表示、その他の不要なメタデータを隠す
           ignore: 'pid,hostname,time,env,version',
           // ログレベルをラベル表示
           levelLabel: 'level',
+          // ✅ スタックトレースを別行で表示
+          messageFormat: '{levelLabel} - {msg}',
         },
       })
     : undefined,
 );
+
+// ✅ pinoCaller を適用してファイル・行番号情報を追加
+// 本番環境: caller 情報を JSON フィールドとして自動出力
+if (!isDevelopment) {
+  basePinoLogger = pinoCaller(basePinoLogger, { 
+    relativeTo: process.cwd(),
+  });
+}
 
 /**
  * NestJS LoggerService インターフェースに適合させたラッパー
