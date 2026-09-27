@@ -141,12 +141,12 @@ export class DriveConnectionController {
       // ディープリンク URL またはリダイレクト URL でリダイレクト
       return response.redirect(302, redirectResponse.url);
     } catch (error) {
-      this.logger.error(
-        `[DriveConnection] Callback error (${provider})`,
-        error as Error,
-      );
-      const errorMsg =
-        error instanceof Error ? error.message : 'Connection failed';
+       this.logger.error(
+         `[DRIVE_CONNECTION] Callback error (${provider})`,
+         error as Error,
+         { provider, operation: 'callback' }
+       );
+      const errorMsg = error instanceof Error ? error.message : 'Connection failed';
       throw new BadRequestException(errorMsg);
     }
   }

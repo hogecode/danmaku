@@ -209,7 +209,9 @@ export class OnedriveTokenService implements ProviderTokenService {
         },
       );
     } catch (error) {
-      this.logger.error('OneDrive token revoke error:', error);
+      this.logger.error('[ONEDRIVE_TOKEN] Revoke failed', error, {
+        operation: 'token_revoke',
+      });
       // リボーク失敗は無視（既に失効している可能性）
     }
   }

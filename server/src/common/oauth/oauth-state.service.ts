@@ -48,7 +48,10 @@ export class OAuthStateService {
       
       return state;
     } catch (error) {
-      this.logger.error('[OAuthStateService] Failed to save state', error as Error);
+      this.logger.error('[OAUTH_STATE] Save failed', error as Error, {
+        operation: 'save_state',
+        provider,
+      });
       throw new BadRequestException('Failed to generate OAuth state');
     }
   }
@@ -84,8 +87,10 @@ export class OAuthStateService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.logger.error('[OAuthStateService] State validation failed', error as Error);
-      throw new BadRequestException('State validation failed');
+       this.logger.error('[OAUTH_STATE] Validation failed', error as Error, {
+         operation: 'validate_state',
+       });
+       throw new BadRequestException('State validation failed');
     }
   }
 
@@ -98,7 +103,9 @@ export class OAuthStateService {
       await this.redis.del(key);
       this.logger.debug(`[OAuthStateService] State deleted: ${state}`);
     } catch (error) {
-      this.logger.error('[OAuthStateService] Failed to delete state', error as Error);
+       this.logger.error('[OAUTH_STATE] Delete failed', error as Error, {
+         operation: 'delete_state',
+       });
     }
   }
 
