@@ -1,14 +1,25 @@
-'use client';
+"use client";
 
-import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
-import { UserSettingsApi, Configuration, UpdateUserSettingsDto, UserSettingsDto } from '@/lib/generated';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  UseQueryResult,
+  UseMutationResult,
+} from "@tanstack/react-query";
+import {
+  UserSettingsApi,
+  Configuration,
+  UpdateUserSettingsDto,
+  UserSettingsDto,
+} from "@/lib/generated";
 
 /**
  * API インスタンスを作成（共通設定）
  */
 function createApiConfiguration(): Configuration {
   return new Configuration({
-    basePath: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080',
+    basePath: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080",
     baseOptions: {
       withCredentials: true,
     },
@@ -29,36 +40,39 @@ export function useUserSettingsQuery(): UseQueryResult<UserSettingsDto, Error> {
   const api = createUserSettingsApi();
 
   return useQuery({
-    queryKey: ['userSettings'],
+    queryKey: ["userSettings"],
     queryFn: async () => {
       const response = await api.userSettingsControllerGetSettings();
       return response.data;
     },
     staleTime: 5 * 60 * 1000, // 5分キャッシュ
-    gcTime: 30 * 60 * 1000,    // 30分ガベージコレクション
+    gcTime: 30 * 60 * 1000, // 30分ガベージコレクション
   });
 }
 
 /**
  * ユーザー設定を更新する Hook
  */
-export function useUserSettingsUpdate(): UseMutationResult<UserSettingsDto, Error, UpdateUserSettingsDto> {
+export function useUserSettingsUpdate(): UseMutationResult<
+  UserSettingsDto,
+  Error,
+  UpdateUserSettingsDto
+> {
   const api = createUserSettingsApi();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (updateDto: UpdateUserSettingsDto) => {
-      console.log('[useUserSettingsUpdate] sending:', updateDto);
-      const response = await api.userSettingsControllerUpdateSettings(updateDto);
+      const response =
+        await api.userSettingsControllerUpdateSettings(updateDto);
       return response.data;
     },
     onSuccess: (data) => {
-      console.log('[useUserSettingsUpdate] success:', data);
       // キャッシュを更新
-      queryClient.setQueryData(['userSettings'], data);
+      queryClient.setQueryData(["userSettings"], data);
     },
     onError: (error) => {
-      console.error('[useUserSettings] Error updating settings:', error);
+      console.error("[useUserSettings] Error updating settings:", error);
     },
   });
 }
@@ -66,7 +80,11 @@ export function useUserSettingsUpdate(): UseMutationResult<UserSettingsDto, Erro
 /**
  * ユーザー設定をリセットする Hook
  */
-export function useUserSettingsReset(): UseMutationResult<UserSettingsDto, Error, void> {
+export function useUserSettingsReset(): UseMutationResult<
+  UserSettingsDto,
+  Error,
+  void
+> {
   const api = createUserSettingsApi();
   const queryClient = useQueryClient();
 
@@ -77,10 +95,10 @@ export function useUserSettingsReset(): UseMutationResult<UserSettingsDto, Error
     },
     onSuccess: (data) => {
       // キャッシュを更新
-      queryClient.setQueryData(['userSettings'], data);
+      queryClient.setQueryData(["userSettings"], data);
     },
     onError: (error) => {
-      console.error('[useUserSettings] Error resetting settings:', error);
+      console.error("[useUserSettings] Error resetting settings:", error);
     },
   });
 }
@@ -97,7 +115,8 @@ export function useUserSettings() {
     settings: query.data || null,
     isLoading: query.isLoading,
     error: query.error ? query.error.message : null,
-    updateSettings: (dto: UpdateUserSettingsDto) => updateMutation.mutateAsync(dto),
+    updateSettings: (dto: UpdateUserSettingsDto) =>
+      updateMutation.mutateAsync(dto),
     resetSettings: () => resetMutation.mutateAsync(),
   };
 }

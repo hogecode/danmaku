@@ -4,6 +4,7 @@ import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserSettingsDto, UpdateUserSettingsDto } from "@/lib/generated";
 import { settingsFormSchema, SettingsFormData } from "./settingsValidation";
+import { useSetTheme } from "@/lib/theme-context";
 import {
   Card,
   CardContent,
@@ -29,6 +30,8 @@ interface Props {
 }
 
 export default function SettingsForm(p: Props) {
+  const setThemeMode = useSetTheme();
+  
   const {
     register, 
     handleSubmit,
@@ -58,6 +61,7 @@ export default function SettingsForm(p: Props) {
   }, [p.settings, reset]);
 
   const ngWordsText = watch('ng_words_reg');
+  const selectedTheme = watch('theme');
 
   const onSubmit: SubmitHandler<any> = async (data: SettingsFormData) => {
     try {
@@ -70,6 +74,11 @@ export default function SettingsForm(p: Props) {
       };
 
       await p.onUpdate(dto);
+      
+      // ✅ テーマが変更された場合、Theme Context を更新
+      if (data.theme && (data.theme === 'light' || data.theme === 'dark')) {
+        setThemeMode(data.theme);
+      }
     } catch (e) {
       console.error('Failed:', e);
     }

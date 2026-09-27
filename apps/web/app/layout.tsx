@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/lib/providers";
 import { StoreProvider } from "@/components/provider/StoreProvider";
 import { MuiProvider } from "@/components/provider/MuiProvider";
+import { ThemeContextProvider } from "@/lib/theme-context";
 import { EmotionCacheProvider } from "@/lib/emotion-cache";
 import "./globals.css";
 
@@ -30,11 +31,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col">
         <StoreProvider>
           <QueryProvider>
-            <EmotionCacheProvider>
-              <MuiProvider>
-                {children}
-              </MuiProvider>
-            </EmotionCacheProvider>
+            <ThemeContextProvider initialTheme="light">
+              <EmotionCacheProvider>
+                <MuiProvider>
+                  {children}
+                </MuiProvider>
+              </EmotionCacheProvider>
+            </ThemeContextProvider>
           </QueryProvider>
         </StoreProvider>
       </body>

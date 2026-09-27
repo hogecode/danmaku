@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserSettings } from '@/hooks/useUserSettings';
+import { useThemeSync } from '@/hooks/useThemeSync';
 import { Sidebar } from '@/components/Sidebar';
 import {
   Box,
@@ -29,7 +30,8 @@ export default function SettingsPage() {
   } = useUserSettings();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-
+  // ✅ API から取得したテーマを Theme Context に同期
+  useThemeSync();
 
   const isLoading = authLoading || settingsLoading;
 
