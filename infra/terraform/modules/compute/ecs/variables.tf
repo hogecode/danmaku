@@ -130,6 +130,18 @@ variable "nextjs_desired_count" {
   default     = 2
 }
 
+variable "nextjs_min_capacity" {
+  description = "Minimum number of Next.js tasks for auto-scaling"
+  type        = number
+  default     = 1
+}
+
+variable "nextjs_max_capacity" {
+  description = "Maximum number of Next.js tasks for auto-scaling"
+  type        = number
+  default     = 10
+}
+
 variable "nextjs_environment_variables" {
   description = "Environment variables for Next.js container"
   type = list(object({
@@ -180,6 +192,18 @@ variable "nestjs_desired_count" {
   description = "Desired number of Go server tasks"
   type        = number
   default     = 2
+}
+
+variable "nestjs_min_capacity" {
+  description = "Minimum number of NestJS tasks for auto-scaling"
+  type        = number
+  default     = 1
+}
+
+variable "nestjs_max_capacity" {
+  description = "Maximum number of NestJS tasks for auto-scaling"
+  type        = number
+  default     = 10
 }
 
 variable "nestjs_environment_variables" {

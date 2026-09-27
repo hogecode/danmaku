@@ -522,3 +522,103 @@ resource "aws_ecs_service" "nestjs" {
     Name = "${var.project_name}-nestjs-service-${var.environment}"
   }
 }
+
+# ========================================
+# Application Auto Scaling - Next.js Service
+# ========================================
+
+resource "aws_appautoscaling_target" "nextjs" {
+  max_capacity       = var.nextjs_max_capacity
+  min_capacity       = var.nextjs_min_capacity
+  resource_id        = "service/${module.ecs_cluster.cluster_name}/${aws_ecs_service.nextjs.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+
+  depends_on = [aws_ecs_service.nextjs]
+}
+
+# Target Tracking Scaling Policy - Next.js CPU
+resource "aws_appautoscaling_policy" "nextjs_cpu" {
+  name               = "${var.project_name}-nextjs-cpu-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.nextjs.resource_id
+  scalable_dimension = aws_appautoscaling_target.nextjs.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.nextjs.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value       = 70.0
+    scale_in_cooldown  = 300
+    scale_out_cooldown = 60
+  }
+}
+
+# Target Tracking Scaling Policy - Next.js Memory
+resource "aws_appautoscaling_policy" "nextjs_memory" {
+  name               = "${var.project_name}-nextjs-memory-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.nextjs.resource_id
+  scalable_dimension = aws_appautoscaling_target.nextjs.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.nextjs.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+    target_value       = 80.0
+    scale_in_cooldown  = 300
+    scale_out_cooldown = 60
+  }
+}
+
+# ========================================
+# Application Auto Scaling - NestJS Service
+# ========================================
+
+resource "aws_appautoscaling_target" "nestjs" {
+  max_capacity       = var.nestjs_max_capacity
+  min_capacity       = var.nestjs_min_capacity
+  resource_id        = "service/${module.ecs_cluster.cluster_name}/${aws_ecs_service.nestjs.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+
+  depends_on = [aws_ecs_service.nestjs]
+}
+
+# Target Tracking Scaling Policy - NestJS CPU
+resource "aws_appautoscaling_policy" "nestjs_cpu" {
+  name               = "${var.project_name}-nestjs-cpu-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.nestjs.resource_id
+  scalable_dimension = aws_appautoscaling_target.nestjs.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.nestjs.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value       = 70.0
+    scale_in_cooldown  = 300
+    scale_out_cooldown = 60
+  }
+}
+
+# Target Tracking Scaling Policy - NestJS Memory
+resource "aws_appautoscaling_policy" "nestjs_memory" {
+  name               = "${var.project_name}-nestjs-memory-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.nestjs.resource_id
+  scalable_dimension = aws_appautoscaling_target.nestjs.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.nestjs.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+    target_value       = 80.0
+    scale_in_cooldown  = 300
+    scale_out_cooldown = 60
+  }
+}

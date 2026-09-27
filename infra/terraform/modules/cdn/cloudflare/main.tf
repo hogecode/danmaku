@@ -43,14 +43,14 @@ resource "cloudflare_record" "alb_cname" {
 }
 
 resource "cloudflare_record" "www" {
-  count   = var.domain_name != "" ? 1 : 0
-  zone_id = data.cloudflare_zone.main.id
-  name    = "www"
-  type    = "CNAME"
-  content = cloudflare_record.alb_cname[0].content
-  ttl     = 1
-  proxied = true
-  comment = "WWW subdomain pointing to ALB"
+  count      = var.domain_name != "" ? 1 : 0
+  zone_id    = data.cloudflare_zone.main.id
+  name       = "www"
+  type       = "CNAME"
+  content    = cloudflare_record.alb_cname[0].content
+  ttl        = 1
+  proxied    = true
+  comment    = "WWW subdomain pointing to ALB"
   depends_on = [cloudflare_record.alb_cname]
 }
 
@@ -343,12 +343,12 @@ resource "cloudflare_logpush_job" "access_logs" {
 # ========================================
 
 resource "cloudflare_custom_ssl" "main" {
-  count       = var.domain_name != "" && var.enable_custom_ssl && var.custom_ssl_certificate != "" && var.custom_ssl_key != "" ? 1 : 0
-  zone_id     = data.cloudflare_zone.main.id
-  certificate = var.custom_ssl_certificate
-  private_key = var.custom_ssl_key
+  count         = var.domain_name != "" && var.enable_custom_ssl && var.custom_ssl_certificate != "" && var.custom_ssl_key != "" ? 1 : 0
+  zone_id       = data.cloudflare_zone.main.id
+  certificate   = var.custom_ssl_certificate
+  private_key   = var.custom_ssl_key
   bundle_method = "ubiquitous"
-  depends_on  = [data.cloudflare_zone.main]
+  depends_on    = [data.cloudflare_zone.main]
 }
 
 # ========================================
