@@ -6,21 +6,21 @@ import {
   Body,
   Query,
   BadRequestException,
-  Res,
 } from '@nestjs/common';
-import type { Response, Express } from 'express';
 import { NicovideoVideoService } from './services/nicovideo-video.service';
 import { NicovideoCommentService } from './services/nicovideo-comment.service';
 import {
   DownloadVideoRequestDto,
   DownloadCommentRequestDto,
 } from './dto';
-import { v4 as uuidv4 } from 'uuid';
+import type {
+  DownloadCommentWithDPlayerResponseDto,
+  DownloadCommentErrorResponseDto,
+} from './dto/download-comment-response.dto';
 import { LoggerService } from '../common/logger/logger.service';
 
 /**
  * ニコ動 API Controller
- * セッション不要 - Nicovideo APIはログインなしで公開動画情報取得可能
  */
 @Controller('api/nicovideo')
 export class NicovideoController {
@@ -34,18 +34,20 @@ export class NicovideoController {
   /**
    * POST /api/nicovideo/download/comments
    * 
+   * ニコ動のコメントを取得して DPlayer 形式に変換
+   * 
    * 1. getVideoMetadata() で HTML から thread_key を抽出
    * 2. thread_key が存在すればコメント取得可能
    * 3. thread_key が不在 = 非公開動画またはコメント機能無効
+   * 4. ニコ動形式のコメント → DPlayer形式に変換
    * 
-   * TODO: レスポンスDTOを定義
+   * @param downloadDto - ダウンロードリクエスト（videoId必須）
+   * @returns DPlayer形式に変換されたコメント
    */
   @Post('download/comments')
   async downloadComments(
     @Body() downloadDto: DownloadCommentRequestDto,
-    @Res() res: Response,
-  ): Promise<void> {
-
+  ): Promise<DownloadCommentWithDPlayerResponseDto> {
     try {
       if (!downloadDto.videoId) {
         throw new BadRequestException('videoId必須');
@@ -58,6 +60,13 @@ export class NicovideoController {
       const metadata = await this.videoService.getVideoMetadata(videoId);
 
       // ステップ2: thread_key の確認
+      this.logger.debug(`メタデータ取得成功`, {
+        title: metadata.title,
+        threadKey: metadata.threadKey,
+        commentServer: metadata.commentServer,
+        threads: metadata.threads?.length,
+      });
+
       if (!metadata.threadKey) {
         throw new BadRequestException(
           'コメント取得不可 - 非公開動画またはコメント機能が無効です',
@@ -65,7 +74,7 @@ export class NicovideoController {
       }
 
       // ステップ3: コメント取得（thread_key を使用）
-      const comments = await this.commentService.fetchVideoComments(
+      const nicoComments = await this.commentService.fetchVideoComments(
         videoId,
         metadata.commentServer,
         metadata.threadKey,
@@ -74,35 +83,59 @@ export class NicovideoController {
       );
 
       this.logger.info(
-        `コメント取得完了: ${videoId} (${comments.globalComments.retrievedCount}/${comments.globalComments.commentCount})`,
+        `コメント取得完了: ${videoId} (${nicoComments.globalComments.retrievedCount}/${nicoComments.globalComments.commentCount})`,
         {
           videoId,
-          retrievedCount: comments.globalComments.retrievedCount,
-          totalCount: comments.globalComments.commentCount,
+          retrievedCount: nicoComments.globalComments.retrievedCount,
+          totalCount: nicoComments.globalComments.commentCount,
         },
       );
 
-      res.json({
+      // ステップ4: ニコ動形式 → DPlayer形式に変換
+      const dplayerComments = this.commentService.convertToDPlayerFormat(nicoComments);
+
+      this.logger.debug(`DPlayer形式への変換完了`, {
+        videoId,
+        threadCount: dplayerComments.threads.length,
+        totalComments: dplayerComments.threads.reduce((sum, t) => sum + t.comments.length, 0),
+      });
+
+      this.logger.info(
+        `DPlayer形式への変換完了: ${videoId}`,
+        {
+          videoId,
+          threadCount: dplayerComments.threads.length,
+        },
+      );
+
+      const response: DownloadCommentWithDPlayerResponseDto = {
         videoId,
         status: 'completed',
         message: 'コメント取得完了',
         data: {
           title: metadata.title,
           commentCount: metadata.commentCount,
-          retrievedCount: comments.globalComments.retrievedCount,
-          threads: comments.threads.length,
+          retrievedCount: nicoComments.globalComments.retrievedCount,
+          threads: dplayerComments.threads.length,
         },
-        comments,
-      });
+        comments: dplayerComments,
+      };
+
+      return response;
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      
       this.logger.error(
         `コメント取得エラー (${downloadDto.videoId}):`,
         error as Error,
       );
-      res.status(500).json({
+
+      const errorResponse: DownloadCommentErrorResponseDto = {
         status: 'failed',
-        message: `エラー: ${(error as Error).message}`,
-      });
+        message: `エラー: ${errorMsg}`,
+      };
+
+      throw new BadRequestException(errorResponse);
     }
   }
 }

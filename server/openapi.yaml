@@ -343,14 +343,19 @@ paths:
       responses:
         '201':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadCommentWithDPlayerResponseDto'
       summary: |-
         POST /api/nicovideo/download/comments
+
+        ニコ動のコメントを取得して DPlayer 形式に変換
 
         1. getVideoMetadata() で HTML から thread_key を抽出
         2. thread_key が存在すればコメント取得可能
         3. thread_key が不在 = 非公開動画またはコメント機能無効
-
-        TODO: レスポンスDTOを定義
+        4. ニコ動形式のコメント → DPlayer形式に変換
       tags:
         - Nicovideo
   /api/user-settings:
@@ -642,6 +647,78 @@ components:
           minimum: 0
       required:
         - videoId
+    CommentDataDto:
+      type: object
+      properties:
+        title:
+          type: string
+        commentCount:
+          type: number
+        retrievedCount:
+          type: number
+        threads:
+          type: number
+      required:
+        - title
+        - commentCount
+        - retrievedCount
+        - threads
+    GlobalCommentsDto:
+      type: object
+      properties:
+        commentCount:
+          type: number
+        retrievedCount:
+          type: number
+      required:
+        - commentCount
+        - retrievedCount
+    CommentThreadDto:
+      type: object
+      properties:
+        id:
+          type: object
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/DPlayerCommentDto'
+      required:
+        - id
+        - comments
+    CommentsContainerDto:
+      type: object
+      properties:
+        globalComments:
+          $ref: '#/components/schemas/GlobalCommentsDto'
+        threads:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentThreadDto'
+      required:
+        - globalComments
+        - threads
+    DownloadCommentWithDPlayerResponseDto:
+      type: object
+      properties:
+        videoId:
+          type: string
+        status:
+          enum:
+            - completed
+            - failed
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/CommentDataDto'
+        comments:
+          $ref: '#/components/schemas/CommentsContainerDto'
+      required:
+        - videoId
+        - status
+        - message
+        - data
+        - comments
     UserSettingsDto:
       type: object
       properties:

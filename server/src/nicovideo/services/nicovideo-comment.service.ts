@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { NicovideoCommentFetcher } from '../utils/nicovideo-comment.fetcher';
-import { CommentsData } from '../types/nicovideo.types';
+import { CommentsData, NicovideoCommentThread } from '../types/nicovideo.types';
+import { convertNicovideoCommentsToDPlayer } from '../utils/convert-to-dplayer';
+import type { DPlayerCommentDto } from '../dto/download-comment-response.dto';
 import { LoggerService } from '../../common/logger/logger.service';
 
 /**
@@ -49,6 +51,44 @@ export class NicovideoCommentService {
       return commentsData;
     } catch (error) {
       this.logger.error(`コメント取得エラー (${videoId}):`, error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * ニコ動コメントを DPlayer 形式に変換
+   * 
+   * @param commentsData ニコ動形式のコメントデータ
+   * @returns DPlayer形式に変換されたコメント
+   */
+  convertToDPlayerFormat(commentsData: CommentsData): {
+    globalComments: CommentsData['globalComments'];
+    threads: Array<{
+      id: string | number;
+      comments: DPlayerCommentDto[];
+    }>;
+  } {
+    try {
+      const convertedThreads = commentsData.threads.map((thread: NicovideoCommentThread) => {
+        const convertedComments = convertNicovideoCommentsToDPlayer(thread.comments);
+        
+        this.logger.debug(
+          `スレッド ${thread.id} コメント変換: ${thread.comments.length} → ${convertedComments.length}`,
+          { threadId: thread.id, originalCount: thread.comments.length, convertedCount: convertedComments.length }
+        );
+
+        return {
+          id: thread.id,
+          comments: convertedComments,
+        };
+      });
+
+      return {
+        globalComments: commentsData.globalComments,
+        threads: convertedThreads,
+      };
+    } catch (error) {
+      this.logger.error('DPlayer形式への変換エラー:', error as Error);
       throw error;
     }
   }

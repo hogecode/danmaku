@@ -76,19 +76,3 @@ export interface NicovideoVideoMetadata {
   };
 }
 
-/**
- * ログイン要求
- */
-export interface NicovideoLoginRequest {
-  email: string;
-  password: string;
-}
-
-/**
- * 認証トークン情報
- */
-export interface NicovideoAuthToken {
-  sessionCookie: string;
-  createdAt: number;
-  updatedAt: number;
-}

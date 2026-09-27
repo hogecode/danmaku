@@ -4,10 +4,10 @@ All URIs are relative to *http://localhost*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**nicovideoControllerDownloadComments**](#nicovideocontrollerdownloadcomments) | **POST** /api/nicovideo/download/comments | POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 &#x3D; 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義|
+|[**nicovideoControllerDownloadComments**](#nicovideocontrollerdownloadcomments) | **POST** /api/nicovideo/download/comments | POST /api/nicovideo/download/comments  ニコ動のコメントを取得して DPlayer 形式に変換  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 &#x3D; 非公開動画またはコメント機能無効 4. ニコ動形式のコメント → DPlayer形式に変換|
 
 # **nicovideoControllerDownloadComments**
-> nicovideoControllerDownloadComments(downloadCommentRequestDto)
+> DownloadCommentWithDPlayerResponseDto nicovideoControllerDownloadComments(downloadCommentRequestDto)
 
 
 ### Example
@@ -38,7 +38,7 @@ const { status, data } = await apiInstance.nicovideoControllerDownloadComments(
 
 ### Return type
 
-void (empty response body)
+**DownloadCommentWithDPlayerResponseDto**
 
 ### Authorization
 
@@ -47,7 +47,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details

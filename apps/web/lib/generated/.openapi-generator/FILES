@@ -14,9 +14,13 @@ common.ts
 configuration.ts
 docs/AppApi.md
 docs/AuthApi.md
+docs/CommentDataDto.md
+docs/CommentThreadDto.md
+docs/CommentsContainerDto.md
 docs/DPlayerCommentDto.md
 docs/DPlayerCommentListDto.md
 docs/DownloadCommentRequestDto.md
+docs/DownloadCommentWithDPlayerResponseDto.md
 docs/DriveConnectionApi.md
 docs/DriveConnectionDeleteResponseDto.md
 docs/DriveConnectionDto.md
@@ -25,6 +29,7 @@ docs/FileItemDto.md
 docs/FolderApi.md
 docs/FolderListDto.md
 docs/GenerateVideoTokenResponseDto.md
+docs/GlobalCommentsDto.md
 docs/HealthApi.md
 docs/LoginResponseDto.md
 docs/NicovideoApi.md
@@ -35,7 +40,11 @@ docs/UserSettingsApi.md
 docs/UserSettingsDto.md
 git_push.sh
 index.ts
+models/comment-data-dto.ts
+models/comment-thread-dto.ts
+models/comments-container-dto.ts
 models/download-comment-request-dto.ts
+models/download-comment-with-dplayer-response-dto.ts
 models/dplayer-comment-dto.ts
 models/dplayer-comment-list-dto.ts
 models/drive-connection-delete-response-dto.ts
@@ -44,6 +53,7 @@ models/drive-connection-initiate-response-dto.ts
 models/file-item-dto.ts
 models/folder-list-dto.ts
 models/generate-video-token-response-dto.ts
+models/global-comments-dto.ts
 models/index.ts
 models/login-response-dto.ts
 models/update-user-settings-dto.ts

@@ -1,17 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { VideoPlayer } from '@/components/VideoPlayer';
+import type { VideoPlayerHandle } from '@/components/VideoPlayer';
+import { NicovideoCommentImporter } from '@/components/NicovideoCommentImporter';
 import { useAppSelector } from '@/lib/store/hooks';
 import { selectSelectedConnectionId } from '@/lib/store/selectors';
 import { useUserSettingsQuery } from '@/hooks/useUserSettings';
+import type { DPlayerCommentDto } from '@/lib/generated';
 
 export default function WatchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const videoPlayerRef = useRef<VideoPlayerHandle>(null);
   
   // ✅ Redux ストアから選択中のドライブ接続ID を取得
   const connectionId = useAppSelector(selectSelectedConnectionId);
@@ -23,13 +27,41 @@ export default function WatchPage() {
   const fileId = searchParams.get('fileId');
   const folderId = searchParams.get('folderId') || undefined;
 
-  // ✅ ユーザー設定からコメント設定を構築
+  // ✅ ニコ動コメント状態
+  const [nicovideoComments, setNicovideoComments] = useState<DPlayerCommentDto[]>([]);
+  const [importSuccess, setImportSuccess] = useState(false);
+
+
+
+  /**
+   * ニコ動コメントをインポート
+   * 
+   * initialComments prop を変更すると、VideoPlayer が自動的に
+   * DPlayer を再初期化してコメントをリロードする
+   */
+  const handleNicovideoCommentsImported = (
+    comments: DPlayerCommentDto[],
+    mergeMode: boolean
+  ) => {
+    // コメント状態を更新 → VideoPlayer に渡される initialComments が変更される
+    const updatedComments = mergeMode 
+      ? [...nicovideoComments, ...comments]
+      : comments;
+    
+    setNicovideoComments(updatedComments);
+    setImportSuccess(true);
+
+    setTimeout(() => {
+      setImportSuccess(false);
+    }, 3000);
+  };
+
   const commentSettings = userSettings ? {
     speedRate: 1,
     fontSize: 25,
-    opacity: 0.7, // デフォルト値
+    opacity: 0.7,
     maxCount: userSettings.danmaku_max_count || 100,
-    displayDuration: 5, // デフォルト値
+    displayDuration: 5,
     closeFormAfterSend: false,
   } : {
     speedRate: 1,
@@ -40,7 +72,6 @@ export default function WatchPage() {
     closeFormAfterSend: false,
   };
 
-  // ✅ ユーザー設定からプレイヤー設定を構築
   const playerSettings = userSettings ? {
     theme: userSettings.theme || '#E64F97',
     autoplay: true,
@@ -49,9 +80,6 @@ export default function WatchPage() {
     autoplay: true,
   };
 
-
-
-  // 認証中
   if (authLoading) {
     return (
       <div className="w-full h-screen bg-gray-900 flex items-center justify-center text-white">
@@ -63,7 +91,6 @@ export default function WatchPage() {
     );
   }
 
-  // 未認証
   if (!isAuthenticated) {
     return null;
   }
@@ -103,10 +130,12 @@ export default function WatchPage() {
             </div>
           ) : (
             <VideoPlayer
+              ref={videoPlayerRef}
               videoFileId={fileId}
               folderId={folderId}
               connectionId={connectionId}
               containerClassName="w-full aspect-video bg-black"
+              initialComments={nicovideoComments}
               commentSettings={commentSettings}
               playerSettings={playerSettings}
             />
@@ -114,12 +143,24 @@ export default function WatchPage() {
         </div>
 
         <div className="mt-6 bg-gray-800 rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-4">ファイル情報</h2>
+          <h2 className="text-xl font-bold mb-4">ℹ️ ファイル情報</h2>
           <p className="text-sm">ID: {fileId}</p>
           <p className="text-sm text-gray-400 mt-2">
             ※ ダンマク設定については [設定] ページから変更できます
           </p>
         </div>
+
+        <NicovideoCommentImporter
+          onCommentsImported={handleNicovideoCommentsImported}
+          isDisabled={settingsLoading}
+        />
+
+        {importSuccess && (
+          <div className="mt-4 bg-green-900 border border-green-600 rounded-lg p-4 text-green-200">
+            <p className="font-bold">✅ コメント取得成功</p>
+            <p className="text-sm mt-1">{nicovideoComments.length} 件のコメントをインポートしました</p>
+          </div>
+        )}
       </div>
     </div>
   );

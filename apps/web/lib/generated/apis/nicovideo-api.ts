@@ -23,6 +23,8 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
 import type { DownloadCommentRequestDto } from '../models';
+// @ts-ignore
+import type { DownloadCommentWithDPlayerResponseDto } from '../models';
 /**
  * NicovideoApi - axios parameter creator
  */
@@ -30,7 +32,7 @@ export const NicovideoApiAxiosParamCreator = function (configuration?: Configura
     return {
         /**
          * 
-         * @summary POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
+         * @summary POST /api/nicovideo/download/comments  ニコ動のコメントを取得して DPlayer 形式に変換  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効 4. ニコ動形式のコメント → DPlayer形式に変換
          * @param {DownloadCommentRequestDto} downloadCommentRequestDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -51,6 +53,7 @@ export const NicovideoApiAxiosParamCreator = function (configuration?: Configura
             const localVarQueryParameter = {} as any;
 
             localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -73,12 +76,12 @@ export const NicovideoApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
+         * @summary POST /api/nicovideo/download/comments  ニコ動のコメントを取得して DPlayer 形式に変換  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効 4. ニコ動形式のコメント → DPlayer形式に変換
          * @param {DownloadCommentRequestDto} downloadCommentRequestDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async nicovideoControllerDownloadComments(downloadCommentRequestDto: DownloadCommentRequestDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async nicovideoControllerDownloadComments(downloadCommentRequestDto: DownloadCommentRequestDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DownloadCommentWithDPlayerResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.nicovideoControllerDownloadComments(downloadCommentRequestDto, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['NicovideoApi.nicovideoControllerDownloadComments']?.[localVarOperationServerIndex]?.url;
@@ -95,12 +98,12 @@ export const NicovideoApiFactory = function (configuration?: Configuration, base
     return {
         /**
          * 
-         * @summary POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
+         * @summary POST /api/nicovideo/download/comments  ニコ動のコメントを取得して DPlayer 形式に変換  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効 4. ニコ動形式のコメント → DPlayer形式に変換
          * @param {DownloadCommentRequestDto} downloadCommentRequestDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        nicovideoControllerDownloadComments(downloadCommentRequestDto: DownloadCommentRequestDto, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        nicovideoControllerDownloadComments(downloadCommentRequestDto: DownloadCommentRequestDto, options?: RawAxiosRequestConfig): AxiosPromise<DownloadCommentWithDPlayerResponseDto> {
             return localVarFp.nicovideoControllerDownloadComments(downloadCommentRequestDto, options).then((request) => request(axios, basePath));
         },
     };
@@ -112,7 +115,7 @@ export const NicovideoApiFactory = function (configuration?: Configuration, base
 export class NicovideoApi extends BaseAPI {
     /**
      * 
-     * @summary POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
+     * @summary POST /api/nicovideo/download/comments  ニコ動のコメントを取得して DPlayer 形式に変換  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効 4. ニコ動形式のコメント → DPlayer形式に変換
      * @param {DownloadCommentRequestDto} downloadCommentRequestDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
