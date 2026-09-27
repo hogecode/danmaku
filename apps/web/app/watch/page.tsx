@@ -11,6 +11,28 @@ import { selectSelectedConnectionId } from '@/lib/store/selectors';
 import { useUserSettingsQuery } from '@/hooks/useUserSettings';
 import type { DPlayerCommentDto } from '@/lib/generated';
 
+/**
+ * コメント重複排除
+ * なぜか、ニコ動のコメントを取得すると、重複してコメントが含まれることがあるため
+ * time と text が同一のコメントを除外
+ */
+function deduplicateComments(comments: DPlayerCommentDto[]): DPlayerCommentDto[] {
+  const seen = new Set<string>();
+  const result: DPlayerCommentDto[] = [];
+
+  for (const comment of comments) {
+    // time と text を組み合わせてキーを生成
+    const key = `${comment.time}:${comment.text}`;
+
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(comment);
+    }
+  }
+
+  return result;
+}
+
 export default function WatchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,11 +66,14 @@ export default function WatchPage() {
     mergeMode: boolean
   ) => {
     // コメント状態を更新 → VideoPlayer に渡される initialComments が変更される
-    const updatedComments = mergeMode 
+    const mergedComments = mergeMode 
       ? [...nicovideoComments, ...comments]
       : comments;
+
+    // ✅ 重複コメントを排除
+    const dedupedComments = deduplicateComments(mergedComments);
     
-    setNicovideoComments(updatedComments);
+    setNicovideoComments(dedupedComments);
     setImportSuccess(true);
 
     setTimeout(() => {

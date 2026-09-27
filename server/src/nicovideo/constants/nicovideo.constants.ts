@@ -25,7 +25,7 @@ export class NicovideoConstants {
   };
 
   // Defaults
-  static readonly COMMENTS_LIMIT_DEFAULT_N = 1000;
+  static readonly COMMENTS_LIMIT_DEFAULT_N = 5000;
   static readonly COMMENTS_THREAD_COOLDOWN_S = 60;
   static readonly COMMENTS_THREAD_INTERVAL_S = 1;
   static readonly RETRY_ATTEMPTS = 5;
@@ -37,7 +37,7 @@ export class NicovideoConstants {
   static readonly VERSION = '1.0.0';
 
   // キャッシュ設定
-  static readonly CACHE_TTL_SECONDS = 3600; // 1 時間
+  static readonly CACHE_TTL_SECONDS = 3000; // 1 時間
   static readonly CACHE_KEY_PREFIX = 'nicovideo:';
 
   // ファイル拡張子
