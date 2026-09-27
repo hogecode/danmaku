@@ -23,7 +23,7 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 
 # Set environment variables for build
-# ECSタスク定義だと、ビルド後なのでも環境変数をここで設定する必要がある
+# ECSタスク定義だと、ビルド後なので環境変数をここで設定する必要がある
 ENV NEXT_TELEMETRY_DISABLED=1
 
 ARG NEXT_PUBLIC_API_BASE_URL=https://danmaku.cloud

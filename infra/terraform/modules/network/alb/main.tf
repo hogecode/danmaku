@@ -55,7 +55,7 @@ module "public_alb" {
         unhealthy_threshold = 2
         timeout             = 5
         interval            = 60
-        path                = "/"
+        path                = "/api/health"
         matcher             = "200"
       }
       stickiness = {

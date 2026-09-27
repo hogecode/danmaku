@@ -53,8 +53,9 @@ export function middleware(request: NextRequest) {
 /**
  * ミドルウェアが適用されるパスの設定
  */
-// middleware.ts の例
 export const config = {
-  // 画像や _next フォルダ、ファビコンなどを除外する matcher の設定が必要
-  matcher: ['/((?!api|_next/static|_next/image|photos|favicon.ico).*)'],
+  // 画像や _next フォルダ、ファビコン、ヘルスチェックなどを除外
+  matcher: [
+    '/((?!api|_next/static|_next/image|photos|favicon.ico|health).*)' 
+  ],
 };
