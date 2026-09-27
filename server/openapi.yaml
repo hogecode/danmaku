@@ -358,6 +358,29 @@ paths:
         4. ニコ動形式のコメント → DPlayer形式に変換
       tags:
         - Nicovideo
+  /api/kakolog/download/comments:
+    post:
+      operationId: KakologController_downloadComments
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetKakologCommentsRequestDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetKakologCommentsResponseDto'
+      summary: |-
+        POST /api/kakolog/download/comments
+
+        チャンネルの時間範囲内のコメントを DPlayer 形式で取得
+      tags:
+        - Kakolog
   /api/user-settings:
     get:
       operationId: UserSettingsController_getSettings
@@ -718,6 +741,93 @@ components:
         - status
         - message
         - data
+        - comments
+    GetKakologCommentsRequestDto:
+      type: object
+      properties:
+        channelId:
+          type: string
+        startTime:
+          type: number
+          minimum: 0
+        endTime:
+          type: number
+          minimum: 0
+        limit:
+          type: number
+          minimum: 1
+      required:
+        - channelId
+        - startTime
+        - endTime
+    KakologCommentDto:
+      type: object
+      properties:
+        time:
+          type: number
+          description: コメント表示時刻（秒単位）
+        type:
+          description: 'コメント種類: "normal", "top", "bottom"'
+          enum:
+            - normal
+            - top
+            - bottom
+          type: string
+        size:
+          description: 'コメントサイズ: "small", "medium", "big"'
+          enum:
+            - small
+            - medium
+            - big
+          type: string
+        color:
+          type: string
+          description: 'コメント色（色番号、例: "184"）'
+        author:
+          type: string
+          nullable: true
+          description: 投稿者ID（匿名の場合は null）
+        text:
+          type: string
+          description: コメント内容
+      required:
+        - time
+        - type
+        - size
+        - color
+        - author
+        - text
+    GetKakologCommentsResponseDto:
+      type: object
+      properties:
+        status:
+          enum:
+            - completed
+            - failed
+          type: string
+        message:
+          type: string
+        channelId:
+          type: string
+        startTime:
+          type: number
+        endTime:
+          type: number
+        commentCount:
+          type: number
+        retrievedCount:
+          type: number
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/KakologCommentDto'
+      required:
+        - status
+        - channelId
+        - startTime
+        - endTime
+        - commentCount
+        - retrievedCount
         - comments
     UserSettingsDto:
       type: object

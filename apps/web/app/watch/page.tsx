@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import type { VideoPlayerHandle } from '@/components/VideoPlayer';
 import { NicovideoCommentImporter } from '@/components/NicovideoCommentImporter';
+import { KakologCommentImporter } from '@/components/KakologCommentImporter';
 import { useAppSelector } from '@/lib/store/hooks';
 import { selectSelectedConnectionId } from '@/lib/store/selectors';
 import { useUserSettingsQuery } from '@/hooks/useUserSettings';
@@ -62,6 +63,31 @@ export default function WatchPage() {
    * DPlayer を再初期化してコメントをリロードする
    */
   const handleNicovideoCommentsImported = (
+    comments: DPlayerCommentDto[],
+    mergeMode: boolean
+  ) => {
+    // コメント状態を更新 → VideoPlayer に渡される initialComments が変更される
+    const mergedComments = mergeMode 
+      ? [...nicovideoComments, ...comments]
+      : comments;
+
+    // ✅ 重複コメントを排除
+    const dedupedComments = deduplicateComments(mergedComments);
+    
+    setNicovideoComments(dedupedComments);
+    setImportSuccess(true);
+
+    setTimeout(() => {
+      setImportSuccess(false);
+    }, 3000);
+  };
+
+  /**
+   * Kakolog（過去ログ）コメントをインポート
+   * 
+   * ニコ動と同じフロー
+   */
+  const handleKakologCommentsImported = (
     comments: DPlayerCommentDto[],
     mergeMode: boolean
   ) => {
@@ -177,6 +203,11 @@ export default function WatchPage() {
 
         <NicovideoCommentImporter
           onCommentsImported={handleNicovideoCommentsImported}
+          isDisabled={settingsLoading}
+        />
+
+        <KakologCommentImporter
+          onCommentsImported={handleKakologCommentsImported}
           isDisabled={settingsLoading}
         />
 

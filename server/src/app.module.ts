@@ -11,6 +11,7 @@ import { CommonModule } from './common/common.module';
 import { NicovideoModule } from './nicovideo/nicovideo.module';
 import { UserSettingsModule } from './user-settings/user-settings.module';
 import { HealthModule } from './health/health.module';
+import { KakologModule } from './kakolog/kakolog.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { HealthModule } from './health/health.module';
     DriveModule,
     PlayerModule,
     NicovideoModule,
+    KakologModule,
     UserSettingsModule,
     HealthModule,
   ],

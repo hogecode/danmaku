@@ -6,6 +6,7 @@ apis/auth-api.ts
 apis/drive-connection-api.ts
 apis/folder-api.ts
 apis/health-api.ts
+apis/kakolog-api.ts
 apis/nicovideo-api.ts
 apis/player-api.ts
 apis/user-settings-api.ts
@@ -29,8 +30,12 @@ docs/FileItemDto.md
 docs/FolderApi.md
 docs/FolderListDto.md
 docs/GenerateVideoTokenResponseDto.md
+docs/GetKakologCommentsRequestDto.md
+docs/GetKakologCommentsResponseDto.md
 docs/GlobalCommentsDto.md
 docs/HealthApi.md
+docs/KakologApi.md
+docs/KakologCommentDto.md
 docs/LoginResponseDto.md
 docs/NicovideoApi.md
 docs/PlayerApi.md
@@ -53,8 +58,11 @@ models/drive-connection-initiate-response-dto.ts
 models/file-item-dto.ts
 models/folder-list-dto.ts
 models/generate-video-token-response-dto.ts
+models/get-kakolog-comments-request-dto.ts
+models/get-kakolog-comments-response-dto.ts
 models/global-comments-dto.ts
 models/index.ts
+models/kakolog-comment-dto.ts
 models/login-response-dto.ts
 models/update-user-settings-dto.ts
 models/user-info-dto.ts
