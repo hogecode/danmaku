@@ -10,6 +10,12 @@ export class PlayerCommonConstants {
     XML: 'text/xml',
   };
 
+  // コメントファイル MIME タイプ（複数の可能性に対応）
+  static readonly COMMENT_MIME_TYPES = {
+    XML: ['text/xml', 'application/xml', 'application/octet-stream'],
+    JSON: ['application/json', 'application/octet-stream'],
+  };
+
   // コメントファイル拡張子（全プロバイダー共通）
   static readonly EXTENSIONS = {
     COMMENT_JSON: '.json',

@@ -154,6 +154,7 @@ export class PlayerService {
       // 2. 対応するコメントファイルを検索
       const commentFile = await this.findCommentFile(
         userId,
+        connectionId,
         folderId,
         videoFile.name,
       );
@@ -169,6 +170,7 @@ export class PlayerService {
       // 3. ファイルをダウンロード・パース
       const fileContent = await this.downloadFileContent(
         userId,
+        connectionId,
         commentFile.id,
       );
       const comments = await this.xmlParser.parseCommentFile(
@@ -232,10 +234,12 @@ export class PlayerService {
 
   /**
    * 親フォルダからコメントファイルを検索
+   * @param connectionId - ドライブ接続ID（どのプロバイダーかを判定）
    * @returns コメントファイル情報 または null
    */
   private async findCommentFile(
     userId: bigint,
+    connectionId: bigint,
     folderId: string,
     videoFileName: string,
   ): Promise<FileInfo | null> {
@@ -243,39 +247,71 @@ export class PlayerService {
       // ファイル名から拡張子を除去（"aaa.mp4" → "aaa"）
       const baseFileName = videoFileName.replace(/\.[^/.]+$/, '');
 
-      const accessToken = await this.tokenService.getValidAccessToken(userId);
-
-      const oauth2Client = new OAuth2Client();
-      oauth2Client.setCredentials({ access_token: accessToken });
-
-      const drive = google.drive({ version: 'v3', auth: oauth2Client });
-
-      this.logger.debug(
-        `[PlayerService] Searching for comment file for video: ${videoFileName} in folder: ${folderId}`,
+      // ✅ connectionId からプロバイダー情報を取得
+      const { provider, providerName } = await this.getProviderConnection(
+        userId,
+        connectionId,
       );
 
-      // ✅ フォルダ内のすべてのファイルを取得
-      const response = await drive.files.list({
-        q: `'${folderId}' in parents and trashed=false`,
-        spaces: 'drive',
-        fields: PlayerGoogleConstants.API.LIST_FIELDS,
-        pageSize: PlayerGoogleConstants.API.PAGE_SIZE,
-        supportsAllDrives: true,
-      });
+      // プロバイダーに応じてアクセストークンを取得
+      const accessToken = await this.tokenService.getValidAccessToken(
+        userId,
+        providerName,
+        connectionId,
+      );
 
-      const files = response.data.files || [];
+      this.logger.debug(
+        `[PlayerService] Searching for comment file for video: ${videoFileName} in folder: ${folderId} (provider: ${providerName})`,
+      );
+
+      let files: any[] = [];
+
+      // ✅ Google Drive の場合
+      if (providerName === ProviderType.GOOGLE) {
+        const oauth2Client = new OAuth2Client();
+        oauth2Client.setCredentials({ access_token: accessToken });
+
+        const drive = google.drive({ version: 'v3', auth: oauth2Client });
+
+        const response = await drive.files.list({
+          q: `'${folderId}' in parents and trashed=false`,
+          spaces: 'drive',
+          fields: PlayerGoogleConstants.API.LIST_FIELDS,
+          pageSize: PlayerGoogleConstants.API.PAGE_SIZE,
+          supportsAllDrives: true,
+        });
+
+        files = response.data.files || [];
+      }
+      // ✅ OneDrive の場合（将来対応）
+      else if (providerName === ProviderType.ONEDRIVE) {
+        // TODO: OneDrive API でファイル一覧取得
+        this.logger.warn('[PlayerService] OneDrive comment file search not yet implemented');
+        return null;
+      }
+
+      this.logger.debug(
+        `[PlayerService] Found ${files.length} files in folder ${folderId}`,
+      );
 
       // aaa.xml または aaa.json を検索
       for (const file of files) {
         const fileName = file.name || '';
         const mimeType = file.mimeType || '';
 
-        if (
-          (fileName === `${baseFileName}.xml` &&
-            mimeType === PlayerCommonConstants.MIME_TYPES.XML) ||
-          (fileName === `${baseFileName}.json` &&
-            mimeType === PlayerCommonConstants.MIME_TYPES.JSON)
-        ) {
+        // ファイル名でコメントファイルか判定（XML/JSON）
+        const isXmlFile = fileName === `${baseFileName}.xml`;
+        const isJsonFile = fileName === `${baseFileName}.json`;
+
+        // MIME タイプで確認（複数の可能性に対応）
+        const isValidXmlMimeType = PlayerCommonConstants.COMMENT_MIME_TYPES.XML.includes(mimeType);
+        const isValidJsonMimeType = PlayerCommonConstants.COMMENT_MIME_TYPES.JSON.includes(mimeType);
+
+        // ✅ ファイル名が一致し、かつ MIME タイプが妥当なら採用
+        if ((isXmlFile && isValidXmlMimeType) || (isJsonFile && isValidJsonMimeType)) {
+          this.logger.debug(
+            `[PlayerService] Found comment file: ${fileName} (mimeType: ${mimeType})`,
+          );
           return {
             id: file.id || '',
             name: fileName,
@@ -300,33 +336,61 @@ export class PlayerService {
 
   /**
    * ファイル内容をテキストとしてダウンロード
+   * @param connectionId - ドライブ接続ID（プロバイダー判定用）
    * @returns ファイル内容（文字列）
    */
   private async downloadFileContent(
     userId: bigint,
+    connectionId: bigint,
     fileId: string,
   ): Promise<string> {
     try {
-      const accessToken = await this.tokenService.getValidAccessToken(userId);
-
-      const oauth2Client = new OAuth2Client();
-      oauth2Client.setCredentials({ access_token: accessToken });
-
-      const drive = google.drive({ version: 'v3', auth: oauth2Client });
-
-      const response = await drive.files.get(
-        {
-          fileId,
-          alt: 'media',
-        },
-        { responseType: 'arraybuffer' },
+      // ✅ connectionId からプロバイダー情報を取得
+      const { providerName } = await this.getProviderConnection(
+        userId,
+        connectionId,
       );
 
-      // バイナリをテキストに変換
-      const content = Buffer.from(response.data as ArrayBuffer).toString(
-        'utf-8',
+      // プロバイダーに応じてアクセストークンを取得
+      const accessToken = await this.tokenService.getValidAccessToken(
+        userId,
+        providerName,
+        connectionId,
       );
-      return content;
+
+      this.logger.debug(
+        `[PlayerService] Downloading file ${fileId} from ${providerName}`,
+      );
+
+      // ✅ Google Drive の場合
+      if (providerName === ProviderType.GOOGLE) {
+        const oauth2Client = new OAuth2Client();
+        oauth2Client.setCredentials({ access_token: accessToken });
+
+        const drive = google.drive({ version: 'v3', auth: oauth2Client });
+
+        const response = await drive.files.get(
+          {
+            fileId,
+            alt: 'media',
+          },
+          { responseType: 'arraybuffer' },
+        );
+
+        // バイナリをテキストに変換
+        const content = Buffer.from(response.data as ArrayBuffer).toString(
+          'utf-8',
+        );
+        return content;
+      }
+      // ✅ OneDrive の場合（将来対応）
+      else if (providerName === ProviderType.ONEDRIVE) {
+        // TODO: OneDrive API でファイルダウンロード
+        this.logger.warn('[PlayerService] OneDrive file download not yet implemented');
+        throw new Error('OneDrive comment file download not yet implemented');
+      }
+
+      throw new Error(`Unsupported provider: ${providerName}`);
     } catch (error) {
       this.logger.error('[PlayerService] Error downloading file content:', {
         error: error instanceof Error ? error.message : String(error),
