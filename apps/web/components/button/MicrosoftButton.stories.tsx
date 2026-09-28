@@ -82,7 +82,7 @@ export const WithMSWIntegration: Story = {
   },
   args: {
     label: 'Microsoft でログイン',
-    onPress: async () => {
+    onPress: fn(async () => {
       // MSWハンドラーがAPIをインターセプト
       try {
         const response = await fetch('/api/auth/login/microsoft');
@@ -91,6 +91,6 @@ export const WithMSWIntegration: Story = {
       } catch (error) {
         console.error('Login error:', error);
       }
-    },
+    }),
   },
 };

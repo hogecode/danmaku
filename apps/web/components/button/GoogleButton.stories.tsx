@@ -82,7 +82,7 @@ export const WithMSWIntegration: Story = {
   },
   args: {
     label: 'Google でログイン',
-    onPress: async () => {
+    onPress: fn(async () => {
       // MSWハンドラーがAPIをインターセプト
       try {
         const response = await fetch('/api/auth/login/google');
@@ -90,6 +90,6 @@ export const WithMSWIntegration: Story = {
       } catch (error) {
         console.error('Login error:', error);
       }
-    },
+    }),
   },
 };

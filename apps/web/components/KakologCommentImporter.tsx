@@ -25,10 +25,10 @@ import type { KakologCommentDto } from "@/lib/generated/models";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { registerLocale, setDefaultLocale } from "react-datepicker";
-import ja from "date-fns/locale/ja";
+import { ja } from "date-fns/locale/ja";
 
 // ロケール設定
-registerLocale("ja", ja);
+registerLocale("ja", ja as any);
 setDefaultLocale("ja");
 
 interface KakologCommentImporterProps {
