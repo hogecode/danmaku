@@ -24,13 +24,24 @@ generate-all-clients: generate-web-client generate-mobile-client generate-flutte
 
 
 ## ========================
+## Storybook関連 (Windows用)
+## ========================
+.PHONY: storybook-dev
+storybook-dev: ## Storybook 開発サーバー起動 (ポート6006)
+	cd apps/web && npm run storybook
+
+.PHONY: storybook-build
+storybook-build: ## Storybook 本番向けビルド
+	cd apps/web && npm run build-storybook
+
+
+## ========================
 ## ビルド関連 (Windows用)
 ## ========================
 # desktop (Flutter)
 .PHONY: flutter-build-runner
 flutter-build-runner: ## Flutter build_runner 実行
 	cd apps/desktop && flutter pub run build_runner build --delete-conflicting-outputs
-
 
 # mobile (React Native/Expo)
 .PHONY: run-android-local
