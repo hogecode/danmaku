@@ -1,0 +1,890 @@
+openapi: 3.0.0
+paths:
+  /:
+    get:
+      operationId: AppController_getHello
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+      tags:
+        - App
+  /api/auth/login/{provider}:
+    post:
+      operationId: AuthController_loginWithProvider
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
+      summary: |-
+        POST /api/auth/login/:provider - プロバイダー別ログイン開始
+
+        認可URLを生成して返す
+      tags:
+        - Auth
+  /api/auth/callback/{provider}:
+    get:
+      operationId: AuthController_callbackWithProvider
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: code
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: state
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: error
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: error_description
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック
+        例: GET /api/auth/callback/onedrive
+
+        DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+        モバイルクライアントにはセッション ID を DeepLink で返す
+      tags:
+        - Auth
+  /api/auth/me:
+    get:
+      operationId: AuthController_getUserInfo
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoDto'
+      summary: GET /api/auth/me - ユーザー情報取得
+      tags:
+        - Auth
+  /api/auth/logout:
+    post:
+      operationId: AuthController_logout
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: POST /api/auth/logout - ログアウト
+      tags:
+        - Auth
+  /api/auth/dummy-login:
+    post:
+      operationId: AuthController_dummyLogin
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）
+
+        DBに保存されたユーザー情報を使用してセッションを作成
+        これにより、実際のGoogleアクセストークンなどを使用できる
+      tags:
+        - Auth
+  /api/drive-connections:
+    get:
+      operationId: DriveConnectionController_list
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DriveConnectionDto'
+      summary: |-
+        GET /api/drive-connections
+        接続済みドライブリストを取得
+      tags:
+        - DriveConnection
+  /api/drive-connections/{provider}:
+    post:
+      operationId: DriveConnectionController_initiateConnection
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriveConnectionInitiateResponseDto'
+      summary: |-
+        POST /api/drive-connections/:provider
+        Drive接続開始（OAuth認可URLを返す）
+      tags:
+        - DriveConnection
+  /api/drive-connections/{provider}/callback:
+    get:
+      operationId: DriveConnectionController_handleConnectionCallback
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: code
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: state
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        GET /api/drive-connections/:provider/callback
+        Drive接続 callback
+
+        セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、
+        Webクライアントはフロントエンドにリダイレクトする
+      tags:
+        - DriveConnection
+  /api/drive-connections/{connectionId}:
+    delete:
+      operationId: DriveConnectionController_delete
+      parameters:
+        - name: connectionId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriveConnectionDeleteResponseDto'
+      summary: |-
+        DELETE /api/drive-connections/:connectionId
+        接続を削除
+      tags:
+        - DriveConnection
+  /api/drive/connections/{connectionId}/files:
+    get:
+      operationId: FolderController_listFolderByConnection
+      parameters:
+        - name: connectionId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: folderId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FolderListDto'
+      summary: |-
+        GET /api/drive/connections/:connectionId/files
+
+        特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）
+      tags:
+        - Folder
+  /api/drive/connections/{connectionId}/search:
+    get:
+      operationId: FolderController_searchByConnection
+      parameters:
+        - name: connectionId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: folderId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: query
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FolderListDto'
+      summary: |-
+        GET /api/drive/connections/:connectionId/search
+
+        特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
+      tags:
+        - Folder
+  /api/player/stream/{connectionId}/{fileId}:
+    get:
+      operationId: PlayerController_streamVideo
+      parameters:
+        - name: connectionId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: fileId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: range
+          required: true
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: 動画ファイルをストリーミング再生（マルチプロバイダー対応）
+      tags:
+        - Player
+  /api/player/comments/{videoFileId}:
+    get:
+      operationId: PlayerController_getComments
+      parameters:
+        - name: videoFileId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: folderId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: connectionId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DPlayerCommentListDto'
+      summary: |-
+        DPlayer 互換形式でコメントを取得
+
+        コメントファイルの自動検出:
+        - 動画: "aaa.mp4"
+        - コメント: "aaa.xml" または "aaa.json" を自動検索
+        - 見つかった場合: DPlayer 互換形式に変換して返す
+        - 見つからない場合: 空配列を返す
+      tags:
+        - Player
+  /api/player/token:
+    post:
+      operationId: PlayerController_generateVideoToken
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateVideoTokenResponseDto'
+      summary: |-
+        POST /api/player/token - 動画ストリーミング用トークン生成
+
+        目的: モバイルアプリでの動画URL認証
+        - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成
+        - 有効期限: 15分（デフォルト）
+
+        TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
+      tags:
+        - Player
+  /api/nicovideo/download/comments:
+    post:
+      operationId: NicovideoController_downloadComments
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DownloadCommentRequestDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadCommentWithDPlayerResponseDto'
+      summary: |-
+        POST /api/nicovideo/download/comments
+
+        ニコ動のコメントを取得して DPlayer 形式に変換
+
+        1. getVideoMetadata() で HTML から thread_key を抽出
+        2. thread_key が存在すればコメント取得可能
+        3. thread_key が不在 = 非公開動画またはコメント機能無効
+        4. ニコ動形式のコメント → DPlayer形式に変換
+      tags:
+        - Nicovideo
+  /api/kakolog/download/comments:
+    post:
+      operationId: KakologController_downloadComments
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetKakologCommentsRequestDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetKakologCommentsResponseDto'
+      summary: |-
+        POST /api/kakolog/download/comments
+
+        チャンネルの時間範囲内のコメントを DPlayer 形式で取得
+      tags:
+        - Kakolog
+  /api/user-settings:
+    get:
+      operationId: UserSettingsController_getSettings
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettingsDto'
+      summary: |-
+        GET /api/user-settings - ユーザー設定を取得
+
+        現在のユーザーの設定を取得します。
+        存在しない場合はデフォルト値で自動作成します。
+      tags:
+        - UserSettings
+    patch:
+      operationId: UserSettingsController_updateSettings
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserSettingsDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettingsDto'
+      summary: |-
+        PATCH /api/user-settings - ユーザー設定を更新
+
+        指定されたフィールドのみを更新します。
+        更新可能なフィールド: theme, language, danmaku_max_count, ng_words_reg
+      tags:
+        - UserSettings
+  /api/user-settings/reset:
+    patch:
+      operationId: UserSettingsController_resetSettings
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettingsDto'
+      summary: |-
+        PATCH /api/user-settings/reset - ユーザー設定をリセット
+
+        すべての設定をデフォルト値に戻します。
+      tags:
+        - UserSettings
+  /api/health:
+    get:
+      operationId: HealthController_health
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+      tags:
+        - Health
+info:
+  title: danmaku API
+  description: Danmaku API documentation
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas:
+    LoginResponseDto:
+      type: object
+      properties:
+        authorize_url:
+          type: string
+        state:
+          type: string
+        expires_in:
+          type: number
+      required:
+        - authorize_url
+        - state
+        - expires_in
+    DriveConnectionDto:
+      type: object
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        account:
+          type: string
+        status:
+          enum:
+            - error
+            - connected
+            - expired
+            - revoked
+          type: string
+        connected_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - provider
+        - account
+        - status
+        - connected_at
+    UserInfoDto:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        picture_url:
+          type: string
+          nullable: true
+        last_login:
+          format: date-time
+          type: string
+          nullable: true
+        drives:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriveConnectionDto'
+      required:
+        - id
+        - email
+        - drives
+    DriveConnectionInitiateResponseDto:
+      type: object
+      properties:
+        authorize_url:
+          type: string
+          description: OAuth認可URL
+        state:
+          type: string
+          description: CSRF対策用ステート
+        expires_in:
+          type: number
+          description: ステート有効期限（秒）
+      required:
+        - authorize_url
+        - state
+        - expires_in
+    DriveConnectionDeleteResponseDto:
+      type: object
+      properties:
+        message:
+          type: string
+          description: 処理結果メッセージ
+      required:
+        - message
+    FileItemDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ファイル/フォルダID
+        name:
+          type: string
+          description: ファイル/フォルダ名
+        mimeType:
+          type: string
+          description: |-
+            MIME タイプ
+            - 'application/vnd.google-apps.folder' = フォルダ
+            - 'video/mp4' = MP4 ビデオ
+        size:
+          type: number
+          description: |-
+            ファイル/フォルダサイズ（バイト）
+            フォルダの場合は null
+        modifiedTime:
+          type: string
+          description: 最終更新日時（ISO 8601形式）
+        webViewLink:
+          type: string
+          description: Google Drive WebView URL
+        thumbnailLink:
+          type: string
+          description: サムネイル URL（ビデオファイルの場合のみ）
+        parentId:
+          type: string
+          description: 親フォルダID
+      required:
+        - id
+        - name
+        - mimeType
+        - modifiedTime
+        - webViewLink
+    FolderListDto:
+      type: object
+      properties:
+        items:
+          description: フォルダ内のファイル/フォルダ一覧
+          type: array
+          items:
+            $ref: '#/components/schemas/FileItemDto'
+        nextPageToken:
+          type: string
+          description: |-
+            次のページトークン（ページネーション用）
+            あれば指定してリクエスト
+      required:
+        - items
+    DPlayerCommentDto:
+      type: object
+      properties:
+        time:
+          type: number
+          description: |-
+            コメント表示時刻（秒単位の浮動小数点数）
+            例: 10.5 (10秒500ミリ秒)
+        type:
+          type: string
+          description: |-
+            コメント種類
+            - "normal" (中央)
+            - "top" / "ue" (上)
+            - "bottom" / "shita" (下)
+        size:
+          type: string
+          description: |-
+            コメント文字サイズ
+            - "small" (小)
+            - "normal" / "" (通常)
+            - "big" (大)
+        color:
+          type: string
+          description: |-
+            コメント色（16進数カラーコード）
+            例: "#ffffff" (白)
+        author:
+          type: string
+          nullable: true
+          description: コメント投稿者ID（匿名の場合は null）
+        text:
+          type: string
+          description: コメント内容（テキスト）
+      required:
+        - time
+        - type
+        - size
+        - color
+        - text
+    DPlayerCommentListDto:
+      type: object
+      properties:
+        comments:
+          description: DPlayer 互換コメント配列
+          type: array
+          items:
+            $ref: '#/components/schemas/DPlayerCommentDto'
+      required:
+        - comments
+    GenerateVideoTokenResponseDto:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+    DownloadCommentRequestDto:
+      type: object
+      properties:
+        videoId:
+          type: string
+        commentsLimit:
+          type: number
+          minimum: 1
+        commentsFrom:
+          type: number
+          minimum: 0
+      required:
+        - videoId
+    CommentDataDto:
+      type: object
+      properties:
+        title:
+          type: string
+        commentCount:
+          type: number
+        retrievedCount:
+          type: number
+        threads:
+          type: number
+      required:
+        - title
+        - commentCount
+        - retrievedCount
+        - threads
+    GlobalCommentsDto:
+      type: object
+      properties:
+        commentCount:
+          type: number
+        retrievedCount:
+          type: number
+      required:
+        - commentCount
+        - retrievedCount
+    CommentThreadDto:
+      type: object
+      properties:
+        id:
+          type: object
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/DPlayerCommentDto'
+      required:
+        - id
+        - comments
+    CommentsContainerDto:
+      type: object
+      properties:
+        globalComments:
+          $ref: '#/components/schemas/GlobalCommentsDto'
+        threads:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentThreadDto'
+      required:
+        - globalComments
+        - threads
+    DownloadCommentWithDPlayerResponseDto:
+      type: object
+      properties:
+        videoId:
+          type: string
+        status:
+          enum:
+            - completed
+            - failed
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/CommentDataDto'
+        comments:
+          $ref: '#/components/schemas/CommentsContainerDto'
+      required:
+        - videoId
+        - status
+        - message
+        - data
+        - comments
+    GetKakologCommentsRequestDto:
+      type: object
+      properties:
+        channelId:
+          type: string
+        startTime:
+          type: number
+          minimum: 0
+        endTime:
+          type: number
+          minimum: 0
+        limit:
+          type: number
+          minimum: 1
+      required:
+        - channelId
+        - startTime
+        - endTime
+    KakologCommentDto:
+      type: object
+      properties:
+        time:
+          type: number
+          description: コメント表示時刻（秒単位）
+        type:
+          description: 'コメント種類: "normal", "top", "bottom"'
+          enum:
+            - normal
+            - top
+            - bottom
+          type: string
+        size:
+          description: 'コメントサイズ: "small", "medium", "big"'
+          enum:
+            - small
+            - medium
+            - big
+          type: string
+        color:
+          type: string
+          description: 'コメント色（色番号、例: "184"）'
+        author:
+          type: string
+          nullable: true
+          description: 投稿者ID（匿名の場合は null）
+        text:
+          type: string
+          description: コメント内容
+      required:
+        - time
+        - type
+        - size
+        - color
+        - author
+        - text
+    GetKakologCommentsResponseDto:
+      type: object
+      properties:
+        status:
+          enum:
+            - completed
+            - failed
+          type: string
+        message:
+          type: string
+        channelId:
+          type: string
+        startTime:
+          type: number
+        endTime:
+          type: number
+        commentCount:
+          type: number
+        retrievedCount:
+          type: number
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/KakologCommentDto'
+      required:
+        - status
+        - channelId
+        - startTime
+        - endTime
+        - commentCount
+        - retrievedCount
+        - comments
+    UserSettingsDto:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        theme:
+          type: string
+        language:
+          type: string
+        danmaku_max_count:
+          type: number
+        ng_words_reg:
+          type: array
+          items:
+            type: string
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - user_id
+        - theme
+        - language
+        - danmaku_max_count
+        - ng_words_reg
+        - created_at
+        - updated_at
+    UpdateUserSettingsDto:
+      type: object
+      properties:
+        theme:
+          type: string
+        language:
+          type: string
+        danmaku_max_count:
+          type: number
+        ng_words_reg:
+          type: array
+          items:
+            type: string

@@ -14,8 +14,12 @@ generate-mobile-client: ## TypeScript Fetch クライアント生成 (React Nati
 generate-flutter-client: ## Dart OpenAPIクライアント生成 (Flutter用 - Docker使用)
 	powershell -Command "$$pwd = pwd; docker run --rm -v \"$$pwd`:/local\" openapitools/openapi-generator-cli:latest generate -i /local/server/openapi.yaml -g dart -o /local/apps/desktop/lib/data/client --additional-properties=hideGenerationTimestamp=true,pubName=desktop,pubVersion=1.0.0"
 
+.PHONY: generate-msw
+generate-msw: ## MSW ハンドラー生成 (Web用 - OpenAPI → MSW自動生成)
+	powershell -Command "cd apps/web; npx msw-auto-mock '../../server/openapi.yaml' -o mocks"
+
 .PHONY: generate-all-clients
-generate-all-clients: generate-web-client generate-mobile-client generate-flutter-client ## すべてのクライアント生成 (Web + Mobile + Flutter)
+generate-all-clients: generate-web-client generate-mobile-client generate-flutter-client generate-msw ## すべてのクライアント生成 (Web + Mobile + Flutter + MSW)
 	@echo "All clients generated successfully!"
 
 
