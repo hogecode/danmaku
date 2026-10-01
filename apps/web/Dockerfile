@@ -38,6 +38,11 @@ ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
 ARG NEXT_PUBLIC_LOG_LEVEL=debug
 ENV NEXT_PUBLIC_LOG_LEVEL=${NEXT_PUBLIC_LOG_LEVEL}
 
+# Sentry Configuration (for source map upload during build)
+# TODO: Github Secretsで管理するように変更する
+ARG NEXT_PUBLIC_SENTRY_DSN=https://bffb3595b3c9847c9b90496efb1f60d4@o4512171600052224.ingest.de.sentry.io/4512171609948240
+ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+
 # Build the application
 RUN npm run build --legacy-peer-deps
 

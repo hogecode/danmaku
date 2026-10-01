@@ -5,7 +5,9 @@ import { StoreProvider } from "@/components/provider/StoreProvider";
 import { MuiProvider } from "@/components/provider/MuiProvider";
 import { ThemeContextProvider } from "@/lib/theme-context";
 import { EmotionCacheProvider } from "@/lib/emotion-cache";
+import { SentryErrorBoundary } from "@/components/error/SentryErrorBoundary";
 import "./globals.css";
+import "./sentry-client-init";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,17 +31,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <StoreProvider>
-          <QueryProvider>
-            <ThemeContextProvider initialTheme="light">
-              <EmotionCacheProvider>
-                <MuiProvider>
-                  {children}
-                </MuiProvider>
-              </EmotionCacheProvider>
-            </ThemeContextProvider>
-          </QueryProvider>
-        </StoreProvider>
+        <SentryErrorBoundary>
+          <StoreProvider>
+            <QueryProvider>
+              <ThemeContextProvider initialTheme="light">
+                <EmotionCacheProvider>
+                  <MuiProvider>
+                    {children}
+                  </MuiProvider>
+                </EmotionCacheProvider>
+              </ThemeContextProvider>
+            </QueryProvider>
+          </StoreProvider>
+        </SentryErrorBoundary>
       </body>
     </html>
   );

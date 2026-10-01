@@ -47,7 +47,29 @@ nextjs_environment_variables = [
   },
   {
     name  = "NEXT_PUBLIC_LOG_LEVEL"
-    value = "debug"
+    value = "info"
+  },
+  # ========================================
+  # Sentry Configuration (動的読み込み)
+  # ========================================
+  {
+    name  = "SENTRY_ORG"
+    value = "shun103100000"
+  },
+  {
+    name  = "SENTRY_PROJECT"
+    value = "javascript-nextjs"
+  },
+  {
+    name  = "SENTRY_URL"
+    value = "https://o4512171600052224.ingest.de.sentry.io"
+  },
+  # NOTE: SENTRY_AUTH_TOKEN は環境変数から動的に注入される
+  # GitHub Actions secrets → ECS Task Definition
+  # .tfvars ファイルにはシークレット値を含めてはいけない
+  {
+    name  = "SENTRY_DSN"
+    value = "https://bffb3595b3c9847c9b90496efb1f60d4@o4512171600052224.ingest.de.sentry.io/4512171609948240"
   }
 ]
 

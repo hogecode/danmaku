@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
-const nextConfig: NextConfig = {
+let nextConfig: NextConfig = {
   // Turbopack configuration for Docker hot-reload
   turbopack: {
     resolveAlias: {},
@@ -27,5 +28,22 @@ const nextConfig: NextConfig = {
     return config;
   },
 };
+
+nextConfig = withSentryConfig(nextConfig, {
+  // For all available options, see:
+  // https://github.com/getsentry/sentry-webpack-plugin#options
+
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  sentryUrl: process.env.SENTRY_URL,
+
+  // An auth token is required for uploading source maps.
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  silent: false, // Can be used to suppress all Sentry CLI output
+  
+  // Hides source maps from generated client bundles
+  hideSourceMaps: true,
+});
 
 export default nextConfig;

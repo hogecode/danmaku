@@ -20,6 +20,7 @@ Google Drive ビデオプレイヤー + リアルタイムコメント表示
 
 - APIクライアントはopenapi自動生成コードを使用する
   - fetchやaxiosは禁止
+- こっちはnpmコマンドを使用する
 
 ---
 
