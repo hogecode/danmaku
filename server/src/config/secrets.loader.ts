@@ -248,9 +248,21 @@ function parseRedisSecrets(): RedisSecrets {
       if (typeof parsed === 'object' && parsed !== null) {
         redisConfig.host = parsed.host || redisConfig.host;
         redisConfig.port = parsed.port ? parseInt(String(parsed.port), 10) : redisConfig.port;
-        redisConfig.password = parsed.password || redisConfig.password;
+        // 🔧 パスワードは undefined と "" を区別する必要がある
+        // "" (空文字列) は "パスワード保護なし" を意味する
+        // undefined は "設定不足" を意味する
+        if ('password' in parsed && parsed.password) {
+          redisConfig.password = parsed.password;
+        } else if ('password' in parsed && parsed.password === '') {
+          // 明示的に空文字列が設定されている場合、パスワードなしを示す
+          redisConfig.password = undefined;
+        }
         redisConfig.db = parsed.db ? parseInt(String(parsed.db), 10) : redisConfig.db;
-        pinoLogger.info(`✅ Redis credentials loaded: ${redisConfig.host}:${redisConfig.port}`);
+        pinoLogger.info({
+          host: redisConfig.host,
+          port: redisConfig.port,
+          hasPassword: !!redisConfig.password,
+        }, '✅ Redis credentials loaded from REDIS_CREDENTIALS');
       }
     } catch (error) {
       pinoLogger.warn({ err: error as Error }, 'Failed to parse REDIS_CREDENTIALS');
@@ -261,6 +273,9 @@ function parseRedisSecrets(): RedisSecrets {
   process.env.REDIS_PORT = String(redisConfig.port);
   if (redisConfig.password) {
     process.env.REDIS_PASSWORD = redisConfig.password;
+  } else {
+    // パスワード不要な場合は REDIS_PASSWORD を削除（undefined を明示的に設定しない）
+    delete process.env.REDIS_PASSWORD;
   }
   process.env.REDIS_DB = String(redisConfig.db);
 
