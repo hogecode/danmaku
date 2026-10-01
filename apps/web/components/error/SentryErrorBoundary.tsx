@@ -165,8 +165,9 @@ function ErrorFallbackUI({ error, onReset }: ErrorFallbackUIProps) {
           {/* サポート情報 */}
           <Typography
             variant="caption"
-            display="block"
+            component="div"
             sx={{
+              display: "block",
               textAlign: "center",
               color: "text.secondary",
               fontStyle: "italic",

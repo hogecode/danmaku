@@ -12,7 +12,7 @@ import {
   Alert,
   Divider,
 } from "@mui/material";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import WarningIcon from "@mui/icons-material/Warning";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import HomeIcon from "@mui/icons-material/Home";
 
@@ -66,7 +66,7 @@ export default function Error({ error, reset }: ErrorProps) {
         >
           {/* エラーアイコン */}
           <Box sx={{ textAlign: "center", mb: 3 }}>
-            <ErrorOutlineIcon
+            <WarningIcon
               sx={{
                 fontSize: 64,
                 color: "error.main",

@@ -123,8 +123,7 @@ export default function GlobalError({
                   {error.digest && (
                     <Typography
                       variant="caption"
-                      display="block"
-                      sx={{ color: "#c62828" }}
+                      sx={{ display: "block", color: "#c62828" }}
                     >
                       <strong>Error ID:</strong> {error.digest}
                     </Typography>
@@ -158,8 +157,8 @@ export default function GlobalError({
               {/* サポート情報 */}
               <Typography
                 variant="caption"
-                display="block"
                 sx={{
+                  display: "block",
                   textAlign: "center",
                   color: "text.secondary",
                   mt: 3,
