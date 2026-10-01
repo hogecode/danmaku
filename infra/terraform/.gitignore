@@ -15,8 +15,8 @@ crash.*.log
 !*.tfvars.sample
 !example.tfvars
 !environments/*.tfvars.sample
-!environments/dev.tfvars
-!environments/prod.tfvars
+# Note: dev.tfvars と prod.tfvars は .gitignore で除外する
+# （シークレット値を含むため、バージョン管理外とする）
 
 # Ignore override files, as they are usually used for temporary workspaces
 override.tf

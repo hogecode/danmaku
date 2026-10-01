@@ -6,4 +6,6 @@ tfplan
 *.txt
 builds/
 params.json
-prod.tfvars
+*.tfvars
+terraform/environments/prod.tfvars
+terraform/environments/dev.tfvars
