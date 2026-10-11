@@ -15,7 +15,18 @@ import {
   ForbiddenException,
   Body,
 } from '@nestjs/common';
-import type { Express, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import type { Session as ExpressSession } from 'express-session';
+
+// ExpressSession型の拡張定義
+declare global {
+  namespace Express {
+    interface Session {
+      userId?: string | number;
+      save(callback: (err: Error | null) => void): void;
+    }
+  }
+}
 import Redis from 'ioredis';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';

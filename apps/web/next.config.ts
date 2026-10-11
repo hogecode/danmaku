@@ -11,8 +11,8 @@ let nextConfig: NextConfig = {
 
   // Optimize on-demand entries for Docker
   onDemandEntries: {
-    maxInactiveAge: 30 * 1000, // Shorter timeout
-    pagesBufferLength: 10,
+    maxInactiveAge: 60 * 1000, // Longer timeout to reduce cache pressure
+    pagesBufferLength: 5, // Reduce buffered pages
   },
 
   // Webpack configuration for development

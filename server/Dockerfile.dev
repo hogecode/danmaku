@@ -20,8 +20,9 @@ RUN yarn install --frozen-lockfile --network-timeout 100000
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 # Create necessary directories with proper permissions
-RUN mkdir -p /app/dist /app/.eslintcache && \
-    chown -R nodejs:nodejs /app/dist /app/.eslintcache
+RUN mkdir -p /app/dist /app/.eslintcache /tmp/nicovideo-downloads && \
+    chown -R nodejs:nodejs /app/dist /app/.eslintcache && \
+    chmod -R 777 /tmp/nicovideo-downloads
 
 # Copy source code (excluding node_modules and dist via .dockerignore)
 COPY --chown=nodejs:nodejs . .

@@ -74,7 +74,10 @@ export class NicovideoDownloadProcessor extends WorkerHost {
           : undefined,
       });
 
-      const context = await this.browser.newContext({ bypassCSP: true });
+      const context = await this.browser.newContext({ 
+        bypassCSP: true,
+        acceptDownloads: true, // ダウンロード機能を有効化
+      });
       const page = await context.newPage();
       
       await this.publishProgress(jobId, {
@@ -99,7 +102,7 @@ export class NicovideoDownloadProcessor extends WorkerHost {
       });
       await page.waitForTimeout(5000);
 
-      const downloadedFilePath = await this.downloadVideo(page, videoId);
+      const downloadedFilePath = await this.downloadVideo(page, context, videoId);
 
       await this.publishProgress(jobId, {
         step: 'uploading_s3',
@@ -165,135 +168,58 @@ export class NicovideoDownloadProcessor extends WorkerHost {
     }
   }
 
-  private async downloadVideo(page: Page, videoId: string): Promise<string> {
+  private async downloadVideo(page: Page, context: any, videoId: string): Promise<string> {
     try {
-      const downloadDir = this.getDownloadDirectory();
       const tempDir = path.join('./temp-downloads', videoId);
+      const downloadPath = path.join(tempDir, 'downloads');
       
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
+      if (!fs.existsSync(downloadPath)) {
+        fs.mkdirSync(downloadPath, { recursive: true });
       }
-
-      // ブックマークレット実行前のファイル一覧取得
-      const beforeFiles = new Set(
-        fs.readdirSync(downloadDir).map((f) => f.toLowerCase())
-      );
 
       this.logger.info(`ブックマークレット実行: ${videoId}`);
 
-      // ブックマークレットスクリプト実行（自動でダウンロード開始）
-      await page.evaluate(() => {
-        // ブックマークレットが自動実行されるのを想定
-        // または必要に応じてボタンクリック
-      });
+      // Playwright のダウンロードイベントを待機
+      const downloadPromise = context.waitForEvent('download');
 
-      // ダウンロード完了を待機（新規ファイル出現 + サイズ安定）
-      const downloadedFile = await this.waitForDownloadComplete(
-        downloadDir,
-        beforeFiles,
-        videoId
-      );
+      // ブックマークレットスクリプト実行（ダウンロード開始）
+      await page.evaluate(() => {});
 
-      if (!downloadedFile) {
-        throw new Error(`動画ファイルが見つかりません (${videoId})`);
-      }
+      // ダウンロード完了を待機（タイムアウト: 5分）
+      const download = await Promise.race([
+        downloadPromise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('ダウンロード待機タイムアウト')), 300000)
+        )
+      ]) as any;
 
-      // ダウンロード完了ファイルを一時フォルダにコピー
-      const sourcePath = path.join(downloadDir, downloadedFile);
-      const destPath = path.join(tempDir, downloadedFile);
-      
-      fs.copyFileSync(sourcePath, destPath);
+      // ダウンロードファイルを保存
+      const fileName = await download.suggestedFilename();
+      const downloadPath2 = path.join(downloadPath, fileName);
+      await download.saveAs(downloadPath2);
 
       this.logger.info(
-        `動画DL完了: ${videoId} -> ${destPath} (${fs.statSync(destPath).size} bytes)`
+        `動画DL完了: ${videoId} -> ${downloadPath2} (${fs.statSync(downloadPath2).size} bytes)`
       );
 
-      return destPath;
+      return downloadPath2;
     } catch (error) {
       this.logger.error(`動画DL失敗: ${videoId}`, error as Error);
       throw error;
     }
   }
 
-  /**
-   * ダウンロード完了を待機
-   * 新規ファイル出現 + ファイルサイズが安定するまで待機
-   */
-  private async waitForDownloadComplete(
-    downloadDir: string,
-    beforeFiles: Set<string>,
-    videoId: string,
-    timeoutMs: number = 300000 // 5分
-  ): Promise<string | null> {
-    const startTime = Date.now();
-    const checkInterval = 500; // 500ms ごとにチェック
-    const stabilityCheck = 3000; // ファイルサイズが 3秒間変わらなければ完了と判定
-    let lastSize = 0;
-    let stableCount = 0;
-    const stableThreshold = stabilityCheck / checkInterval;
 
-    while (Date.now() - startTime < timeoutMs) {
-      const currentFiles = fs.readdirSync(downloadDir);
-      
-      // 新規ファイルを検出
-      const newFiles = currentFiles.filter(
-        (f) => !beforeFiles.has(f.toLowerCase())
-      );
-
-      if (newFiles.length > 0) {
-        // 最初の新規ファイル（複数ある場合は最大サイズ）
-        const newFile = newFiles
-          .map((f) => ({
-            name: f,
-            size: fs.statSync(path.join(downloadDir, f)).size,
-          }))
-          .sort((a, b) => b.size - a.size)[0];
-
-        const currentSize = newFile.size;
-
-        // ファイルサイズが安定しているか確認
-        if (currentSize > 0 && currentSize === lastSize) {
-          stableCount++;
-
-          if (stableCount >= stableThreshold) {
-            this.logger.info(
-              `ダウンロード完了検知: ${newFile.name} (${currentSize} bytes)`
-            );
-            return newFile.name;
-          }
-        } else {
-          stableCount = 0;
-        }
-
-        lastSize = currentSize;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, checkInterval));
-    }
-
-    // タイムアウト
-    throw new Error(
-      `ダウンロードタイムアウト: ${videoId} (${timeoutMs}ms以内に完了しませんでした)`
-    );
-  }
 
   /**
-   * OS別ダウンロードフォルダを取得
+   * ダウンロードフォルダを取得（Docker コンテナ専用）
    */
   private getDownloadDirectory(): string {
-    const platform = process.platform;
-    const homeDir = process.env.HOME || process.env.USERPROFILE || '~';
-
-    if (platform === 'win32') {
-      // Windows: C:\Users\{user}\Downloads
-      return path.join(homeDir, 'Downloads');
-    } else if (platform === 'darwin') {
-      // macOS: ~/Downloads
-      return path.join(homeDir, 'Downloads');
-    } else {
-      // Linux: ~/Downloads
-      return path.join(homeDir, 'Downloads');
+    const downloadDir = '/tmp/nicovideo-downloads';
+    if (!fs.existsSync(downloadDir)) {
+      fs.mkdirSync(downloadDir, { recursive: true });
     }
+    return downloadDir;
   }
 
   private async publishProgress(

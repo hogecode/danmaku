@@ -78,12 +78,15 @@ services:
       - .env
       - apps/web/.env
     environment:
-      # Critical for Turbopack file watching in Docker
+      # Memory optimization for Turbopack
+      - NODE_OPTIONS=--max-old-space-size=3072
+      # Watchpack optimization
+      - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
       - CHOKIDAR_POLL_INTERVAL=1000
-      - WATCHPACK_POLLING=true
-      - TURBOPACK_LOG_VERBOSITY=debug
+      - WATCHPACK_AGGREGATION_TIMEOUT=20000
       - NODE_ENV=development
+    mem_limit: 4g
     ports:
       - "3000:3000"
     volumes:
@@ -122,6 +125,10 @@ services:
     env_file:
       - .env
       - server/.env
+    environment:
+      - DOCKER_ENV=true
+      - NODE_OPTIONS=--max-old-space-size=2048
+    mem_limit: 3g
     ports:
       - "3001:3001"
       - "9229:9229"  # Debug port

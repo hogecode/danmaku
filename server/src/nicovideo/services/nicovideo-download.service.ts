@@ -121,6 +121,8 @@ export class NicovideoDownloadService {
 
   /**
    * ジョブをキャンセル
+   * - queued/delayed/paused状態のジョブは削除
+   * - active状態のジョブはスキップ（Worker が処理中）
    */
   async cancelJob(jobId: string): Promise<boolean> {
     try {
@@ -131,10 +133,20 @@ export class NicovideoDownloadService {
         return false;
       }
 
-      await job.remove();
-
-      this.logger.info(`ジョブキャンセル: ${jobId}`, { jobId });
-      return true;
+      try {
+        await job.remove();
+        this.logger.info(`ジョブを削除: ${jobId}`, { jobId });
+        return true;
+      } catch (removeError: any) {
+        // ロックされている場合（active状態）はスキップ
+        if (removeError.message?.includes('locked')) {
+          const state = await job.getState();
+          this.logger.warn(`ジョブは実行中のため削除できません: ${jobId}`, { jobId, state });
+          return false;
+        } else {
+          throw removeError;
+        }
+      }
     } catch (error) {
       this.logger.error(`ジョブキャンセル失敗: ${jobId}`, error as Error);
       throw error;
