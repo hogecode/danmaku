@@ -89,6 +89,35 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
+         * @summary POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authControllerDummyLogin: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/auth/dummy-login`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary GET /api/auth/me - ユーザー情報取得
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -208,6 +237,18 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async authControllerDummyLogin(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authControllerDummyLogin(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AuthApi.authControllerDummyLogin']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary GET /api/auth/me - ユーザー情報取得
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -268,6 +309,15 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
+         * @summary POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authControllerDummyLogin(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.authControllerDummyLogin(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary GET /api/auth/me - ユーザー情報取得
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -314,6 +364,16 @@ export class AuthApi extends BaseAPI {
      */
     public authControllerCallbackWithProvider(provider: string, code: string, state: string, error?: string, errorDescription?: string, options?: RawAxiosRequestConfig) {
         return AuthApiFp(this.configuration).authControllerCallbackWithProvider(provider, code, state, error, errorDescription, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public authControllerDummyLogin(options?: RawAxiosRequestConfig) {
+        return AuthApiFp(this.configuration).authControllerDummyLogin(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

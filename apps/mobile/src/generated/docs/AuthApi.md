@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**authControllerCallbackWithProvider**](AuthApi.md#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す |
+| [**authControllerDummyLogin**](AuthApi.md#authcontrollerdummylogin) | **POST** /api/auth/dummy-login | POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる |
 | [**authControllerGetUserInfo**](AuthApi.md#authcontrollergetuserinfo) | **GET** /api/auth/me | GET /api/auth/me - ユーザー情報取得 |
 | [**authControllerLoginWithProvider**](AuthApi.md#authcontrollerloginwithprovider) | **POST** /api/auth/login/{provider} | POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す |
 | [**authControllerLogout**](AuthApi.md#authcontrollerlogout) | **POST** /api/auth/logout | POST /api/auth/logout - ログアウト |
@@ -65,6 +66,63 @@ example().catch(console.error);
 | **state** | `string` |  | [Defaults to `undefined`] |
 | **error** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **errorDescription** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## authControllerDummyLogin
+
+> authControllerDummyLogin()
+
+POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AuthApi,
+} from '';
+import type { AuthControllerDummyLoginRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new AuthApi();
+
+  try {
+    const data = await api.authControllerDummyLogin();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
 
 ### Return type
 

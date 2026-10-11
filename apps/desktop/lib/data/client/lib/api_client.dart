@@ -182,22 +182,60 @@ class ApiClient {
           return valueString == 'true' || valueString == '1';
         case 'DateTime':
           return value is DateTime ? value : DateTime.tryParse(value);
+        case 'CommentDataDto':
+          return CommentDataDto.fromJson(value);
+        case 'CommentThreadDto':
+          return CommentThreadDto.fromJson(value);
+        case 'CommentsContainerDto':
+          return CommentsContainerDto.fromJson(value);
         case 'DPlayerCommentDto':
           return DPlayerCommentDto.fromJson(value);
         case 'DPlayerCommentListDto':
           return DPlayerCommentListDto.fromJson(value);
         case 'DownloadCommentRequestDto':
           return DownloadCommentRequestDto.fromJson(value);
+        case 'DownloadCommentWithDPlayerResponseDto':
+          return DownloadCommentWithDPlayerResponseDto.fromJson(value);
+        case 'DownloadVideoRequestDto':
+          return DownloadVideoRequestDto.fromJson(value);
+        case 'DriveConnectionDeleteResponseDto':
+          return DriveConnectionDeleteResponseDto.fromJson(value);
         case 'DriveConnectionDto':
           return DriveConnectionDto.fromJson(value);
+        case 'DriveConnectionInitiateResponseDto':
+          return DriveConnectionInitiateResponseDto.fromJson(value);
         case 'FileItemDto':
           return FileItemDto.fromJson(value);
         case 'FolderListDto':
           return FolderListDto.fromJson(value);
+        case 'GenerateVideoTokenResponseDto':
+          return GenerateVideoTokenResponseDto.fromJson(value);
+        case 'GetKakologCommentsRequestDto':
+          return GetKakologCommentsRequestDto.fromJson(value);
+        case 'GetKakologCommentsResponseDto':
+          return GetKakologCommentsResponseDto.fromJson(value);
+        case 'GlobalCommentsDto':
+          return GlobalCommentsDto.fromJson(value);
+        case 'KakologCommentDto':
+          return KakologCommentDto.fromJson(value);
         case 'LoginResponseDto':
           return LoginResponseDto.fromJson(value);
+        case 'UpdateUserSettingsDto':
+          return UpdateUserSettingsDto.fromJson(value);
         case 'UserInfoDto':
           return UserInfoDto.fromJson(value);
+        case 'UserSettingsDto':
+          return UserSettingsDto.fromJson(value);
+        case 'VideoDownloadCancelResponseDto':
+          return VideoDownloadCancelResponseDto.fromJson(value);
+        case 'VideoDownloadStartResponseDto':
+          return VideoDownloadStartResponseDto.fromJson(value);
+        case 'VideoDownloadStatusResponseDto':
+          return VideoDownloadStatusResponseDto.fromJson(value);
+        case 'VideoDownloadStatusResponseDtoProgress':
+          return VideoDownloadStatusResponseDtoProgress.fromJson(value);
+        case 'VideoDownloadStatusResponseDtoResult':
+          return VideoDownloadStatusResponseDtoResult.fromJson(value);
         default:
           dynamic match;
           if (value is List && (match = _regList.firstMatch(targetType)?.group(1)) != null) {

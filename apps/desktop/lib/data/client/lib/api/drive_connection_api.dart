@@ -54,14 +54,22 @@ class DriveConnectionApi {
   /// Parameters:
   ///
   /// * [String] connectionId (required):
-  Future<void> driveConnectionControllerDelete(String connectionId,) async {
+  Future<DriveConnectionDeleteResponseDto?> driveConnectionControllerDelete(String connectionId,) async {
     final response = await driveConnectionControllerDeleteWithHttpInfo(connectionId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DriveConnectionDeleteResponseDto',) as DriveConnectionDeleteResponseDto;
+    
+    }
+    return null;
   }
 
-  /// GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+  /// GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -101,7 +109,7 @@ class DriveConnectionApi {
     );
   }
 
-  /// GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+  /// GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
   ///
   /// Parameters:
   ///
@@ -155,11 +163,19 @@ class DriveConnectionApi {
   /// Parameters:
   ///
   /// * [String] provider (required):
-  Future<void> driveConnectionControllerInitiateConnection(String provider,) async {
+  Future<DriveConnectionInitiateResponseDto?> driveConnectionControllerInitiateConnection(String provider,) async {
     final response = await driveConnectionControllerInitiateConnectionWithHttpInfo(provider,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DriveConnectionInitiateResponseDto',) as DriveConnectionInitiateResponseDto;
+    
+    }
+    return null;
   }
 
   /// GET /api/drive-connections 接続済みドライブリストを取得
@@ -191,10 +207,21 @@ class DriveConnectionApi {
   }
 
   /// GET /api/drive-connections 接続済みドライブリストを取得
-  Future<void> driveConnectionControllerList() async {
+  Future<List<DriveConnectionDto>?> driveConnectionControllerList() async {
     final response = await driveConnectionControllerListWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<DriveConnectionDto>') as List)
+        .cast<DriveConnectionDto>()
+        .toList(growable: false);
+
+    }
+    return null;
   }
 }

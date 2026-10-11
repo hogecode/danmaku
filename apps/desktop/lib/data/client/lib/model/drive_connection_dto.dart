@@ -158,17 +158,17 @@ class DriveConnectionDtoStatusEnum {
 
   String toJson() => value;
 
+  static const error = DriveConnectionDtoStatusEnum._(r'error');
   static const connected = DriveConnectionDtoStatusEnum._(r'connected');
   static const expired = DriveConnectionDtoStatusEnum._(r'expired');
   static const revoked = DriveConnectionDtoStatusEnum._(r'revoked');
-  static const error = DriveConnectionDtoStatusEnum._(r'error');
 
   /// List of all possible values in this [enum][DriveConnectionDtoStatusEnum].
   static const values = <DriveConnectionDtoStatusEnum>[
+    error,
     connected,
     expired,
     revoked,
-    error,
   ];
 
   static DriveConnectionDtoStatusEnum? fromJson(dynamic value) => DriveConnectionDtoStatusEnumTypeTransformer().decode(value);
@@ -207,10 +207,10 @@ class DriveConnectionDtoStatusEnumTypeTransformer {
   DriveConnectionDtoStatusEnum? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
+        case r'error': return DriveConnectionDtoStatusEnum.error;
         case r'connected': return DriveConnectionDtoStatusEnum.connected;
         case r'expired': return DriveConnectionDtoStatusEnum.expired;
         case r'revoked': return DriveConnectionDtoStatusEnum.revoked;
-        case r'error': return DriveConnectionDtoStatusEnum.error;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

@@ -16,20 +16,96 @@
 import * as runtime from '../runtime';
 import type {
   DownloadCommentRequestDto,
+  DownloadCommentWithDPlayerResponseDto,
+  DownloadVideoRequestDto,
+  VideoDownloadCancelResponseDto,
+  VideoDownloadStartResponseDto,
+  VideoDownloadStatusResponseDto,
 } from '../models/index';
 import {
     DownloadCommentRequestDtoFromJSON,
     DownloadCommentRequestDtoToJSON,
+    DownloadCommentWithDPlayerResponseDtoFromJSON,
+    DownloadCommentWithDPlayerResponseDtoToJSON,
+    DownloadVideoRequestDtoFromJSON,
+    DownloadVideoRequestDtoToJSON,
+    VideoDownloadCancelResponseDtoFromJSON,
+    VideoDownloadCancelResponseDtoToJSON,
+    VideoDownloadStartResponseDtoFromJSON,
+    VideoDownloadStartResponseDtoToJSON,
+    VideoDownloadStatusResponseDtoFromJSON,
+    VideoDownloadStatusResponseDtoToJSON,
 } from '../models/index';
+
+export interface NicovideoControllerCancelDownloadRequest {
+    jobId: string;
+}
 
 export interface NicovideoControllerDownloadCommentsRequest {
     downloadCommentRequestDto: DownloadCommentRequestDto;
+}
+
+export interface NicovideoControllerGetDownloadProgressRequest {
+    jobId: string;
+}
+
+export interface NicovideoControllerGetDownloadStatusRequest {
+    jobId: string;
+}
+
+export interface NicovideoControllerStartVideoDownloadRequest {
+    downloadVideoRequestDto: DownloadVideoRequestDto;
 }
 
 /**
  * 
  */
 export class NicovideoApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for nicovideoControllerCancelDownload without sending the request
+     */
+    async nicovideoControllerCancelDownloadRequestOpts(requestParameters: NicovideoControllerCancelDownloadRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['jobId'] == null) {
+            throw new runtime.RequiredError(
+                'jobId',
+                'Required parameter "jobId" was null or undefined when calling nicovideoControllerCancelDownload().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/nicovideo/download/{jobId}`;
+        urlPath = urlPath.replace(`{${"jobId"}}`, encodeURIComponent(String(requestParameters['jobId'])));
+
+        return {
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * DELETE /api/nicovideo/download/:jobId  ダウンロードジョブをキャンセル
+     */
+    async nicovideoControllerCancelDownloadRaw(requestParameters: NicovideoControllerCancelDownloadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VideoDownloadCancelResponseDto>> {
+        const requestOptions = await this.nicovideoControllerCancelDownloadRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => VideoDownloadCancelResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * DELETE /api/nicovideo/download/:jobId  ダウンロードジョブをキャンセル
+     */
+    async nicovideoControllerCancelDownload(requestParameters: NicovideoControllerCancelDownloadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VideoDownloadCancelResponseDto> {
+        const response = await this.nicovideoControllerCancelDownloadRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Creates request options for nicovideoControllerDownloadComments without sending the request
@@ -61,20 +137,157 @@ export class NicovideoApi extends runtime.BaseAPI {
     }
 
     /**
-     * POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
+     * POST /api/nicovideo/download/comments  ニコ動のコメントを取得して DPlayer 形式に変換  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効 4. ニコ動形式のコメント → DPlayer形式に変換
      */
-    async nicovideoControllerDownloadCommentsRaw(requestParameters: NicovideoControllerDownloadCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async nicovideoControllerDownloadCommentsRaw(requestParameters: NicovideoControllerDownloadCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DownloadCommentWithDPlayerResponseDto>> {
         const requestOptions = await this.nicovideoControllerDownloadCommentsRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DownloadCommentWithDPlayerResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * POST /api/nicovideo/download/comments  ニコ動のコメントを取得して DPlayer 形式に変換  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効 4. ニコ動形式のコメント → DPlayer形式に変換
+     */
+    async nicovideoControllerDownloadComments(requestParameters: NicovideoControllerDownloadCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DownloadCommentWithDPlayerResponseDto> {
+        const response = await this.nicovideoControllerDownloadCommentsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for nicovideoControllerGetDownloadProgress without sending the request
+     */
+    async nicovideoControllerGetDownloadProgressRequestOpts(requestParameters: NicovideoControllerGetDownloadProgressRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['jobId'] == null) {
+            throw new runtime.RequiredError(
+                'jobId',
+                'Required parameter "jobId" was null or undefined when calling nicovideoControllerGetDownloadProgress().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/nicovideo/download/progress/{jobId}/sse`;
+        urlPath = urlPath.replace(`{${"jobId"}}`, encodeURIComponent(String(requestParameters['jobId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * GET /api/nicovideo/download/progress/:jobId/sse  Server-Sent Events で進捗をリアルタイム配信
+     */
+    async nicovideoControllerGetDownloadProgressRaw(requestParameters: NicovideoControllerGetDownloadProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.nicovideoControllerGetDownloadProgressRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
+     * GET /api/nicovideo/download/progress/:jobId/sse  Server-Sent Events で進捗をリアルタイム配信
      */
-    async nicovideoControllerDownloadComments(requestParameters: NicovideoControllerDownloadCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.nicovideoControllerDownloadCommentsRaw(requestParameters, initOverrides);
+    async nicovideoControllerGetDownloadProgress(requestParameters: NicovideoControllerGetDownloadProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.nicovideoControllerGetDownloadProgressRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Creates request options for nicovideoControllerGetDownloadStatus without sending the request
+     */
+    async nicovideoControllerGetDownloadStatusRequestOpts(requestParameters: NicovideoControllerGetDownloadStatusRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['jobId'] == null) {
+            throw new runtime.RequiredError(
+                'jobId',
+                'Required parameter "jobId" was null or undefined when calling nicovideoControllerGetDownloadStatus().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/nicovideo/download/status/{jobId}`;
+        urlPath = urlPath.replace(`{${"jobId"}}`, encodeURIComponent(String(requestParameters['jobId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * GET /api/nicovideo/download/status/:jobId  ダウンロードジョブのステータスを確認
+     */
+    async nicovideoControllerGetDownloadStatusRaw(requestParameters: NicovideoControllerGetDownloadStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VideoDownloadStatusResponseDto>> {
+        const requestOptions = await this.nicovideoControllerGetDownloadStatusRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => VideoDownloadStatusResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * GET /api/nicovideo/download/status/:jobId  ダウンロードジョブのステータスを確認
+     */
+    async nicovideoControllerGetDownloadStatus(requestParameters: NicovideoControllerGetDownloadStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VideoDownloadStatusResponseDto> {
+        const response = await this.nicovideoControllerGetDownloadStatusRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for nicovideoControllerStartVideoDownload without sending the request
+     */
+    async nicovideoControllerStartVideoDownloadRequestOpts(requestParameters: NicovideoControllerStartVideoDownloadRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['downloadVideoRequestDto'] == null) {
+            throw new runtime.RequiredError(
+                'downloadVideoRequestDto',
+                'Required parameter "downloadVideoRequestDto" was null or undefined when calling nicovideoControllerStartVideoDownload().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/nicovideo/download/video`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DownloadVideoRequestDtoToJSON(requestParameters['downloadVideoRequestDto']),
+        };
+    }
+
+    /**
+     * POST /api/nicovideo/download/video  非同期で動画ダウンロードを開始 ジョブIDを即座に返す
+     */
+    async nicovideoControllerStartVideoDownloadRaw(requestParameters: NicovideoControllerStartVideoDownloadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VideoDownloadStartResponseDto>> {
+        const requestOptions = await this.nicovideoControllerStartVideoDownloadRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => VideoDownloadStartResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * POST /api/nicovideo/download/video  非同期で動画ダウンロードを開始 ジョブIDを即座に返す
+     */
+    async nicovideoControllerStartVideoDownload(requestParameters: NicovideoControllerStartVideoDownloadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VideoDownloadStartResponseDto> {
+        const response = await this.nicovideoControllerStartVideoDownloadRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
 }

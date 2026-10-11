@@ -15,7 +15,7 @@ Method | HTTP request | Description
 
 
 # **playerControllerGenerateVideoToken**
-> playerControllerGenerateVideoToken()
+> GenerateVideoTokenResponseDto playerControllerGenerateVideoToken()
 
 POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
 
@@ -26,7 +26,8 @@ import 'package:desktop/api.dart';
 final api_instance = PlayerApi();
 
 try {
-    api_instance.playerControllerGenerateVideoToken();
+    final result = api_instance.playerControllerGenerateVideoToken();
+    print(result);
 } catch (e) {
     print('Exception when calling PlayerApi->playerControllerGenerateVideoToken: $e\n');
 }
@@ -37,7 +38,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-void (empty response body)
+[**GenerateVideoTokenResponseDto**](GenerateVideoTokenResponseDto.md)
 
 ### Authorization
 
@@ -46,7 +47,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

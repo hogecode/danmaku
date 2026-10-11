@@ -22,6 +22,7 @@ docs/DPlayerCommentDto.md
 docs/DPlayerCommentListDto.md
 docs/DownloadCommentRequestDto.md
 docs/DownloadCommentWithDPlayerResponseDto.md
+docs/DownloadVideoRequestDto.md
 docs/DriveConnectionApi.md
 docs/DriveConnectionDeleteResponseDto.md
 docs/DriveConnectionDto.md
@@ -43,6 +44,11 @@ docs/UpdateUserSettingsDto.md
 docs/UserInfoDto.md
 docs/UserSettingsApi.md
 docs/UserSettingsDto.md
+docs/VideoDownloadCancelResponseDto.md
+docs/VideoDownloadStartResponseDto.md
+docs/VideoDownloadStatusResponseDto.md
+docs/VideoDownloadStatusResponseDtoProgress.md
+docs/VideoDownloadStatusResponseDtoResult.md
 git_push.sh
 index.ts
 models/comment-data-dto.ts
@@ -50,6 +56,7 @@ models/comment-thread-dto.ts
 models/comments-container-dto.ts
 models/download-comment-request-dto.ts
 models/download-comment-with-dplayer-response-dto.ts
+models/download-video-request-dto.ts
 models/dplayer-comment-dto.ts
 models/dplayer-comment-list-dto.ts
 models/drive-connection-delete-response-dto.ts
@@ -67,3 +74,8 @@ models/login-response-dto.ts
 models/update-user-settings-dto.ts
 models/user-info-dto.ts
 models/user-settings-dto.ts
+models/video-download-cancel-response-dto.ts
+models/video-download-start-response-dto.ts
+models/video-download-status-response-dto-progress.ts
+models/video-download-status-response-dto-result.ts
+models/video-download-status-response-dto.ts

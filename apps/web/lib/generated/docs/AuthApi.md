@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**authControllerCallbackWithProvider**](#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す|
+|[**authControllerDummyLogin**](#authcontrollerdummylogin) | **POST** /api/auth/dummy-login | POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる|
 |[**authControllerGetUserInfo**](#authcontrollergetuserinfo) | **GET** /api/auth/me | GET /api/auth/me - ユーザー情報取得|
 |[**authControllerLoginWithProvider**](#authcontrollerloginwithprovider) | **POST** /api/auth/login/{provider} | POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す|
 |[**authControllerLogout**](#authcontrollerlogout) | **POST** /api/auth/logout | POST /api/auth/logout - ログアウト|
@@ -48,6 +49,49 @@ const { status, data } = await apiInstance.authControllerCallbackWithProvider(
 | **state** | [**string**] |  | defaults to undefined|
 | **error** | [**string**] |  | (optional) defaults to undefined|
 | **errorDescription** | [**string**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **authControllerDummyLogin**
+> authControllerDummyLogin()
+
+
+### Example
+
+```typescript
+import {
+    AuthApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new AuthApi(configuration);
+
+const { status, data } = await apiInstance.authControllerDummyLogin();
+```
+
+### Parameters
+This endpoint does not have any parameters.
 
 
 ### Return type

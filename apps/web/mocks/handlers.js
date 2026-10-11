@@ -86,6 +86,34 @@ export const handlers = [
       return HttpResponse.json(responseJson, init);
     },
   ),
+  http.post(`${baseURL}/api/nicovideo/download/video`, async ({ request }) => {
+    const shouldEchoRequestBody = false;
+    let requestJson = null;
+    if (shouldEchoRequestBody && ["post", "put", "patch"].includes("post")) {
+      try {
+        requestJson = await request.clone().json();
+      } catch (e) {
+        requestJson = null;
+      }
+    }
+
+    const resultArray = [
+      [
+        await getNicovideoControllerStartVideoDownload201Response(),
+        { status: 201 },
+      ],
+    ];
+
+    const [body, init] =
+      resultArray[
+        next(`post /api/nicovideo/download/video`) % resultArray.length
+      ];
+    const responseJson =
+      requestJson && body && typeof body === "object" && !Array.isArray(body)
+        ? { ...body, ...requestJson }
+        : body;
+    return HttpResponse.json(responseJson, init);
+  }),
   http.get(`${baseURL}/api/auth/me`, async ({ request }) => {
     const shouldEchoRequestBody = false;
     let requestJson = null;
@@ -324,6 +352,33 @@ export const handlers = [
     return HttpResponse.json(responseJson, init);
   }),
   http.get(
+    `${baseURL}/api/nicovideo/download/progress/:jobId/sse`,
+    async ({ request }) => {
+      const shouldEchoRequestBody = false;
+      let requestJson = null;
+      if (shouldEchoRequestBody && ["post", "put", "patch"].includes("get")) {
+        try {
+          requestJson = await request.clone().json();
+        } catch (e) {
+          requestJson = null;
+        }
+      }
+
+      const resultArray = [[undefined, { status: 200 }]];
+
+      const [body, init] =
+        resultArray[
+          next(`get /api/nicovideo/download/progress/:jobId/sse`) %
+            resultArray.length
+        ];
+      const responseJson =
+        requestJson && body && typeof body === "object" && !Array.isArray(body)
+          ? { ...body, ...requestJson }
+          : body;
+      return HttpResponse.json(responseJson, init);
+    },
+  ),
+  http.get(
     `${baseURL}/api/drive/connections/:connectionId/files`,
     async ({ request }) => {
       const shouldEchoRequestBody = false;
@@ -379,6 +434,71 @@ export const handlers = [
         resultArray[
           next(`get /api/drive/connections/:connectionId/search`) %
             resultArray.length
+        ];
+      const responseJson =
+        requestJson && body && typeof body === "object" && !Array.isArray(body)
+          ? { ...body, ...requestJson }
+          : body;
+      return HttpResponse.json(responseJson, init);
+    },
+  ),
+  http.get(
+    `${baseURL}/api/nicovideo/download/status/:jobId`,
+    async ({ request }) => {
+      const shouldEchoRequestBody = false;
+      let requestJson = null;
+      if (shouldEchoRequestBody && ["post", "put", "patch"].includes("get")) {
+        try {
+          requestJson = await request.clone().json();
+        } catch (e) {
+          requestJson = null;
+        }
+      }
+
+      const resultArray = [
+        [
+          await getNicovideoControllerGetDownloadStatus200Response(),
+          { status: 200 },
+        ],
+      ];
+
+      const [body, init] =
+        resultArray[
+          next(`get /api/nicovideo/download/status/:jobId`) % resultArray.length
+        ];
+      const responseJson =
+        requestJson && body && typeof body === "object" && !Array.isArray(body)
+          ? { ...body, ...requestJson }
+          : body;
+      return HttpResponse.json(responseJson, init);
+    },
+  ),
+  http.delete(
+    `${baseURL}/api/nicovideo/download/:jobId`,
+    async ({ request }) => {
+      const shouldEchoRequestBody = false;
+      let requestJson = null;
+      if (
+        shouldEchoRequestBody &&
+        ["post", "put", "patch"].includes("delete")
+      ) {
+        try {
+          requestJson = await request.clone().json();
+        } catch (e) {
+          requestJson = null;
+        }
+      }
+
+      const resultArray = [
+        [
+          await getNicovideoControllerCancelDownload200Response(),
+          { status: 200 },
+        ],
+      ];
+
+      const [body, init] =
+        resultArray[
+          next(`delete /api/nicovideo/download/:jobId`) % resultArray.length
         ];
       const responseJson =
         requestJson && body && typeof body === "object" && !Array.isArray(body)
@@ -781,6 +901,58 @@ export function getNicovideoControllerDownloadComments201Response() {
   };
 }
 
+export function getNicovideoControllerStartVideoDownload201Response() {
+  return {
+    jobId: faker.string.uuid(),
+    videoId: faker.string.uuid(),
+    status: faker.helpers.arrayElement([
+      "completed",
+      "failed",
+      "queued",
+      "processing",
+    ]),
+    message: faker.lorem.words(),
+    estimatedTime: faker.number.int(),
+  };
+}
+
+export function getNicovideoControllerGetDownloadStatus200Response() {
+  return {
+    jobId: faker.string.uuid(),
+    status: faker.helpers.arrayElement([
+      "completed",
+      "failed",
+      "queued",
+      "not_found",
+      "processing",
+    ]),
+    videoId: faker.string.uuid(),
+    progress: {
+      step: faker.lorem.words(),
+      percentage: faker.number.int(),
+      message: faker.lorem.words(),
+    },
+    result: {
+      fileName: faker.person.fullName(),
+      s3Key: faker.lorem.words(),
+      s3Url: faker.internet.url(),
+      fileSize: faker.number.int(),
+      duration: faker.number.int(),
+      title: faker.lorem.words(),
+      commentCount: faker.number.int(),
+      completedAt: faker.lorem.words(),
+    },
+  };
+}
+
+export function getNicovideoControllerCancelDownload200Response() {
+  return {
+    jobId: faker.string.uuid(),
+    message: faker.lorem.words(),
+    status: faker.helpers.arrayElement(["not_found", "cancelled"]),
+  };
+}
+
 export function getKakologControllerDownloadComments200Response() {
   return {
     status: faker.helpers.arrayElement(["completed", "failed"]),
@@ -799,7 +971,7 @@ export function getKakologControllerDownloadComments200Response() {
       ].map((_) => ({
         time: faker.number.int(),
         type: faker.helpers.arrayElement(["normal", "top", "bottom"]),
-        size: faker.helpers.arrayElement(["small", "medium", "big"]),
+        size: faker.helpers.arrayElement(["big", "small", "medium"]),
         color: faker.lorem.words(),
         author: faker.lorem.words(),
         text: faker.lorem.words(),

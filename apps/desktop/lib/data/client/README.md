@@ -59,34 +59,61 @@ All URIs are relative to *http://localhost*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AppApi* | [**appControllerGetHello**](doc//AppApi.md#appcontrollergethello) | **GET** / | 
-*AuthApi* | [**authControllerCallbackWithProvider**](doc//AuthApi.md#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+*AuthApi* | [**authControllerCallbackWithProvider**](doc//AuthApi.md#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
+*AuthApi* | [**authControllerDummyLogin**](doc//AuthApi.md#authcontrollerdummylogin) | **POST** /api/auth/dummy-login | POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
 *AuthApi* | [**authControllerGetUserInfo**](doc//AuthApi.md#authcontrollergetuserinfo) | **GET** /api/auth/me | GET /api/auth/me - ユーザー情報取得
 *AuthApi* | [**authControllerLoginWithProvider**](doc//AuthApi.md#authcontrollerloginwithprovider) | **POST** /api/auth/login/{provider} | POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
 *AuthApi* | [**authControllerLogout**](doc//AuthApi.md#authcontrollerlogout) | **POST** /api/auth/logout | POST /api/auth/logout - ログアウト
 *DriveConnectionApi* | [**driveConnectionControllerDelete**](doc//DriveConnectionApi.md#driveconnectioncontrollerdelete) | **DELETE** /api/drive-connections/{connectionId} | DELETE /api/drive-connections/:connectionId 接続を削除
-*DriveConnectionApi* | [**driveConnectionControllerHandleConnectionCallback**](doc//DriveConnectionApi.md#driveconnectioncontrollerhandleconnectioncallback) | **GET** /api/drive-connections/{provider}/callback | GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+*DriveConnectionApi* | [**driveConnectionControllerHandleConnectionCallback**](doc//DriveConnectionApi.md#driveconnectioncontrollerhandleconnectioncallback) | **GET** /api/drive-connections/{provider}/callback | GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
 *DriveConnectionApi* | [**driveConnectionControllerInitiateConnection**](doc//DriveConnectionApi.md#driveconnectioncontrollerinitiateconnection) | **POST** /api/drive-connections/{provider} | POST /api/drive-connections/:provider Drive接続開始（OAuth認可URLを返す）
 *DriveConnectionApi* | [**driveConnectionControllerList**](doc//DriveConnectionApi.md#driveconnectioncontrollerlist) | **GET** /api/drive-connections | GET /api/drive-connections 接続済みドライブリストを取得
-*FolderApi* | [**folderControllerListFolder**](doc//FolderApi.md#foldercontrollerlistfolder) | **GET** /api/drive/list | GET /api/drive/list フォルダ内容を取得
 *FolderApi* | [**folderControllerListFolderByConnection**](doc//FolderApi.md#foldercontrollerlistfolderbyconnection) | **GET** /api/drive/connections/{connectionId}/files | GET /api/drive/connections/:connectionId/files  特定のドライブ接続からフォルダ内容を取得（マルチプロバイダー対応）
-*FolderApi* | [**folderControllerSearch**](doc//FolderApi.md#foldercontrollersearch) | **GET** /api/drive/search | GET /api/drive/search フォルダ内でキーワード検索
-*FolderApi* | [**folderControllerSearchByConnection**](doc//FolderApi.md#foldercontrollersearchbyconnection) | **GET** /api/drive/connections/{connectionId}/search | GET /api/drive/connections/:connectionId/search 特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
-*NicovideoApi* | [**nicovideoControllerDownloadComments**](doc//NicovideoApi.md#nicovideocontrollerdownloadcomments) | **POST** /api/nicovideo/download/comments | POST /api/nicovideo/download/comments  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効  TODO: レスポンスDTOを定義
+*FolderApi* | [**folderControllerSearchByConnection**](doc//FolderApi.md#foldercontrollersearchbyconnection) | **GET** /api/drive/connections/{connectionId}/search | GET /api/drive/connections/:connectionId/search  特定のドライブ接続内でキーワード検索（マルチプロバイダー対応）
+*HealthApi* | [**healthControllerHealth**](doc//HealthApi.md#healthcontrollerhealth) | **GET** /api/health | 
+*KakologApi* | [**kakologControllerDownloadComments**](doc//KakologApi.md#kakologcontrollerdownloadcomments) | **POST** /api/kakolog/download/comments | POST /api/kakolog/download/comments  チャンネルの時間範囲内のコメントを DPlayer 形式で取得
+*NicovideoApi* | [**nicovideoControllerCancelDownload**](doc//NicovideoApi.md#nicovideocontrollercanceldownload) | **DELETE** /api/nicovideo/download/{jobId} | DELETE /api/nicovideo/download/:jobId  ダウンロードジョブをキャンセル
+*NicovideoApi* | [**nicovideoControllerDownloadComments**](doc//NicovideoApi.md#nicovideocontrollerdownloadcomments) | **POST** /api/nicovideo/download/comments | POST /api/nicovideo/download/comments  ニコ動のコメントを取得して DPlayer 形式に変換  1. getVideoMetadata() で HTML から thread_key を抽出 2. thread_key が存在すればコメント取得可能 3. thread_key が不在 = 非公開動画またはコメント機能無効 4. ニコ動形式のコメント → DPlayer形式に変換
+*NicovideoApi* | [**nicovideoControllerGetDownloadProgress**](doc//NicovideoApi.md#nicovideocontrollergetdownloadprogress) | **GET** /api/nicovideo/download/progress/{jobId}/sse | GET /api/nicovideo/download/progress/:jobId/sse  Server-Sent Events で進捗をリアルタイム配信
+*NicovideoApi* | [**nicovideoControllerGetDownloadStatus**](doc//NicovideoApi.md#nicovideocontrollergetdownloadstatus) | **GET** /api/nicovideo/download/status/{jobId} | GET /api/nicovideo/download/status/:jobId  ダウンロードジョブのステータスを確認
+*NicovideoApi* | [**nicovideoControllerStartVideoDownload**](doc//NicovideoApi.md#nicovideocontrollerstartvideodownload) | **POST** /api/nicovideo/download/video | POST /api/nicovideo/download/video  非同期で動画ダウンロードを開始 ジョブIDを即座に返す
 *PlayerApi* | [**playerControllerGenerateVideoToken**](doc//PlayerApi.md#playercontrollergeneratevideotoken) | **POST** /api/player/token | POST /api/player/token - 動画ストリーミング用トークン生成  目的: モバイルアプリでの動画URL認証 - URL クエリパラメータ ?token={jwt} で認証するためのトークンを生成 - 有効期限: 15分（デフォルト）  TODO: userIdではなく、videoFileIdを使ってトークンを生成するように変更する
 *PlayerApi* | [**playerControllerGetComments**](doc//PlayerApi.md#playercontrollergetcomments) | **GET** /api/player/comments/{videoFileId} | DPlayer 互換形式でコメントを取得  コメントファイルの自動検出: - 動画: \"aaa.mp4\" - コメント: \"aaa.xml\" または \"aaa.json\" を自動検索 - 見つかった場合: DPlayer 互換形式に変換して返す - 見つからない場合: 空配列を返す
 *PlayerApi* | [**playerControllerStreamVideo**](doc//PlayerApi.md#playercontrollerstreamvideo) | **GET** /api/player/stream/{connectionId}/{fileId} | 動画ファイルをストリーミング再生（マルチプロバイダー対応）
+*UserSettingsApi* | [**userSettingsControllerGetSettings**](doc//UserSettingsApi.md#usersettingscontrollergetsettings) | **GET** /api/user-settings | GET /api/user-settings - ユーザー設定を取得  現在のユーザーの設定を取得します。 存在しない場合はデフォルト値で自動作成します。
+*UserSettingsApi* | [**userSettingsControllerResetSettings**](doc//UserSettingsApi.md#usersettingscontrollerresetsettings) | **PATCH** /api/user-settings/reset | PATCH /api/user-settings/reset - ユーザー設定をリセット  すべての設定をデフォルト値に戻します。
+*UserSettingsApi* | [**userSettingsControllerUpdateSettings**](doc//UserSettingsApi.md#usersettingscontrollerupdatesettings) | **PATCH** /api/user-settings | PATCH /api/user-settings - ユーザー設定を更新  指定されたフィールドのみを更新します。 更新可能なフィールド: theme, language, danmaku_max_count, ng_words_reg
 
 
 ## Documentation For Models
 
+ - [CommentDataDto](doc//CommentDataDto.md)
+ - [CommentThreadDto](doc//CommentThreadDto.md)
+ - [CommentsContainerDto](doc//CommentsContainerDto.md)
  - [DPlayerCommentDto](doc//DPlayerCommentDto.md)
  - [DPlayerCommentListDto](doc//DPlayerCommentListDto.md)
  - [DownloadCommentRequestDto](doc//DownloadCommentRequestDto.md)
+ - [DownloadCommentWithDPlayerResponseDto](doc//DownloadCommentWithDPlayerResponseDto.md)
+ - [DownloadVideoRequestDto](doc//DownloadVideoRequestDto.md)
+ - [DriveConnectionDeleteResponseDto](doc//DriveConnectionDeleteResponseDto.md)
  - [DriveConnectionDto](doc//DriveConnectionDto.md)
+ - [DriveConnectionInitiateResponseDto](doc//DriveConnectionInitiateResponseDto.md)
  - [FileItemDto](doc//FileItemDto.md)
  - [FolderListDto](doc//FolderListDto.md)
+ - [GenerateVideoTokenResponseDto](doc//GenerateVideoTokenResponseDto.md)
+ - [GetKakologCommentsRequestDto](doc//GetKakologCommentsRequestDto.md)
+ - [GetKakologCommentsResponseDto](doc//GetKakologCommentsResponseDto.md)
+ - [GlobalCommentsDto](doc//GlobalCommentsDto.md)
+ - [KakologCommentDto](doc//KakologCommentDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
+ - [UpdateUserSettingsDto](doc//UpdateUserSettingsDto.md)
  - [UserInfoDto](doc//UserInfoDto.md)
+ - [UserSettingsDto](doc//UserSettingsDto.md)
+ - [VideoDownloadCancelResponseDto](doc//VideoDownloadCancelResponseDto.md)
+ - [VideoDownloadStartResponseDto](doc//VideoDownloadStartResponseDto.md)
+ - [VideoDownloadStatusResponseDto](doc//VideoDownloadStatusResponseDto.md)
+ - [VideoDownloadStatusResponseDtoProgress](doc//VideoDownloadStatusResponseDtoProgress.md)
+ - [VideoDownloadStatusResponseDtoResult](doc//VideoDownloadStatusResponseDtoResult.md)
 
 
 ## Documentation For Authorization

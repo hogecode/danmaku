@@ -32,17 +32,39 @@ part 'api/app_api.dart';
 part 'api/auth_api.dart';
 part 'api/drive_connection_api.dart';
 part 'api/folder_api.dart';
+part 'api/health_api.dart';
+part 'api/kakolog_api.dart';
 part 'api/nicovideo_api.dart';
 part 'api/player_api.dart';
+part 'api/user_settings_api.dart';
 
+part 'model/comment_data_dto.dart';
+part 'model/comment_thread_dto.dart';
+part 'model/comments_container_dto.dart';
 part 'model/d_player_comment_dto.dart';
 part 'model/d_player_comment_list_dto.dart';
 part 'model/download_comment_request_dto.dart';
+part 'model/download_comment_with_d_player_response_dto.dart';
+part 'model/download_video_request_dto.dart';
+part 'model/drive_connection_delete_response_dto.dart';
 part 'model/drive_connection_dto.dart';
+part 'model/drive_connection_initiate_response_dto.dart';
 part 'model/file_item_dto.dart';
 part 'model/folder_list_dto.dart';
+part 'model/generate_video_token_response_dto.dart';
+part 'model/get_kakolog_comments_request_dto.dart';
+part 'model/get_kakolog_comments_response_dto.dart';
+part 'model/global_comments_dto.dart';
+part 'model/kakolog_comment_dto.dart';
 part 'model/login_response_dto.dart';
+part 'model/update_user_settings_dto.dart';
 part 'model/user_info_dto.dart';
+part 'model/user_settings_dto.dart';
+part 'model/video_download_cancel_response_dto.dart';
+part 'model/video_download_start_response_dto.dart';
+part 'model/video_download_status_response_dto.dart';
+part 'model/video_download_status_response_dto_progress.dart';
+part 'model/video_download_status_response_dto_result.dart';
 
 
 /// An [ApiClient] instance that uses the default values obtained from

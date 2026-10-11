@@ -9,7 +9,8 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**authControllerCallbackWithProvider**](AuthApi.md#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+[**authControllerCallbackWithProvider**](AuthApi.md#authcontrollercallbackwithprovider) | **GET** /api/auth/callback/{provider} | GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
+[**authControllerDummyLogin**](AuthApi.md#authcontrollerdummylogin) | **POST** /api/auth/dummy-login | POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
 [**authControllerGetUserInfo**](AuthApi.md#authcontrollergetuserinfo) | **GET** /api/auth/me | GET /api/auth/me - ユーザー情報取得
 [**authControllerLoginWithProvider**](AuthApi.md#authcontrollerloginwithprovider) | **POST** /api/auth/login/{provider} | POST /api/auth/login/:provider - プロバイダー別ログイン開始  認可URLを生成して返す
 [**authControllerLogout**](AuthApi.md#authcontrollerlogout) | **POST** /api/auth/logout | POST /api/auth/logout - ログアウト
@@ -18,7 +19,7 @@ Method | HTTP request | Description
 # **authControllerCallbackWithProvider**
 > authControllerCallbackWithProvider(provider, code, state, error, errorDescription)
 
-GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
 
 ### Example
 ```dart
@@ -47,6 +48,42 @@ Name | Type | Description  | Notes
  **state** | **String**|  | 
  **error** | **String**|  | [optional] 
  **errorDescription** | **String**|  | [optional] 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **authControllerDummyLogin**
+> authControllerDummyLogin()
+
+POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
+
+### Example
+```dart
+import 'package:desktop/api.dart';
+
+final api_instance = AuthApi();
+
+try {
+    api_instance.authControllerDummyLogin();
+} catch (e) {
+    print('Exception when calling AuthApi->authControllerDummyLogin: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
 
 ### Return type
 

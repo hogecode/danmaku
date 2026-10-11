@@ -117,6 +117,42 @@ export class AuthApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for authControllerDummyLogin without sending the request
+     */
+    async authControllerDummyLoginRequestOpts(): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/auth/dummy-login`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
+     */
+    async authControllerDummyLoginRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.authControllerDummyLoginRequestOpts();
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
+     */
+    async authControllerDummyLogin(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.authControllerDummyLoginRaw(initOverrides);
+    }
+
+    /**
      * Creates request options for authControllerGetUserInfo without sending the request
      */
     async authControllerGetUserInfoRequestOpts(): Promise<runtime.RequestOpts> {

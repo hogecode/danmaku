@@ -16,7 +16,7 @@ class AuthApi {
 
   final ApiClient apiClient;
 
-  /// GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+  /// GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -66,7 +66,7 @@ class AuthApi {
     );
   }
 
-  /// GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする
+  /// GET /api/auth/callback/:provider - プロバイダー別 OAuth コールバック 例: GET /api/auth/callback/onedrive  DB にユーザー情報を保存し、セッションにユーザーIDを設定してリダイレクトする モバイルクライアントにはセッション ID を DeepLink で返す
   ///
   /// Parameters:
   ///
@@ -81,6 +81,42 @@ class AuthApi {
   /// * [String] errorDescription:
   Future<void> authControllerCallbackWithProvider(String provider, String code, String state, { String? error, String? errorDescription, }) async {
     final response = await authControllerCallbackWithProviderWithHttpInfo(provider, code, state,  error: error, errorDescription: errorDescription, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> authControllerDummyLoginWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/api/auth/dummy-login';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// POST /api/auth/dummy-login - ダミーログイン（開発環境のみ）  DBに保存されたユーザー情報を使用してセッションを作成 これにより、実際のGoogleアクセストークンなどを使用できる
+  Future<void> authControllerDummyLogin() async {
+    final response = await authControllerDummyLoginWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

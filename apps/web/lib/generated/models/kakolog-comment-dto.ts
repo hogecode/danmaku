@@ -49,9 +49,9 @@ export const KakologCommentDtoTypeEnum = {
 
 export type KakologCommentDtoTypeEnum = typeof KakologCommentDtoTypeEnum[keyof typeof KakologCommentDtoTypeEnum];
 export const KakologCommentDtoSizeEnum = {
+    Big: 'big',
     Small: 'small',
     Medium: 'medium',
-    Big: 'big',
 } as const;
 
 export type KakologCommentDtoSizeEnum = typeof KakologCommentDtoSizeEnum[keyof typeof KakologCommentDtoSizeEnum];

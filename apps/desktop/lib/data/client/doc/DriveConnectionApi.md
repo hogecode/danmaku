@@ -10,13 +10,13 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**driveConnectionControllerDelete**](DriveConnectionApi.md#driveconnectioncontrollerdelete) | **DELETE** /api/drive-connections/{connectionId} | DELETE /api/drive-connections/:connectionId 接続を削除
-[**driveConnectionControllerHandleConnectionCallback**](DriveConnectionApi.md#driveconnectioncontrollerhandleconnectioncallback) | **GET** /api/drive-connections/{provider}/callback | GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+[**driveConnectionControllerHandleConnectionCallback**](DriveConnectionApi.md#driveconnectioncontrollerhandleconnectioncallback) | **GET** /api/drive-connections/{provider}/callback | GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
 [**driveConnectionControllerInitiateConnection**](DriveConnectionApi.md#driveconnectioncontrollerinitiateconnection) | **POST** /api/drive-connections/{provider} | POST /api/drive-connections/:provider Drive接続開始（OAuth認可URLを返す）
 [**driveConnectionControllerList**](DriveConnectionApi.md#driveconnectioncontrollerlist) | **GET** /api/drive-connections | GET /api/drive-connections 接続済みドライブリストを取得
 
 
 # **driveConnectionControllerDelete**
-> driveConnectionControllerDelete(connectionId)
+> DriveConnectionDeleteResponseDto driveConnectionControllerDelete(connectionId)
 
 DELETE /api/drive-connections/:connectionId 接続を削除
 
@@ -28,7 +28,8 @@ final api_instance = DriveConnectionApi();
 final connectionId = connectionId_example; // String | 
 
 try {
-    api_instance.driveConnectionControllerDelete(connectionId);
+    final result = api_instance.driveConnectionControllerDelete(connectionId);
+    print(result);
 } catch (e) {
     print('Exception when calling DriveConnectionApi->driveConnectionControllerDelete: $e\n');
 }
@@ -42,7 +43,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**DriveConnectionDeleteResponseDto**](DriveConnectionDeleteResponseDto.md)
 
 ### Authorization
 
@@ -51,14 +52,14 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **driveConnectionControllerHandleConnectionCallback**
 > driveConnectionControllerHandleConnectionCallback(provider, code, state)
 
-GET /api/drive-connections/:provider/callback Drive接続 callback（JSON返却）
+GET /api/drive-connections/:provider/callback Drive接続 callback  セッションを保存し、モバイルクライアントにはDeepLinkでリダイレクト、 Webクライアントはフロントエンドにリダイレクトする
 
 ### Example
 ```dart
@@ -100,7 +101,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **driveConnectionControllerInitiateConnection**
-> driveConnectionControllerInitiateConnection(provider)
+> DriveConnectionInitiateResponseDto driveConnectionControllerInitiateConnection(provider)
 
 POST /api/drive-connections/:provider Drive接続開始（OAuth認可URLを返す）
 
@@ -112,7 +113,8 @@ final api_instance = DriveConnectionApi();
 final provider = provider_example; // String | 
 
 try {
-    api_instance.driveConnectionControllerInitiateConnection(provider);
+    final result = api_instance.driveConnectionControllerInitiateConnection(provider);
+    print(result);
 } catch (e) {
     print('Exception when calling DriveConnectionApi->driveConnectionControllerInitiateConnection: $e\n');
 }
@@ -126,7 +128,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**DriveConnectionInitiateResponseDto**](DriveConnectionInitiateResponseDto.md)
 
 ### Authorization
 
@@ -135,12 +137,12 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **driveConnectionControllerList**
-> driveConnectionControllerList()
+> List<DriveConnectionDto> driveConnectionControllerList()
 
 GET /api/drive-connections 接続済みドライブリストを取得
 
@@ -151,7 +153,8 @@ import 'package:desktop/api.dart';
 final api_instance = DriveConnectionApi();
 
 try {
-    api_instance.driveConnectionControllerList();
+    final result = api_instance.driveConnectionControllerList();
+    print(result);
 } catch (e) {
     print('Exception when calling DriveConnectionApi->driveConnectionControllerList: $e\n');
 }
@@ -162,7 +165,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-void (empty response body)
+[**List<DriveConnectionDto>**](DriveConnectionDto.md)
 
 ### Authorization
 
@@ -171,7 +174,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
