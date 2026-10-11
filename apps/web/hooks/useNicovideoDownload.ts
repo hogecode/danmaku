@@ -21,6 +21,10 @@ export interface DownloadProgress {
   message: string;
   timestamp: Date;
   error?: string;
+  // ダウンロード完了時のデータ
+  downloadUrl?: string;
+  fileName?: string;
+  fileSize?: number;
 }
 
 export interface DownloadState {
@@ -66,6 +70,8 @@ export function useNicovideoDownload() {
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        
+        // progress タイプのメッセージ処理
         if (data.type === "progress" && data.progress) {
           setState((prev) => ({
             ...prev,
@@ -77,6 +83,41 @@ export function useNicovideoDownload() {
             eventSource.close();
             sseRef.current = null;
           }
+        }
+        
+        // completed タイプのメッセージ処理（署名付き URL 含む）
+        if (data.type === "completed" && data.data) {
+          const completedData = data.data;
+          setState((prev) => ({
+            ...prev,
+            progress: {
+              ...prev.progress,
+              downloadUrl: completedData.downloadUrl,
+              fileName: completedData.fileName,
+              fileSize: completedData.fileSize,
+              timestamp: new Date(completedData.timestamp),
+            } as DownloadProgress,
+            status: "completed",
+            result: {
+              downloadUrl: completedData.downloadUrl,
+              fileName: completedData.fileName,
+              fileSize: completedData.fileSize,
+            },
+          }));
+
+          // ファイルを自動ダウンロード
+          if (completedData.downloadUrl) {
+            const link = document.createElement("a");
+            link.href = completedData.downloadUrl;
+            link.download = completedData.fileName || "video.mp4";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("ダウンロード開始:", completedData.fileName);
+          }
+
+          eventSource.close();
+          sseRef.current = null;
         }
       } catch (error) {
         console.error("SSE パース失敗:", error);

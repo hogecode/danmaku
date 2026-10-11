@@ -130,10 +130,14 @@ export class NicovideoDownloadProcessor extends WorkerHost {
         completedAt: new Date(),
       };
 
-      await this.publishProgress(jobId, {
+      // ダウンロード完了イベントを SSE 経由で送信（署名付き URL 付き）
+      await this.publishDownloadComplete(jobId, {
         step: 'completed',
         percentage: 100,
         message: 'ダウンロード完了',
+        downloadUrl: s3Url,
+        fileName,
+        fileSize,
       });
 
       await context.close();
@@ -237,6 +241,31 @@ export class NicovideoDownloadProcessor extends WorkerHost {
       );
     } catch (error) {
       this.logger.error(`進捗発行失敗: ${jobId}`, error as Error);
+    }
+  }
+
+  /**
+   * ダウンロード完了イベントを発行（署名付き URL 付き）
+   */
+  private async publishDownloadComplete(
+    jobId: string,
+    data: any,
+  ): Promise<void> {
+    try {
+      await this.redis.publish(
+        `nicovideo-download:${jobId}`,
+        JSON.stringify({
+          jobId,
+          type: 'completed',
+          data: {
+            ...data,
+            timestamp: new Date(),
+          },
+        }),
+      );
+      this.logger.info(`ダウンロード完了イベント発行: ${jobId}`, { jobId });
+    } catch (error) {
+      this.logger.error(`ダウンロード完了イベント発行失敗: ${jobId}`, error as Error);
     }
   }
 }

@@ -188,7 +188,7 @@ export function NicovideoDownloader() {
               startIcon={<DownloadIcon />}
               sx={{ mt: 2 }}
             >
-              S3 からダウンロード
+              もう一度ダウンロード
             </Button>
             <Button variant="outlined" onClick={() => reset()} sx={{ mt: 1 }}>
               別の動画をダウンロード
