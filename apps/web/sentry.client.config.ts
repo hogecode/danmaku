@@ -4,14 +4,15 @@ Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
   // パフォーマンス監視のサンプリングレート
-  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
+  // 開発環境では 0.0 に設定してトレーシングを無効化
+  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 0.0,
 
   // 分散トレーシングのターゲット URL
   tracePropagationTargets: ["localhost", /^\//],
 
   // Replay サンプリングレート
-  replaysSessionSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 0.1,
-  replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 0.0,
+  replaysOnErrorSampleRate: process.env.NODE_ENV === "production" ? 1.0 : 0.0,
 
   // 環境設定
   environment: process.env.NODE_ENV,
@@ -47,8 +48,8 @@ Sentry.init({
     return event;
   },
 
-  // デバッグ情報の詳細度
-  debug: process.env.NODE_ENV === "development",
+  // デバッグ情報の詳細度（開発環境では無効化）
+  debug: false,
 
   // Sentry が無効な場合に送信を試みない
   enabled: !!process.env.NEXT_PUBLIC_SENTRY_DSN,

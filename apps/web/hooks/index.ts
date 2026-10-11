@@ -6,3 +6,4 @@ export { usePlayerComments } from './usePlayerComments';
 export { usePlayerStream } from './usePlayerStream';
 export { useNicovideoComments } from './useNicovideoComments';
 export { useKakologComments } from './useKakologComments';
+export { useNicovideoDownload } from './useNicovideoDownload';

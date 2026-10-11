@@ -4,8 +4,9 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install git (needed for GitHub package installation)
-RUN apk add --no-cache git
+# Install build dependencies including Playwright dependencies
+# Also install chromium from apk (system package)
+RUN apk add --no-cache git python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev pixman-dev chromium
 
 # Copy package files
 COPY package.json yarn.lock ./
@@ -22,6 +23,9 @@ COPY . .
 # Build the application
 RUN yarn build
 
+# Skip Playwright browser download (use system chromium)
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
 # Prune dev dependencies for production
 RUN yarn install --frozen-lockfile --production=true
 
@@ -30,8 +34,8 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install runtime dependencies for Playwright + system chromium
+RUN apk add --no-cache dumb-init cairo jpeg pango giflib pixman chromium
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \

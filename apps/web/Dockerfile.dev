@@ -23,14 +23,14 @@ ENV NODE_OPTIONS=--enable-source-maps
 COPY package.json package-lock.json ./
 
 # Install all dependencies (including dev dependencies)
-RUN npm install --frozen-lockfile
+RUN npm install --frozen-lockfile --legacy-peer-deps
 
 # Copy source code
 COPY . .
 
 # Fix permissions and ensure .next directory is writable
-RUN mkdir -p /app/.next && \
-    chmod -R 755 /app
+#RUN mkdir -p /app/.next && \
+#     chmod -R 755 /app
 
 # Expose development port
 EXPOSE 3000

@@ -24,8 +24,6 @@ export interface NicovideoDownloadJobResult {
   s3Key: string;
   s3Url: string;
   fileSize: number;
-  duration: number;
-  title: string;
   commentCount?: number;
   completedAt: Date;
 }
