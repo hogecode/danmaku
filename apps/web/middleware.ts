@@ -18,7 +18,7 @@ export function middleware(request: NextRequest) {
   const isAuthenticated = !!sessionId;
 
   // ✅ 認証不要（公開）ページ
-  const publicPages = ['/about', '/auth/login'];
+  const publicPages = ['/about', '/auth/login', '/nicovideo'];
 
   // ✅ 認証必須ページ（ルートを含む）
   const protectedPages = [

@@ -91,7 +91,7 @@ export function useNicovideoDownload() {
           setState((prev) => ({
             ...prev,
             progress: {
-              ...prev.progress,
+              ...data.progress,
               downloadUrl: completedData.downloadUrl,
               fileName: completedData.fileName,
               fileSize: completedData.fileSize,
