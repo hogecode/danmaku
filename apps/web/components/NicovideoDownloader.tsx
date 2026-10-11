@@ -59,9 +59,6 @@ export function NicovideoDownloader() {
 
   return (
     <Box sx={{ p: 3, maxWidth: 800, mx: "auto" }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold" }}>
-        🎬 ニコ動 ダウンロード
-      </Typography>
 
       {status === "idle" ? (
         <Paper sx={{ p: 3, mb: 3 }}>

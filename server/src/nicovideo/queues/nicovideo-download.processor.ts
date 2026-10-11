@@ -87,7 +87,7 @@ export class NicovideoDownloadProcessor extends WorkerHost {
       });
 
       const videoUrl = `https://ext.nicovideo.jp/?${videoId}`;
-      await page.goto(videoUrl, { waitUntil: 'networkidle' });
+      await page.goto(videoUrl, { waitUntil: 'networkidle', timeout: 60000 });
 
       await this.publishProgress(jobId, {
         step: 'downloading_video',
@@ -189,11 +189,11 @@ export class NicovideoDownloadProcessor extends WorkerHost {
       // ブックマークレットスクリプト実行（ダウンロード開始）
       await page.evaluate(() => {});
 
-      // ダウンロード完了を待機（タイムアウト: 5分）
+      // ダウンロード完了を待機（タイムアウト: 15分）
       const download = await Promise.race([
         downloadPromise,
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('ダウンロード待機タイムアウト')), 300000)
+          setTimeout(() => reject(new Error('ダウンロード待機タイムアウト (900秒)')), 900000)
         )
       ]) as any;
 
@@ -203,12 +203,13 @@ export class NicovideoDownloadProcessor extends WorkerHost {
       await download.saveAs(downloadPath2);
 
       this.logger.info(
-        `動画DL完了: ${videoId} -> ${downloadPath2} (${fs.statSync(downloadPath2).size} bytes)`
+        `動画DL完了: ${videoId} -> ${downloadPath2} (${fs.statSync(downloadPath2).size} bytes)`, 
+        { videoId, fileName, fileSize: fs.statSync(downloadPath2).size }
       );
 
       return downloadPath2;
     } catch (error) {
-      this.logger.error(`動画DL失敗: ${videoId}`, error as Error);
+      this.logger.error(`動画DL失敗: ${videoId}`, error as Error, { videoId });
       throw error;
     }
   }
