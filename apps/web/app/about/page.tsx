@@ -19,6 +19,7 @@ import {
   Alert,
 } from "@mui/material";
 import { PlayArrow, Comment, Cloud } from "@mui/icons-material";
+import Link from "next/link";
 
 export default function AboutPage() {
   const router = useRouter();
@@ -121,10 +122,85 @@ export default function AboutPage() {
                   </Box>
                 </Box>
               </Box>
+              <Box
+                sx={{
+                  p: 3,
+                  border: "1px solid #e0e0e0",
+                  borderLeft: "4px solid #667eea",
+                  borderRadius: 1,
+                }}
+              >
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <Cloud sx={{ fontSize: 40, color: "#667eea" }} />
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      ダウンロード機能
+                    </Typography>
+                    <Typography variant="body2">
+                      ニコ動の動画とコメントをダウンロード可能
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
             </Stack>
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-                📖 使い方
+                ニコ動の動画とコメントダウンロード機能
+              </Typography>
+              <Stack spacing={3}>
+                <Card>
+                  <CardContent>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                        gap: 3,
+                      }}
+                    >
+                      <Box sx={{ display: "flex", gap: 2 }}>
+                        <Avatar
+                          sx={{
+                            bgcolor: "#667eea",
+                            color: "white",
+                            fontWeight: 700,
+                            width: 48,
+                            height: 48,
+                          }}
+                        >
+                          1
+                        </Avatar>
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            以下をクリック
+                          </Typography>
+                          <Link href="./nicovideo" style={{ textDecoration: "underline", color: "#667eea" }}>ニコ動の動画とコメントをダウンロードする</Link>
+                        </Box>
+                      </Box>
+                      <Box
+                        sx={{
+                          bgcolor: "#f5f5f5",
+                          borderRadius: 1,
+                          position: "relative",
+                          aspectRatio: "16/9",
+                          width: "100%",
+                        }}
+                      >
+                        <Image
+                          src="/photos/nicovideo.png"
+                          alt="ニコ動の動画とコメントダウンロード"
+                          fill
+                          style={{ objectFit: "cover", borderRadius: "4px" }}
+                        />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Stack>
+            </Box>
+
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+                📖 クラウド接続機能の使い方
               </Typography>
               <Stack spacing={3}>
                 <Card>
@@ -153,7 +229,9 @@ export default function AboutPage() {
                             ドライブ追加
                           </Typography>
                           <Typography variant="body2" sx={{ mt: 1 }}>
-                            Google Drive や OneDriveを追加。<br />複数ドライブを管理できます。
+                            Google Drive や OneDriveを追加。
+                            <br />
+                            複数ドライブを管理できます。
                           </Typography>
                         </Box>
                       </Box>

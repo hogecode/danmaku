@@ -79,7 +79,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     }
   };
 
-  if (!isAuthenticated) return null;
+  // if (!isAuthenticated) return null;
 
   const drawerContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
