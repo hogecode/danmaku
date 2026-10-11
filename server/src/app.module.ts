@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -19,6 +20,17 @@ import { KakologModule } from './kakolog/kakolog.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+    }),
+    // BullMQ グローバル登録
+    BullModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>('REDIS_HOST') || 'localhost',
+          port: configService.get<number>('REDIS_PORT') || 6379,
+          password: configService.get<string>('REDIS_PASSWORD'),
+        },
+      }),
+      inject: [ConfigService],
     }),
     CommonModule,
     DatabaseModule,

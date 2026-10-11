@@ -99,6 +99,31 @@ export const EnvironmentSchema = z.object({
   SCREENSHOT_QUALITY: z.coerce.number().default(90),
 
   // ==================================================
+  // AWS S3 Storage (Nicovideo Downloads)
+  // ==================================================
+  AWS_S3_ENABLED: z.enum(['true', 'false']).default('true'),
+  AWS_REGION: z.string().default('ap-northeast-1'),
+  AWS_ACCESS_KEY_ID: z.string().min(1, 'AWS_ACCESS_KEY_ID is required when S3 is enabled').optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().min(1, 'AWS_SECRET_ACCESS_KEY is required when S3 is enabled').optional(),
+  AWS_S3_BUCKET: z.string().min(1, 'AWS_S3_BUCKET is required when S3 is enabled').optional(),
+  AWS_S3_PREFIX: z.string().default('nicovideo/'),
+  AWS_S3_EXPIRATION_HOURS: z.coerce.number().default(24),
+
+  // ==================================================
+  // Playwright & Browser
+  // ==================================================
+  PLAYWRIGHT_HEADLESS: z.enum(['true', 'false']).default('true'),
+  PLAYWRIGHT_TIMEOUT: z.coerce.number().default(300000),
+  BROWSER_CONCURRENCY: z.coerce.number().default(2),
+
+  // ==================================================
+  // Nicovideo Download Queue
+  // ==================================================
+  NICOVIDEO_QUEUE_CONCURRENCY: z.coerce.number().default(2),
+  NICOVIDEO_DOWNLOAD_TIMEOUT: z.coerce.number().default(300000),
+  NICOVIDEO_DOWNLOAD_MAX_RETRIES: z.coerce.number().default(3),
+
+  // ==================================================
   // Rate Limiting
   // ==================================================
   RATE_LIMIT_WINDOW: z.coerce.number().default(900000),
@@ -151,6 +176,31 @@ export const EnvironmentSchema = z.object({
         code: z.ZodIssueCode.custom,
         path: ['ONEDRIVE_CLIENT_SECRET'],
         message: 'ONEDRIVE_CLIENT_SECRET is required when ONEDRIVE_OAUTH_ENABLED=true',
+      });
+    }
+  }
+
+  // AWS S3 検証
+  if (data.AWS_S3_ENABLED === 'true') {
+    if (!data.AWS_ACCESS_KEY_ID) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['AWS_ACCESS_KEY_ID'],
+        message: 'AWS_ACCESS_KEY_ID is required when AWS_S3_ENABLED=true',
+      });
+    }
+    if (!data.AWS_SECRET_ACCESS_KEY) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['AWS_SECRET_ACCESS_KEY'],
+        message: 'AWS_SECRET_ACCESS_KEY is required when AWS_S3_ENABLED=true',
+      });
+    }
+    if (!data.AWS_S3_BUCKET) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['AWS_S3_BUCKET'],
+        message: 'AWS_S3_BUCKET is required when AWS_S3_ENABLED=true',
       });
     }
   }

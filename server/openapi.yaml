@@ -372,6 +372,92 @@ paths:
         4. ニコ動形式のコメント → DPlayer形式に変換
       tags:
         - Nicovideo
+  /api/nicovideo/download/video:
+    post:
+      operationId: NicovideoController_startVideoDownload
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DownloadVideoRequestDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoDownloadStartResponseDto'
+      summary: |-
+        POST /api/nicovideo/download/video
+
+        非同期で動画ダウンロードを開始
+        ジョブIDを即座に返す
+      tags:
+        - Nicovideo
+  /api/nicovideo/download/status/{jobId}:
+    get:
+      operationId: NicovideoController_getDownloadStatus
+      parameters:
+        - name: jobId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoDownloadStatusResponseDto'
+      summary: |-
+        GET /api/nicovideo/download/status/:jobId
+
+        ダウンロードジョブのステータスを確認
+      tags:
+        - Nicovideo
+  /api/nicovideo/download/progress/{jobId}/sse:
+    get:
+      operationId: NicovideoController_getDownloadProgress
+      parameters:
+        - name: jobId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: |-
+        GET /api/nicovideo/download/progress/:jobId/sse
+
+        Server-Sent Events で進捗をリアルタイム配信
+      tags:
+        - Nicovideo
+  /api/nicovideo/download/{jobId}:
+    delete:
+      operationId: NicovideoController_cancelDownload
+      parameters:
+        - name: jobId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoDownloadCancelResponseDto'
+      summary: |-
+        DELETE /api/nicovideo/download/:jobId
+
+        ダウンロードジョブをキャンセル
+      tags:
+        - Nicovideo
   /api/kakolog/download/comments:
     post:
       operationId: KakologController_downloadComments
@@ -756,6 +842,124 @@ components:
         - message
         - data
         - comments
+    DownloadVideoRequestDto:
+      type: object
+      properties:
+        videoId:
+          type: string
+        quality:
+          enum:
+            - high
+            - low
+            - auto
+          type: string
+        commentsLimit:
+          type: number
+          minimum: 1
+        commentsFrom:
+          type: number
+          minimum: 0
+        downloadComments:
+          type: boolean
+      required:
+        - videoId
+    VideoDownloadStartResponseDto:
+      type: object
+      properties:
+        jobId:
+          type: string
+        videoId:
+          type: string
+        status:
+          enum:
+            - completed
+            - failed
+            - queued
+            - processing
+          type: string
+        message:
+          type: string
+        estimatedTime:
+          type: number
+      required:
+        - jobId
+        - videoId
+        - status
+        - message
+    VideoDownloadStatusResponseDto:
+      type: object
+      properties:
+        jobId:
+          type: string
+        status:
+          enum:
+            - completed
+            - failed
+            - queued
+            - not_found
+            - processing
+          type: string
+        videoId:
+          type: string
+        progress:
+          type: object
+          properties:
+            step:
+              type: string
+            percentage:
+              type: number
+            message:
+              type: string
+          required:
+            - step
+            - percentage
+            - message
+        result:
+          type: object
+          properties:
+            fileName:
+              type: string
+            s3Key:
+              type: string
+            s3Url:
+              type: string
+            fileSize:
+              type: number
+            duration:
+              type: number
+            title:
+              type: string
+            commentCount:
+              type: number
+            completedAt:
+              type: string
+          required:
+            - fileName
+            - s3Key
+            - s3Url
+            - fileSize
+            - duration
+            - title
+            - completedAt
+      required:
+        - jobId
+        - status
+        - videoId
+    VideoDownloadCancelResponseDto:
+      type: object
+      properties:
+        jobId:
+          type: string
+        message:
+          type: string
+        status:
+          enum:
+            - not_found
+            - cancelled
+          type: string
+      required:
+        - jobId
+        - message
     GetKakologCommentsRequestDto:
       type: object
       properties:
@@ -790,9 +994,9 @@ components:
         size:
           description: 'コメントサイズ: "small", "medium", "big"'
           enum:
+            - big
             - small
             - medium
-            - big
           type: string
         color:
           type: string

@@ -4,20 +4,27 @@ import {
   Get,
   Delete,
   Body,
-  Query,
+  Param,
+  Res,
   BadRequestException,
 } from '@nestjs/common';
+import * as express from 'express';
 import { NicovideoVideoService } from './services/nicovideo-video.service';
 import { NicovideoCommentService } from './services/nicovideo-comment.service';
+import { NicovideoDownloadService } from './services/nicovideo-download.service';
 import {
   DownloadVideoRequestDto,
   DownloadCommentRequestDto,
+  VideoDownloadStartResponseDto,
+  VideoDownloadStatusResponseDto,
+  VideoDownloadCancelResponseDto,
 } from './dto';
 import type {
   DownloadCommentWithDPlayerResponseDto,
   DownloadCommentErrorResponseDto,
 } from './dto/download-comment-response.dto';
 import { LoggerService } from '../common/logger/logger.service';
+import { NicovideoSSEService } from './nicovideo-sse.service';
 
 /**
  * ニコ動 API Controller
@@ -28,6 +35,8 @@ export class NicovideoController {
   constructor(
     private readonly videoService: NicovideoVideoService,
     private readonly commentService: NicovideoCommentService,
+    private readonly downloadService: NicovideoDownloadService,
+    private readonly sseService: NicovideoSSEService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -136,6 +145,120 @@ export class NicovideoController {
       };
 
       throw new BadRequestException(errorResponse);
+    }
+  }
+
+  /**
+   * POST /api/nicovideo/download/video
+   *
+   * 非同期で動画ダウンロードを開始
+   * ジョブIDを即座に返す
+   */
+  @Post('download/video')
+  async startVideoDownload(
+    @Body() downloadDto: DownloadVideoRequestDto,
+  ): Promise<VideoDownloadStartResponseDto> {
+    try {
+      if (!downloadDto.videoId) {
+        throw new BadRequestException('videoId is required');
+      }
+
+      const quality = downloadDto.quality || 'auto';
+      const downloadComments = downloadDto.downloadComments || false;
+
+      const result = await this.downloadService.startDownload(
+        downloadDto.videoId,
+        quality as any,
+        downloadComments,
+      );
+
+      this.logger.info(
+        `ダウンロード開始: ${downloadDto.videoId} (Job ID: ${result.jobId})`,
+        { videoId: downloadDto.videoId, jobId: result.jobId },
+      );
+
+      return {
+        jobId: result.jobId,
+        videoId: downloadDto.videoId,
+        status: 'queued',
+        message: result.message,
+      };
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `ダウンロード開始失敗: ${downloadDto.videoId}`,
+        error as Error,
+      );
+      throw new BadRequestException(errorMsg);
+    }
+  }
+
+  /**
+   * GET /api/nicovideo/download/status/:jobId
+   *
+   * ダウンロードジョブのステータスを確認
+   */
+  @Get('download/status/:jobId')
+  async getDownloadStatus(
+    @Param('jobId') jobId: string,
+  ): Promise<VideoDownloadStatusResponseDto> {
+    try {
+      const status = await this.downloadService.getJobStatus(jobId);
+
+      return {
+        jobId,
+        status: status.status,
+        videoId: status.videoId || '',
+        progress: status.progress,
+        result: status.result,
+      };
+    } catch (error) {
+      this.logger.error(`ジョブ状態確認失敗: ${jobId}`, error as Error);
+      throw new BadRequestException('ジョブ状態確認失敗');
+    }
+  }
+
+  /**
+   * GET /api/nicovideo/download/progress/:jobId/sse
+   *
+   * Server-Sent Events で進捗をリアルタイム配信
+   */
+  @Get('download/progress/:jobId/sse')
+  async getDownloadProgress(
+    @Param('jobId') jobId: string,
+    @Res() res: express.Response,
+  ): Promise<void> {
+    try {
+      this.logger.debug(`SSE接続開始: ${jobId}`, { jobId });
+      // SSE接続を登録
+      await this.sseService.registerClient(jobId, res);
+    } catch (error) {
+      this.logger.error(`SSE接続失敗: ${jobId}`, error as Error);
+      res.status(500).json({ error: 'SSE接続失敗' });
+    }
+  }
+
+  /**
+   * DELETE /api/nicovideo/download/:jobId
+   *
+   * ダウンロードジョブをキャンセル
+   */
+  @Delete('download/:jobId')
+  async cancelDownload(
+    @Param('jobId') jobId: string,
+  ): Promise<VideoDownloadCancelResponseDto> {
+    try {
+      // ダウンロードジョブをキャンセル
+      const cancelled = await this.downloadService.cancelJob(jobId);
+
+      return {
+        jobId,
+        message: cancelled ? 'ダウンロードをキャンセルしました' : 'ジョブが見つかりません',
+        status: cancelled ? 'cancelled' : 'not_found',
+      };
+    } catch (error) {
+      this.logger.error(`ジョブキャンセル失敗: ${jobId}`, error as Error);
+      throw new BadRequestException('ジョブキャンセル失敗');
     }
   }
 }
