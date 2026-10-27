@@ -118,6 +118,7 @@ export const EnvironmentSchema = z.object({
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: z.enum(['true', 'false']).default('true'),
   PLAYWRIGHT_BROWSERS_PATH: z.string().default('/dev/null'), // ブラウザキャッシュパス（ダウンロード防止）
   CHROMIUM_PATH: z.string().optional(), // システムchromiumへのカスタムパス
+  TEMP_DOWNLOAD_DIR: z.string().default('/tmp/nicovideo-downloads'), // 一時ダウンロードディレクトリ
 
   // ==================================================
   // Nicovideo Download Queue

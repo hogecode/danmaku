@@ -59,13 +59,20 @@ ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV PLAYWRIGHT_BROWSERS_PATH=/dev/null
 ENV NODE_ENV=production
 ENV CHROMIUM_PATH=/usr/bin/chromium-browser
+ENV TEMP_DOWNLOAD_DIR=/tmp/nicovideo-downloads
 
 # Ensure nodejs user can execute chromium
 RUN chmod +x /usr/bin/chromium-browser
 
-# Create an empty playwright cache directory for nodejs user
+# Create necessary directories with proper permissions for nodejs user
 RUN mkdir -p /app/.playwright/chromium && \
-    chown -R nodejs:nodejs /app/.playwright
+    mkdir -p /app/temp-downloads && \
+    mkdir -p /tmp/nicovideo-downloads && \
+    chown -R nodejs:nodejs /app/.playwright && \
+    chown -R nodejs:nodejs /app/temp-downloads && \
+    chown -R nodejs:nodejs /tmp/nicovideo-downloads && \
+    chmod -R 755 /app/temp-downloads && \
+    chmod -R 755 /tmp/nicovideo-downloads
 
 # Switch to non-root user
 USER nodejs

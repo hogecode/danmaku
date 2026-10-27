@@ -156,7 +156,8 @@ export class NicovideoDownloadProcessor extends WorkerHost {
       if (this.browser) await this.browser.close();
 
       // クリーンアップ: 一時ファイルを削除
-      await this.cleanupTempDirectory(path.join('./temp-downloads', videoId));
+      const baseTempDir = process.env.TEMP_DOWNLOAD_DIR || '/tmp/nicovideo-downloads';
+      await this.cleanupTempDirectory(path.join(baseTempDir, videoId));
 
       return result;
     } catch (error) {
@@ -186,11 +187,21 @@ export class NicovideoDownloadProcessor extends WorkerHost {
 
   private async downloadVideo(page: Page, context: any, videoId: string): Promise<string> {
     try {
-      const tempDir = path.join('./temp-downloads', videoId);
+      // アプリケーションのワーキングディレクトリを使用（Dockerコンテナ内では /tmp を推奨）
+      const baseTempDir = process.env.TEMP_DOWNLOAD_DIR || '/tmp/nicovideo-downloads';
+      const tempDir = path.join(baseTempDir, videoId);
       const downloadPath = path.join(tempDir, 'downloads');
       
+      this.logger.info(`ダウンロード作成ディレクトリ: ${downloadPath}（ベース: ${baseTempDir}）`);
+      
       if (!fs.existsSync(downloadPath)) {
-        fs.mkdirSync(downloadPath, { recursive: true });
+        try {
+          fs.mkdirSync(downloadPath, { recursive: true });
+          this.logger.info(`ディレクトリを作成しました: ${downloadPath}`);
+        } catch (mkdirError) {
+          this.logger.error(`ディレクトリ作成失敗: ${downloadPath}`, mkdirError as Error);
+          throw mkdirError;
+        }
       }
 
       this.logger.info(`ブックマークレット実行: ${videoId}`);
@@ -258,10 +269,17 @@ export class NicovideoDownloadProcessor extends WorkerHost {
   }
 
   /**
+   * 一時ダウンロードディレクトリのベースパスを取得
+   */
+  private getTempDownloadBaseDir(): string {
+    return process.env.TEMP_DOWNLOAD_DIR || '/tmp/nicovideo-downloads';
+  }
+
+  /**
    * ダウンロードフォルダを取得（Docker コンテナ専用）
    */
   private getDownloadDirectory(): string {
-    const downloadDir = '/tmp/nicovideo-downloads';
+    const downloadDir = this.getTempDownloadBaseDir();
     if (!fs.existsSync(downloadDir)) {
       fs.mkdirSync(downloadDir, { recursive: true });
     }
