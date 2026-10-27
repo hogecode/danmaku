@@ -25,6 +25,8 @@ RUN yarn build
 
 # Skip Playwright browser download (use system chromium)
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+# Verify chromium installation
+RUN which chromium-browser || which chromium || echo "chromium not found in PATH"
 
 # Prune dev dependencies for production
 RUN yarn install --frozen-lockfile --production=true
@@ -37,6 +39,9 @@ WORKDIR /app
 # Install runtime dependencies for Playwright + system chromium
 RUN apk add --no-cache dumb-init cairo jpeg pango giflib pixman chromium
 
+# Verify chromium is installed and create symlink if needed
+RUN which chromium-browser || ln -s /usr/bin/chromium /usr/bin/chromium-browser
+
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
@@ -48,6 +53,10 @@ COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 # Also copy src for drizzle-kit migrations
 COPY --from=builder --chown=nodejs:nodejs /app/src ./src
 COPY --from=builder --chown=nodejs:nodejs /app/drizzle.config.ts ./drizzle.config.ts
+
+# Set environment variables for Playwright to use system chromium
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV NODE_ENV=production
 
 # Switch to non-root user
 USER nodejs

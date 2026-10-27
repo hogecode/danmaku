@@ -65,13 +65,14 @@ export class NicovideoDownloadProcessor extends WorkerHost {
 
       // Chromiumブラウザを起動
       // Docker環境ではシステムパッケージのchromiumを使用
+      const executablePath = this.getChromiumPath();
+      
       this.browser = await chromium.launch({
         headless:
           this.configService.get<string>('PLAYWRIGHT_HEADLESS') !== 'false',
         // Docker環境でシステムchromiumを使用
-        executablePath: process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD 
-          ? '/usr/bin/chromium-browser' 
-          : undefined,
+        executablePath: executablePath || undefined,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Docker環境用オプション
       });
 
       const context = await this.browser.newContext({ 
@@ -213,8 +214,29 @@ export class NicovideoDownloadProcessor extends WorkerHost {
       throw error;
     }
   }
+  /**
+   * Chromiumのパスを自動検出
+   */
+  private getChromiumPath(): string | null {
+    // システムchromiumの可能性のあるパス
+    const possiblePaths = [
+      '/usr/bin/chromium-browser',  // Alpine Linux標準
+      '/usr/bin/chromium',           // Ubuntu/Debian
+      '/usr/local/bin/chromium',     // カスタムインストール
+      '/snap/bin/chromium',          // Snap インストール
+      process.env.CHROMIUM_PATH,     // 環境変数指定
+    ].filter((path): path is string => Boolean(path));
 
+    for (const path of possiblePaths) {
+      if (fs.existsSync(path)) {
+        this.logger.info(`Chromiumを検出: ${path}`);
+        return path;
+      }
+    }
 
+    this.logger.warn('システムchromiumが見つかりません。Playwriteのダウンロード済みブラウザを使用します。');
+    return null;
+  }
 
   /**
    * ダウンロードフォルダを取得（Docker コンテナ専用）

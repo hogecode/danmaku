@@ -115,6 +115,8 @@ export const EnvironmentSchema = z.object({
   PLAYWRIGHT_HEADLESS: z.enum(['true', 'false']).default('true'),
   PLAYWRIGHT_TIMEOUT: z.coerce.number().default(300000),
   BROWSER_CONCURRENCY: z.coerce.number().default(2),
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: z.enum(['true', 'false']).default('true'),
+  CHROMIUM_PATH: z.string().optional(), // システムchromiumへのカスタムパス
 
   // ==================================================
   // Nicovideo Download Queue
