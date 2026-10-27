@@ -56,7 +56,16 @@ COPY --from=builder --chown=nodejs:nodejs /app/drizzle.config.ts ./drizzle.confi
 
 # Set environment variables for Playwright to use system chromium
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV PLAYWRIGHT_BROWSERS_PATH=/dev/null
 ENV NODE_ENV=production
+ENV CHROMIUM_PATH=/usr/bin/chromium-browser
+
+# Ensure nodejs user can execute chromium
+RUN chmod +x /usr/bin/chromium-browser
+
+# Create an empty playwright cache directory for nodejs user
+RUN mkdir -p /app/.playwright/chromium && \
+    chown -R nodejs:nodejs /app/.playwright
 
 # Switch to non-root user
 USER nodejs

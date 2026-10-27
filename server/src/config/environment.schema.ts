@@ -116,6 +116,7 @@ export const EnvironmentSchema = z.object({
   PLAYWRIGHT_TIMEOUT: z.coerce.number().default(300000),
   BROWSER_CONCURRENCY: z.coerce.number().default(2),
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: z.enum(['true', 'false']).default('true'),
+  PLAYWRIGHT_BROWSERS_PATH: z.string().default('/dev/null'), // ブラウザキャッシュパス（ダウンロード防止）
   CHROMIUM_PATH: z.string().optional(), // システムchromiumへのカスタムパス
 
   // ==================================================

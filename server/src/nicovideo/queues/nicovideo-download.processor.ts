@@ -67,11 +67,22 @@ export class NicovideoDownloadProcessor extends WorkerHost {
       // Docker環境ではシステムパッケージのchromiumを使用
       const executablePath = this.getChromiumPath();
       
+      this.logger.info(`[Playwright Launch] executablePath: ${executablePath}`);
+      this.logger.info(`[Playwright Launch] PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: ${process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD}`);
+      this.logger.info(`[Playwright Launch] PLAYWRIGHT_BROWSERS_PATH: ${process.env.PLAYWRIGHT_BROWSERS_PATH}`);
+      this.logger.info(`[Playwright Launch] CHROMIUM_PATH: ${process.env.CHROMIUM_PATH}`);
+      
+      if (!executablePath) {
+        const errorMsg = 'システムchromiumが見つかりません。実行環境を確認してください。';
+        this.logger.error(errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      // executablePath が必須（undefined を渡さない）
       this.browser = await chromium.launch({
         headless:
           this.configService.get<string>('PLAYWRIGHT_HEADLESS') !== 'false',
-        // Docker環境でシステムchromiumを使用
-        executablePath: executablePath || undefined,
+        executablePath: executablePath, // 絶対に値が入っている
         args: ['--no-sandbox', '--disable-setuid-sandbox'], // Docker環境用オプション
       });
 
@@ -227,14 +238,22 @@ export class NicovideoDownloadProcessor extends WorkerHost {
       process.env.CHROMIUM_PATH,     // 環境変数指定
     ].filter((path): path is string => Boolean(path));
 
+    this.logger.info(`[getChromiumPath] 検査対象パス: ${JSON.stringify(possiblePaths)}`);
+
     for (const path of possiblePaths) {
-      if (fs.existsSync(path)) {
-        this.logger.info(`Chromiumを検出: ${path}`);
-        return path;
+      try {
+        if (fs.existsSync(path)) {
+          this.logger.info(`✅ [getChromiumPath] Chromiumを検出: ${path}`);
+          return path;
+        } else {
+          this.logger.info(`❌ [getChromiumPath] パスが存在しない: ${path}`);
+        }
+      } catch (error) {
+        this.logger.error(`[getChromiumPath] パスチェック失敗: ${path}`, error as Error);
       }
     }
 
-    this.logger.warn('システムchromiumが見つかりません。Playwriteのダウンロード済みブラウザを使用します。');
+    this.logger.error('❌ [getChromiumPath] システムchromiumが見つかりません。');
     return null;
   }
 
